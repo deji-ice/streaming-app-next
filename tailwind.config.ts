@@ -1,4 +1,8 @@
 import type { Config } from "tailwindcss";
+import { fontFamily } from 'tailwindcss/defaultTheme';
+import tailwindcssForms from '@tailwindcss/forms';
+import tailwindcssAnimate from "tailwindcss-animate";
+
 
 export default {
     darkMode: ["class"],
@@ -9,6 +13,10 @@ export default {
   ],
   theme: {
   	extend: {
+		fontFamily: {
+			montserrat: ['var(--font-montserrat)', ...fontFamily.sans],
+			roboto: ['var(--font-roboto)', ...fontFamily.sans],
+		  },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
@@ -58,5 +66,5 @@ export default {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate, tailwindcssForms],
 } satisfies Config;
