@@ -131,8 +131,7 @@ export default function MediaInfo({
                        backdrop-blur-sm border border-primary/20
                        relative before:absolute before:inset-0 
                        before:rounded-lg before:p-[1px]
-                       before:bg-gradient-to-r before:from-primary/50 
-                       before:to-transparent before:-z-10"
+                        before:-z-10"
         >
           <p className="text-lg font-roboto leading-relaxed">{overview}</p>
         </div>
