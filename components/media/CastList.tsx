@@ -1,4 +1,3 @@
-// components/media/CastList.tsx
 import Image from "next/image";
 import type { Cast } from "@/types";
 

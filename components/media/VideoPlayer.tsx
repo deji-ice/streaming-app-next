@@ -3,11 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Play } from "lucide-react";
+import { MediaType } from "@/types";
 
 interface VideoPlayerProps {
   tmdbId: number;
-  type: "movie" | "series";
-  posterPath: string;
+  type: MediaType;
+  posterPath: string | null;
   title: string;
   episode?: {
     season: number;

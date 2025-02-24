@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
-            <span className="font-montserrat font-bold text-xl">StreamApp</span>
+            <span className="font-montserrat font-bold text-xl">Streamscape</span>
           </div>
           
           <nav className="flex gap-6 font-roboto">

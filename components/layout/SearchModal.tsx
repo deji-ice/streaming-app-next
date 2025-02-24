@@ -8,8 +8,6 @@ import { Movie, Series } from "@/types";
 import { tmdb } from "@/lib/tmdb";
 import Image from "next/image";
 import Link from "next/link";
-
-// Import the sluggify function from utils
 import { sluggify } from "@/lib/utils";
 
 interface SearchModalProps {

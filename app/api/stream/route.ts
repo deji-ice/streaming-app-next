@@ -1,11 +1,11 @@
-// app/api/stream/route.ts
-import { NextResponse } from "next/server";
+import { MediaType } from "@/types";
+import { NextResponse, NextRequest } from "next/server";
 
 const VIDSRC_BASE = process.env.NEXT_STREAM_BASE_URL; // Add to .env.local
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const type = searchParams.get("type");
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  const type = searchParams.get("type") as MediaType | null;
   const tmdbId = searchParams.get("id");
   const season = searchParams.get("season");
   const episode = searchParams.get("episode");
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Invalid parameters" }, { status: 400 });
   }
 
-  const streamUrl = type === "movie" 
+  const streamUrl = type === "movie"
     ? `${VIDSRC_BASE}/embed/movie/${tmdbId}`
     : `${VIDSRC_BASE}/embed/tv/${tmdbId}/${season || 1}/${episode || 1}`;
 

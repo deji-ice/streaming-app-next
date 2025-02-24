@@ -9,26 +9,37 @@ const options = {
   }
 };
 
+import type { Movie, Series, MovieDetails, SeriesDetails, Genre, Episode } from "@/types";
+
+interface TMDBResponse<T> {
+  results: T[];
+  page: number;
+  total_pages: number;
+  total_results: number;
+}
+
+type MediaType = 'movie' | 'tv';
+
 export const tmdb = {
-  async getTrending() {
+  async getTrending(): Promise<TMDBResponse<Movie>> {
     const res = await fetch(`${BASE_URL}/trending/movie/week`, options);
     if (!res.ok) throw new Error('Failed to fetch trending');
     return res.json();
   },
 
-  async getPopularMovies() {
+  async getPopularMovies(): Promise<TMDBResponse<Movie>> {
     const res = await fetch(`${BASE_URL}/movie/popular`, options);
     if (!res.ok) throw new Error('Failed to fetch popular movies');
     return res.json();
   },
 
-  async getPopularSeries() {
+  async getPopularSeries(): Promise<TMDBResponse<Series>> {
     const res = await fetch(`${BASE_URL}/tv/popular`, options);
     if (!res.ok) throw new Error('Failed to fetch popular series');
     return res.json();
   },
 
-  async getMediaDetails(id: string, type: 'movie' | 'tv') {
+  async getMediaDetails(id: string, type: MediaType): Promise<MovieDetails | SeriesDetails> {
     const res = await fetch(
       `${BASE_URL}/${type}/${id}?append_to_response=credits`,
       options
@@ -37,15 +48,7 @@ export const tmdb = {
     return res.json();
   },
 
-  async searchMedia(query: string) {
-    const res = await fetch(
-      `${BASE_URL}/search/multi?query=${encodeURIComponent(query)}`,
-      options
-    );
-    if (!res.ok) throw new Error('Failed to search');
-    return res.json();
-  },
-  async searchMulti(query: string) {
+  async searchMulti(query: string): Promise<TMDBResponse<Movie | Series>> {
     try {
       const res = await fetch(
         `${BASE_URL}/search/multi?query=${encodeURIComponent(query)}`,
@@ -55,18 +58,14 @@ export const tmdb = {
       return res.json()
     } catch (error) {
       console.error("Error:", error)
-      return { results: [] }
+      return { results: [], page: 1, total_pages: 0, total_results: 0 }
     }
   },
-  async getSeriesDetails(seriesId: number, seasonNumber: number) {
-    const res = await fetch(
-      `${BASE_URL}/tv/${seriesId}/season/${seasonNumber}`,
-      options
-    );
-    if (!res.ok) throw new Error('Failed to fetch season details');
-    return res.json();
-  },
-  async getSeasonDetails(seriesId: number, seasonNumber: number) {
+
+  async getSeasonDetails(
+    seriesId: number,
+    seasonNumber: number
+  ): Promise<{ episodes: Episode[] }> {
     try {
       const res = await fetch(
         `${BASE_URL}/tv/${seriesId}/season/${seasonNumber}`,
@@ -80,7 +79,11 @@ export const tmdb = {
       return { episodes: [] };
     }
   },
-  async getRecommendations(id: number, type: "movie" | "tv") {
+
+  async getRecommendations(
+    id: number,
+    type: MediaType
+  ): Promise<(Movie | Series)[]> {
     try {
       const res = await fetch(
         `${BASE_URL}/${type}/${id}/recommendations`,
@@ -94,26 +97,28 @@ export const tmdb = {
       return [];
     }
   },
-  async getGenres() {
+
+  async getGenres(): Promise<Genre[]> {
     try {
       const [movieGenres, tvGenres] = await Promise.all([
         fetch(`${BASE_URL}/genre/movie/list`, options),
         fetch(`${BASE_URL}/genre/tv/list`, options)
       ]);
-      
+
       const movieData = await movieGenres.json();
       const tvData = await tvGenres.json();
-      
+
       // Combine and deduplicate genres
       const allGenres = [...movieData.genres, ...tvData.genres];
       const uniqueGenres = Array.from(new Map(allGenres.map(g => [g.id, g])).values());
-      
+
       return uniqueGenres;
     } catch (error) {
       console.error("Error fetching genres:", error);
       return [];
     }
   },
+
   async getLatestMovies() {
     try {
       const res = await fetch(`${BASE_URL}/movie/now_playing`, options);

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
 import VideoPlayer from "@/components/media/VideoPlayer";
 import MediaInfo from "@/components/media/MediaInfo";
@@ -7,16 +8,27 @@ import CastList from "@/components/media/CastList";
 import SeasonSelector from "@/components/media/SeasonSelector";
 import EpisodeGrid from "@/components/media/EpisodeGrid";
 import RecommendedMedia from "@/components/media/RecommendedMedia";
+import {
+  SeriesPageProps,
+  SeriesDetails,
+  Season,
+} from "@/types/series";
 
-interface PageProps {
-  params: Promise<{ slug: string }>; // Type params as a Promise
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+// Type guard for series data
+function isSeriesDetails(data: unknown): data is SeriesDetails {
+  return (
+    data !== null &&
+    typeof data === "object" &&
+    "id" in data &&
+    "name" in data &&
+    "seasons" in data
+  );
 }
 
-// Generate metadata for the page
-export async function generateMetadata({ params }: PageProps) {
-  const resolvedParams = await params; // Await params
-  const series = await getSeriesDetails(resolvedParams.slug);
+export async function generateMetadata({
+  params,
+}: SeriesPageProps): Promise<Metadata> {
+  const series = await getSeriesDetails(params.slug);
 
   if (!series) {
     return {
@@ -31,20 +43,27 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
-async function getSeriesDetails(slug: string, currentSeason: number = 1) {
+async function getSeriesDetails(
+  slug: string,
+  currentSeason: number = 1
+): Promise<SeriesDetails | null> {
   const id = slug.split("-").pop();
-  if (!id) return null;
+  if (!id || isNaN(Number(id))) return null;
 
   try {
-    const series = await tmdb.getMediaDetails(id.toString(), "tv");
+    const seriesData = await tmdb.getMediaDetails(id, "tv");
+    if (!isSeriesDetails(seriesData)) {
+      throw new Error("Invalid series data");
+    }
+
     const seasonDetails = await tmdb.getSeasonDetails(
-      parseInt(id),
+      Number(id),
       currentSeason
     );
 
     return {
-      ...series,
-      seasons: series.seasons.map((season) => ({
+      ...seriesData,
+      seasons: seriesData.seasons.map((season: Season) => ({
         ...season,
         episodes:
           season.season_number === currentSeason ? seasonDetails.episodes : [],
@@ -56,20 +75,26 @@ async function getSeriesDetails(slug: string, currentSeason: number = 1) {
   }
 }
 
-// app/series/[slug]/page.tsx
-export default async function SeriesPage({ params, searchParams }: PageProps) {
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
-  const currentSeason = parseInt(resolvedSearchParams.season as string) || 1;
+export default async function SeriesPage({
+  params,
+  searchParams,
+}: SeriesPageProps): Promise<JSX.Element> {
+  const currentSeason =
+    Number(
+      Array.isArray(searchParams.season)
+        ? searchParams.season[0]
+        : searchParams.season
+    ) || 1;
 
-  // Pass currentSeason to getSeriesDetails
-  const series = await getSeriesDetails(resolvedParams.slug, currentSeason);
-  // Fetch recommendations in parallel
-  const recommendations = await tmdb.getRecommendations(series.id, "tv");
+  const series = await getSeriesDetails(params.slug, currentSeason);
 
   if (!series) {
     notFound();
   }
+
+  const recommendations = await tmdb
+    .getRecommendations(series.id, "tv")
+    .catch(() => []);
 
   return (
     <div className="min-h-screen pb-8">
@@ -78,7 +103,7 @@ export default async function SeriesPage({ params, searchParams }: PageProps) {
           <VideoPlayer
             tmdbId={series.id}
             type="series"
-            posterPath={series.backdrop_path || series.poster_path}
+            posterPath={series.backdrop_path ?? series.poster_path ?? ""}
             title={series.name}
             episode={{ season: currentSeason, number: 1 }}
           />
@@ -91,11 +116,11 @@ export default async function SeriesPage({ params, searchParams }: PageProps) {
           overview={series.overview}
           releaseDate={series.first_air_date}
           rating={series.vote_average}
-          posterPath={series.poster_path}
+          posterPath={series.poster_path ?? ""}
           genres={series.genres.map((g) => g.name)}
-          duration={series.episode_run_time?.[0] || 0}
+          duration={series.episode_run_time?.[0] ?? 0}
           cast={series.credits.cast}
-          country={series.production_countries[0]?.name || "United States"}
+          country={series.production_countries[0]?.name ?? "United States"}
         />
 
         <div className="mt-12 space-y-6">
@@ -133,7 +158,6 @@ export default async function SeriesPage({ params, searchParams }: PageProps) {
           <CastList cast={series.credits.cast} />
         </div>
 
-        {/* Add Recommendations */}
         <div className="mt-12">
           <RecommendedMedia
             items={recommendations}

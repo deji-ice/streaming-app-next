@@ -4,13 +4,14 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Play, Star, Clock, Calendar, Bookmark } from "lucide-react";
-import { type Movie, type Series } from "@/types";
+import { type Movie, type Series, type MediaType } from "@/types";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
+
 interface MediaCardProps {
   item: Movie | Series;
-  type: "movie" | "series";
+  type: MediaType;
 }
 
 export default function MediaCard({ item, type }: MediaCardProps) {
@@ -53,8 +54,8 @@ export default function MediaCard({ item, type }: MediaCardProps) {
                         from-black/80 via-black/20 to-transparent"
           />
 
-            {/* Mobile-friendly playback button */}
-            <Button
+          {/* Mobile-friendly playback button */}
+          <Button
             size="icon"
             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
                  md:opacity-0 md:group-hover:opacity-100 
@@ -63,9 +64,9 @@ export default function MediaCard({ item, type }: MediaCardProps) {
               e.preventDefault();
               // Add your play logic here
             }}
-            >
+          >
             <Play className="w-4 h-4" />
-            </Button>
+          </Button>
 
           {/* Bookmark button */}
           <Button

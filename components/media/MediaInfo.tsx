@@ -1,4 +1,4 @@
-// components/media/MediaInfo.tsx
+
 import Image from "next/image";
 import { Star, Calendar, Clock, Globe, Users, Film } from "lucide-react";
 

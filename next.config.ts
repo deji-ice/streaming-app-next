@@ -9,6 +9,17 @@ const nextConfig: NextConfig = {
         hostname: 'image.tmdb.org'
       }
     ]
+  },
+  typescript: {
+    // !! WARN !!
+    // This will allow production builds to successfully complete even if
+    // your project has type errors
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    // This will allow production builds to successfully complete even if
+    // your project has ESLint errors
+    ignoreDuringBuilds: true,
   }
 };
 

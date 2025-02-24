@@ -1,31 +1,55 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
 import VideoPlayer from "@/components/media/VideoPlayer";
 import MediaInfo from "@/components/media/MediaInfo";
 import CastList from "@/components/media/CastList";
 import RecommendedMedia from "@/components/media/RecommendedMedia";
+import { MovieDetails } from "@/types/movie";
 
-// Define the expected props for the page component
-interface PageProps {
-  params: Promise<{
-    slug: string;
-  }>;
+type Props = {
+  params: { slug: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
+
+// Type guard for MovieDetails
+function isMovieDetails(movie: unknown): movie is MovieDetails {
+  return (
+    movie !== null &&
+    typeof movie === "object" &&
+    "id" in movie &&
+    typeof (movie as MovieDetails).id === "number" &&
+    "title" in movie &&
+    typeof (movie as MovieDetails).title === "string"
+  );
 }
 
-/**
- * Fetches detailed movie information from TMDB API using the slug
- * @param slug - URL slug containing the movie ID (format: "movie-title-123")
- * @returns Movie details object or null if not found
- */
-async function getMovieDetails(slug: string) {
-  // Extract ID from the last part of the slug
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const movie = await getMovieDetails(params.slug);
+
+  if (!movie) {
+    return {
+      title: "Movie Not Found",
+      description: "The requested movie could not be found.",
+    };
+  }
+
+  return {
+    title: `${movie.title} | StreamFlix`,
+    description: movie.overview,
+  };
+}
+
+async function getMovieDetails(slug: string): Promise<MovieDetails | null> {
   const id = slug.split("-").pop();
-  if (!id) return null;
+  if (!id || isNaN(Number(id))) return null;
 
   try {
-    // Fetch movie details using TMDB client
-    const movie = await tmdb.getMediaDetails(id.toString(), "movie");
+    const movie = await tmdb.getMediaDetails(id, "movie");
+    if (!isMovieDetails(movie)) {
+      throw new Error("Invalid movie data received");
+    }
     return movie;
   } catch (error) {
     console.error("Error fetching movie details:", error);
@@ -33,66 +57,67 @@ async function getMovieDetails(slug: string) {
   }
 }
 
-/**
- * Movie details page component
- * Displays video player, movie information, and cast list
- */
-export default async function MoviePage({ params }: PageProps) {
-  const resolvedParams = await params;
-  // Fetch movie details using the URL slug
-  const movie = await getMovieDetails(resolvedParams.slug);
-  // Fetch recommendations in parallel with movie details
-  const recommendations = await tmdb.getRecommendations(movie.id, "movie");
+export default async function MoviePage({ params }: Props) {
+  try {
+    const movie = await getMovieDetails(params.slug);
 
-  // Show 404 page if movie is not found
-  if (!movie) {
+    if (!movie) {
+      notFound();
+    }
+
+    const recommendations = await tmdb
+      .getRecommendations(movie.id, "movie")
+      .catch(() => []);
+
+    return (
+      <div className="min-h-screen pb-8">
+        <div className="relative aspect-video w-full">
+          <Suspense fallback={<div>Loading player...</div>}>
+            <VideoPlayer
+              tmdbId={movie.id}
+              type="movie"
+              posterPath={movie.backdrop_path ?? movie.poster_path ?? ""}
+              title={movie.title}
+            />
+          </Suspense>
+        </div>
+
+        <div className="container mx-auto px-4 py-8">
+          <Suspense fallback={<div>Loading movie details...</div>}>
+            <MediaInfo
+              title={movie.title}
+              overview={movie.overview}
+              releaseDate={movie.release_date}
+              rating={movie.vote_average}
+              posterPath={movie.poster_path ?? ""}
+              genres={movie.genres?.map((g) => g.name) ?? []}
+              duration={movie.runtime ?? 0}
+              cast={movie.credits?.cast ?? []}
+              country={movie.production_countries[0]?.name ?? "United States"}
+            />
+          </Suspense>
+
+          <Suspense fallback={<div>Loading cast...</div>}>
+            <div className="mt-12">
+              <h2 className="text-2xl font-montserrat font-bold mb-6">Cast</h2>
+              <CastList cast={movie.credits?.cast ?? []} />
+            </div>
+          </Suspense>
+
+          <Suspense fallback={<div>Loading recommendations...</div>}>
+            <div className="mt-12">
+              <RecommendedMedia
+                items={recommendations}
+                type="movie"
+                title="Similar Movies"
+              />
+            </div>
+          </Suspense>
+        </div>
+      </div>
+    );
+  } catch (error) {
+    console.error("Error rendering movie page:", error);
     notFound();
   }
-
-  return (
-    <div className="min-h-screen pb-8">
-      {/* Video Player Section */}
-      <div className="relative aspect-video w-full">
-        <Suspense fallback={<div>Loading player...</div>}>
-          <VideoPlayer
-            tmdbId={movie.id}
-            type="movie"
-            posterPath={movie.backdrop_path || movie.poster_path}
-            title={movie.title}
-          />
-        </Suspense>
-      </div>
-
-      {/* Movie Details Section */}
-      <div className="container mx-auto px-4 py-8">
-        {/* Movie Information Component */}
-        <MediaInfo
-          title={movie.title}
-          overview={movie.overview}
-          releaseDate={movie.release_date}
-          rating={movie.vote_average}
-          posterPath={movie.poster_path}
-          genres={movie.genres.map((g: { name: string }) => g.name)}
-          duration={movie.runtime}
-          cast={movie.credits.cast}
-          country={movie.production_countries[0]?.name || "United States"}
-        />
-
-        {/* Cast Section */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-montserrat font-bold mb-6">Cast</h2>
-          <CastList cast={movie.credits.cast} />
-        </div>
-
-        {/* Add Recommendations */}
-        <div className="mt-12">
-          <RecommendedMedia
-            items={recommendations}
-            type="movie"
-            title="Similar Movies"
-          />
-        </div>
-      </div>
-    </div>
-  );
 }
