@@ -23,12 +23,30 @@ export default function VideoPlayer({
   episode,
 }: VideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
-  const url =
-    type === "movie"
-      ? `https://vidsrc.to/embed/movie/${tmdbId}`
-      : `https://vidsrc.to/embed/tv/${tmdbId}/${episode?.season || 1}/${
-          episode?.number || 1
-        }`;
+  const [streamUrl, setStreamUrl] = useState<string>("");
+
+  const handlePlay = async () => {
+    try {
+      const params = new URLSearchParams({
+        type,
+        id: tmdbId.toString(),
+        ...(episode && {
+          season: episode.season.toString(),
+          episode: episode.number.toString(),
+        }),
+      });
+
+      const res = await fetch(`/api/stream?${params}`);
+      const data = await res.json();
+
+      if (data.url) {
+        setStreamUrl(data.url);
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error("Error fetching stream URL:", error);
+    }
+  };
 
   const backdropUrl = posterPath
     ? `https://image.tmdb.org/t/p/original${posterPath}`
@@ -38,7 +56,7 @@ export default function VideoPlayer({
     return (
       <div
         className="relative aspect-video w-full group cursor-pointer"
-        onClick={() => setIsPlaying(true)}
+        onClick={handlePlay}
       >
         <Image
           src={backdropUrl}
@@ -56,12 +74,12 @@ export default function VideoPlayer({
     );
   }
 
-  return (
+  return streamUrl ? (
     <iframe
-      src={url}
+      src={streamUrl}
       className="absolute inset-0 w-full h-full"
       allowFullScreen
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
     />
-  );
+  ) : null;
 }
