@@ -36,7 +36,7 @@ async function getSeriesDetails(slug: string, currentSeason: number = 1) {
   if (!id) return null;
 
   try {
-    const series = await tmdb.getMediaDetails(parseInt(id), "tv");
+    const series = await tmdb.getMediaDetails(id.toString(), "tv");
     const seasonDetails = await tmdb.getSeasonDetails(
       parseInt(id),
       currentSeason
