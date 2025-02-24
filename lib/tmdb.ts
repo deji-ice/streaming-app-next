@@ -11,7 +11,7 @@ const options = {
 
 export const tmdb = {
   async getTrending() {
-    const res = await fetch(`${BASE_URL}/trending/all/day`, options);
+    const res = await fetch(`${BASE_URL}/trending/movie/week`, options);
     if (!res.ok) throw new Error('Failed to fetch trending');
     return res.json();
   },
@@ -58,4 +58,81 @@ export const tmdb = {
       return { results: [] }
     }
   },
+  async getSeriesDetails(seriesId: number, seasonNumber: number) {
+    const res = await fetch(
+      `${BASE_URL}/tv/${seriesId}/season/${seasonNumber}`,
+      options
+    );
+    if (!res.ok) throw new Error('Failed to fetch season details');
+    return res.json();
+  },
+  async getSeasonDetails(seriesId: number, seasonNumber: number) {
+    try {
+      const res = await fetch(
+        `${BASE_URL}/tv/${seriesId}/season/${seasonNumber}`,
+        options
+      );
+      if (!res.ok) throw new Error('Failed to fetch season details');
+      const data = await res.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching season details:', error);
+      return { episodes: [] };
+    }
+  },
+  async getRecommendations(id: number, type: "movie" | "tv") {
+    try {
+      const res = await fetch(
+        `${BASE_URL}/${type}/${id}/recommendations`,
+        options
+      );
+      if (!res.ok) throw new Error(`Failed to fetch ${type} recommendations`);
+      const data = await res.json();
+      return data.results.slice(0, 10); // Limit to 10 recommendations
+    } catch (error) {
+      console.error(`Error fetching ${type} recommendations:`, error);
+      return [];
+    }
+  },
+  async getGenres() {
+    try {
+      const [movieGenres, tvGenres] = await Promise.all([
+        fetch(`${BASE_URL}/genre/movie/list`, options),
+        fetch(`${BASE_URL}/genre/tv/list`, options)
+      ]);
+      
+      const movieData = await movieGenres.json();
+      const tvData = await tvGenres.json();
+      
+      // Combine and deduplicate genres
+      const allGenres = [...movieData.genres, ...tvData.genres];
+      const uniqueGenres = Array.from(new Map(allGenres.map(g => [g.id, g])).values());
+      
+      return uniqueGenres;
+    } catch (error) {
+      console.error("Error fetching genres:", error);
+      return [];
+    }
+  },
+  async getLatestMovies() {
+    try {
+      const res = await fetch(`${BASE_URL}/movie/now_playing`, options);
+      if (!res.ok) throw new Error('Failed to fetch latest movies');
+      return res.json();
+    } catch (error) {
+      console.error('Error:', error);
+      return { results: [] };
+    }
+  },
+
+  async getLatestSeries() {
+    try {
+      const res = await fetch(`${BASE_URL}/tv/airing_today`, options);
+      if (!res.ok) throw new Error('Failed to fetch latest series');
+      return res.json();
+    } catch (error) {
+      console.error('Error:', error);
+      return { results: [] };
+    }
+  }
 };
