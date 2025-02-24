@@ -1,41 +1,61 @@
 import { Suspense } from "react";
 import HeroSlider from "@/components/media/HeroSlider";
-import MediaGrid from "@/components/media/MediaGrid";
+import MediaTabs from "@/components/media/MediaTabs";
 import { tmdb } from "@/lib/tmdb";
+// import BentoGrid from "@/components/media/BentoGrid";
+// 
 
 async function getData() {
-  const [trending, popularMovies, popularSeries] = await Promise.all([
+  const [
+    trending,
+    popularMovies,
+    popularSeries,
+    latestMovies,
+    latestSeries,
+    genres,
+  ] = await Promise.all([
     tmdb.getTrending(),
     tmdb.getPopularMovies(),
     tmdb.getPopularSeries(),
+    tmdb.getLatestMovies(),
+    tmdb.getLatestSeries(),
+    tmdb.getGenres(),
   ]);
 
   return {
     trending: trending.results.slice(0, 5),
     popularMovies: popularMovies.results,
     popularSeries: popularSeries.results,
+    latestMovies: latestMovies.results,
+    latestSeries: latestSeries.results,
+    genres,
   };
 }
 
 export default async function HomePage() {
-  const { trending, popularMovies, popularSeries } = await getData();
+  const { trending, popularMovies, popularSeries, latestMovies, latestSeries, genres } = await getData();
 
   return (
     <div className="min-h-screen pb-8">
       <HeroSlider items={trending} />
-      <div className="space-y-12 mt-8">
-        <Suspense fallback={<div>Loading movies...</div>}>
-          <MediaGrid
-            items={popularMovies}
-            type="movies"
-            title="Popular Movies"
+
+      <div className="container mx-auto px-4 mt-16">
+      <h2 className="text-2xl font-montserrat font-bold mb-6 ">Popular</h2>
+        <Suspense fallback={<div>Loading content...</div>}>
+          <MediaTabs
+            movies={popularMovies}
+            series={popularSeries}
+            genres={genres}
           />
         </Suspense>
-        <Suspense fallback={<div>Loading series...</div>}>
-          <MediaGrid
-            items={popularSeries}
-            type="series"
-            title="Popular Series"
+      </div>
+      <div className="container mx-auto px-4 mt-16">
+      <h2 className="text-2xl font-montserrat font-bold mb-6 ">Latest</h2>
+        <Suspense fallback={<div>Loading content...</div>}>
+          <MediaTabs
+            movies={latestMovies}
+            series={latestSeries}
+            genres={genres} 
           />
         </Suspense>
       </div>
