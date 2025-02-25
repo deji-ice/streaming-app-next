@@ -11,9 +11,13 @@ export async function GET(request: NextRequest) {
   const episode = searchParams.get("episode");
 
   if (!type || !tmdbId) {
-    return NextResponse.json({ error: "Invalid parameters" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid parameters" },
+      { status: 400 }
+    );
   }
 
+  // Ensure we're using the correct episode number from the params
   const streamUrl = type === "movie"
     ? `${VIDSRC_BASE}/embed/movie/${tmdbId}`
     : `${VIDSRC_BASE}/embed/tv/${tmdbId}/${season || 1}/${episode || 1}`;
