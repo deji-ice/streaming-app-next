@@ -35,13 +35,13 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${series.name} | StreamFlix`,
+    title: `${series.name} | StreamScape`,
     description: series.overview,
   };
 }
 
 async function getSeriesDetails(
-  slug: string,
+  slug: string, 
   currentSeason: number = 1
 ): Promise<SeriesDetails | null> {
   const id = slug.split("-").pop();
