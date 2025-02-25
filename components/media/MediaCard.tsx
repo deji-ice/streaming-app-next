@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Play, Star, Clock, Calendar, Bookmark } from "lucide-react";
 import { type Movie, type Series, type MediaType } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,9 @@ interface MediaCardProps {
 }
 
 export default function MediaCard({ item, type }: MediaCardProps) {
+  const router = useRouter()
   const title = "title" in item ? item.title : item.name;
+  console.log(title)
   const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${item.id}`;
   const imageUrl = item.poster_path
     ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
@@ -23,6 +26,11 @@ export default function MediaCard({ item, type }: MediaCardProps) {
   const year = new Date(
     "release_date" in item ? item.release_date : item.first_air_date
   ).getFullYear();
+
+  const handlePlay = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default to avoid double navigation
+    router.push(`/${type}/${slug}`);
+  };
 
   const handleBookmark = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -37,6 +45,7 @@ export default function MediaCard({ item, type }: MediaCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="group relative bg-card rounded-xl overflow-hidden"
+      onClick={()=> console.log(title)}
     >
       <Link href={`/${type}/${slug}`}>
         <div className="aspect-[2/3] relative">
@@ -60,10 +69,7 @@ export default function MediaCard({ item, type }: MediaCardProps) {
             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
                  md:opacity-0 md:group-hover:opacity-100 
                  transition-opacity duration-500 bg-primary/90"
-            onClick={(e) => {
-              e.preventDefault();
-              // Add your play logic here
-            }}
+                 onClick={handlePlay}
           >
             <Play className="w-4 h-4" />
           </Button>

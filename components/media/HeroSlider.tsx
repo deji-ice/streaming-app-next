@@ -8,6 +8,14 @@ import Link from "next/link";
 import { type Movie, type Series } from "@/types";
 import { Button } from "@/components/ui/button";
 
+// Add this helper function at the top of the file
+function generateSlug(title: string, id: number): string {
+  return `${title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")}-${id}`;
+}
+
 interface Props {
   items: (Movie | Series)[];
 }
@@ -74,7 +82,10 @@ export default function HeroSlider({ items }: Props) {
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
                 <Link
-                  href={`/${isMovie ? "movie" : "series"}/${currentItem.id}`}
+                  href={`/${isMovie ? "movie" : "series"}/${generateSlug(
+                    isMovie ? currentItem.title : currentItem.name,
+                    currentItem.id
+                  )}`}
                 >
                   <Button size="lg" className="gap-2">
                     <Play className="w-5 h-5" />
