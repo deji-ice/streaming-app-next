@@ -96,7 +96,7 @@ export default async function SeriesPage({
     .getRecommendations(series.id, "tv")
     .catch(() => []);
 
-  return (
+  return ( 
     <div className="min-h-screen pb-8">
       <div className="relative aspect-video w-full">
         <Suspense fallback={<div>Loading player...</div>}>
