@@ -14,7 +14,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center">
-            <span className="font-montserrat font-bold text-xl">StreamApp</span>
+            <span className="font-montserrat font-bold text-xl">StreamScape</span>
           </Link>
 
           <div className="flex items-center gap-4">

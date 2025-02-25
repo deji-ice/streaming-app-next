@@ -32,7 +32,7 @@ export default function Footer() {
         </div>
         
         <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-          © {new Date().getFullYear()} StreamApp. All rights reserved.
+          © {new Date().getFullYear()} StreamScape. All rights reserved.
         </div>
       </div>
     </footer>
