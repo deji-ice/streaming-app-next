@@ -8,6 +8,17 @@ export interface MoviePageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
+export interface VideoPlayerProps {
+  tmdbId: number | string;
+  type: "movie" | "series";
+  posterPath: string;
+  title: string;
+  episode?: {
+    season: number;
+    number: number;
+  };
+}
+
 export interface BaseMediaItem {
   id: number;
   overview: string;

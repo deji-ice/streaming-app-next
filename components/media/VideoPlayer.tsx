@@ -3,18 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Play } from "lucide-react";
-import { MediaType } from "@/types";
+import { VideoPlayerProps } from "@/types";
 
-interface VideoPlayerProps {
-  tmdbId: number;
-  type: MediaType;
-  posterPath: string | null;
-  title: string;
-  episode?: {
-    season: number;
-    number: number;
-  };
-}
 
 export default function VideoPlayer({
   tmdbId,
@@ -24,18 +14,21 @@ export default function VideoPlayer({
   episode,
 }: VideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [streamUrl, setStreamUrl] = useState<string>("");
+  const [streamUrl, setStreamUrl] = useState("");
 
   const handlePlay = async () => {
     try {
+      // Base params for all types
       const params = new URLSearchParams({
         type,
         id: tmdbId.toString(),
-        ...(episode && {
-          season: episode.season.toString(),
-          episode: episode.number.toString(),
-        }),
       });
+
+      // Add season and episode params only for series
+      if (type === "series" && episode) {
+        params.append("season", episode.season.toString());
+        params.append("episode", episode.number.toString());
+      }
 
       const res = await fetch(`/api/stream?${params}`);
       const data = await res.json();
