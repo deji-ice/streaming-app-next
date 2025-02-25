@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,32 +13,52 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useState } from "react";
-
-interface Episode {
-  id: number;
-  name: string;
-  overview: string;
-  still_path: string;
-  episode_number: number;
-  air_date: string;
-}
+import { Episode } from "@/types";
 
 interface EpisodeGridProps {
   episodes: Episode[];
+  seriesId: string;
+  currentSeason: number;
 }
 
 const EPISODES_PER_PAGE = 5;
 
 export default function EpisodeGrid({
-  episodes
+  episodes,
+  seriesId,
+  currentSeason,
 }: EpisodeGridProps) {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const totalPages = Math.ceil(episodes.length / EPISODES_PER_PAGE);
+
+  const handlePlayEpisode = async (
+    episodeNumber: number,
+    e: React.MouseEvent
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setIsLoading(true);
+    try {
+      const url = `/series/${seriesId}?season=${currentSeason}&episode=${episodeNumber}`;
+      await router.push(url);
+
+      // Verify the URL matches what the API expects
+      console.log("Navigating to:", url);
+      console.log("Episode number:", episodeNumber);
+    } catch (error) {
+      console.error("Navigation error:", error);
+    }
+    setIsLoading(false);
+  };
 
   const paginatedEpisodes = episodes.slice(
     (currentPage - 1) * EPISODES_PER_PAGE,
     currentPage * EPISODES_PER_PAGE
   );
+
 
   return (
     <div className="space-y-6">
@@ -60,7 +81,13 @@ export default function EpisodeGrid({
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Button variant="ghost" size="icon" className="text-white">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white"
+                  onClick={(e) => handlePlayEpisode(episode.episode_number, e)}
+                  disabled={isLoading}
+                >
                   <Play className="w-8 h-8" />
                 </Button>
               </div>
@@ -94,14 +121,21 @@ export default function EpisodeGrid({
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
+                aria-disabled={currentPage === 1}
+                className={
+                  currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                }
               />
             </PaginationItem>
             {[...Array(totalPages)].map((_, i) => (
               <PaginationItem key={i + 1}>
                 <PaginationLink
                   onClick={() => setCurrentPage(i + 1)}
-                  active={currentPage === i + 1}
+                  className={
+                    currentPage === i + 1
+                      ? "bg-primary text-primary-foreground"
+                      : ""
+                  }
                 >
                   {i + 1}
                 </PaginationLink>
@@ -112,7 +146,12 @@ export default function EpisodeGrid({
                 onClick={() =>
                   setCurrentPage((p) => Math.min(totalPages, p + 1))
                 }
-                disabled={currentPage === totalPages}
+                aria-disabled={currentPage === totalPages}
+                className={
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : ""
+                }
               />
             </PaginationItem>
           </PaginationContent>
