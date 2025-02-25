@@ -8,11 +8,7 @@ import CastList from "@/components/media/CastList";
 import SeasonSelector from "@/components/media/SeasonSelector";
 import EpisodeGrid from "@/components/media/EpisodeGrid";
 import RecommendedMedia from "@/components/media/RecommendedMedia";
-import {
-  SeriesPageProps,
-  SeriesDetails,
-  Season,
-} from "@/types/series";
+import { SeriesPageProps, SeriesDetails, Season } from "@/types";
 
 // Type guard for series data
 function isSeriesDetails(data: unknown): data is SeriesDetails {
@@ -28,7 +24,8 @@ function isSeriesDetails(data: unknown): data is SeriesDetails {
 export async function generateMetadata({
   params,
 }: SeriesPageProps): Promise<Metadata> {
-  const series = await getSeriesDetails(params.slug);
+  const { slug } = await params;
+  const series = await getSeriesDetails(slug);
 
   if (!series) {
     return {
@@ -78,15 +75,14 @@ async function getSeriesDetails(
 export default async function SeriesPage({
   params,
   searchParams,
-}: SeriesPageProps): Promise<JSX.Element> {
-  const currentSeason =
-    Number(
-      Array.isArray(searchParams.season)
-        ? searchParams.season[0]
-        : searchParams.season
-    ) || 1;
+}: SeriesPageProps) {
+  const slug = (await params).slug;
+  const seriesId = slug.split("-").pop();
+  const { season, episode } = await searchParams;
+  const currentSeason = Number(season) || 1;
+  const currentEpisode = Number(episode) || 1; // Ensure this is parsed
 
-  const series = await getSeriesDetails(params.slug, currentSeason);
+  const series = await getSeriesDetails(slug, currentSeason);
 
   if (!series) {
     notFound();
@@ -96,16 +92,20 @@ export default async function SeriesPage({
     .getRecommendations(series.id, "tv")
     .catch(() => []);
 
-  return ( 
+  return (
     <div className="min-h-screen pb-8">
       <div className="relative aspect-video w-full">
         <Suspense fallback={<div>Loading player...</div>}>
           <VideoPlayer
-            tmdbId={series.id}
+            key={`${currentSeason}-${currentEpisode}`}
+            tmdbId={seriesId!}
             type="series"
             posterPath={series.backdrop_path ?? series.poster_path ?? ""}
             title={series.name}
-            episode={{ season: currentSeason, number: 1 }}
+            episode={{
+              season: currentSeason,
+              number: currentEpisode, // Pass the correct episode number from URL
+            }}
           />
         </Suspense>
       </div>
@@ -148,6 +148,7 @@ export default async function SeriesPage({
                 series.seasons.find((s) => s.season_number === currentSeason)
                   ?.episodes || []
               }
+              seriesId={slug}
               currentSeason={currentSeason}
             />
           </Suspense>

@@ -1,17 +1,12 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { Metadata } from "next";
+import type { Metadata } from 'next'
 import { tmdb } from "@/lib/tmdb";
 import VideoPlayer from "@/components/media/VideoPlayer";
 import MediaInfo from "@/components/media/MediaInfo";
 import CastList from "@/components/media/CastList";
 import RecommendedMedia from "@/components/media/RecommendedMedia";
-import { MovieDetails } from "@/types/movie";
-
-type Props = {
-  params: { slug: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
+import { MovieDetails , MoviePageProps } from "@/types";
 
 // Type guard for MovieDetails
 function isMovieDetails(movie: unknown): movie is MovieDetails {
@@ -25,8 +20,12 @@ function isMovieDetails(movie: unknown): movie is MovieDetails {
   );
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const movie = await getMovieDetails(params.slug);
+export async function generateMetadata(
+  { params }: MoviePageProps
+): Promise<Metadata> {
+  const  slug  = (await params).slug;
+  console.log(slug);
+  const movie = await getMovieDetails(slug);
 
   if (!movie) {
     return {
@@ -57,9 +56,10 @@ async function getMovieDetails(slug: string): Promise<MovieDetails | null> {
   }
 }
 
-export default async function MoviePage({ params }: Props) {
+export default async function MoviePage({ params }: MoviePageProps) {
   try {
-    const movie = await getMovieDetails(params.slug);
+    const  slug = (await params).slug;
+    const movie = await getMovieDetails(slug);
 
     if (!movie) {
       notFound();
