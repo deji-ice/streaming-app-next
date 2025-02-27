@@ -5,7 +5,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import "./globals.css";
 import { Providers } from "./providers";
-
+import { Analytics } from "@vercel/analytics/react"
 const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["400", "700", "800"],
@@ -38,7 +38,9 @@ export default function RootLayout({
             <Footer />
           </ThemeProvider>
         </Providers>
+        <Analytics />
       </body>
+      
     </html>
   );
 }
