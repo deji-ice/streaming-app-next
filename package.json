@@ -23,6 +23,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.4.7",
     "lucide-react": "^0.475.0",
+    "movie-trailer": "^3.2.2",
     "next": "15.1.7",
     "next-auth": "^4.24.11",
     "next-themes": "^0.4.4",

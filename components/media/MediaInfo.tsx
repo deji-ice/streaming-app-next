@@ -1,4 +1,3 @@
-
 import Image from "next/image";
 import { Star, Calendar, Clock, Globe, Users, Film } from "lucide-react";
 
@@ -57,14 +56,17 @@ export default function MediaInfo({
             {title}
           </h1>
 
-          <div
-            className="flex items-center gap-4 p-2 bg-black/10 dark:bg-white/5 
-                         backdrop-blur rounded-lg w-fit"
-          >
-            <div className="flex items-center">
-              <Star className="w-5 h-5 text-yellow-500 mr-1" />
-              <span className="font-roboto text-lg">{rating.toFixed(1)}</span>
+          <div className="flex items-center gap-4 w-fit">
+            <div
+              className="flex items-center px-3 py-1 bg-black/10 dark:bg-white/5 
+                         backdrop-blur rounded-lg "
+            >
+              <Star className="w-4 h-4 text-yellow-500 mr-1" />
+              <span className="font-roboto text-md">{rating.toFixed(1)}</span>
             </div>
+            <button className="bg-black/10 dark:bg-white/5  px-3 py-1 rounded-lg ">
+              Trailer
+            </button>
           </div>
         </div>
 
