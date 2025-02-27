@@ -49,14 +49,14 @@ export default function VideoPlayer({
   if (!isPlaying) {
     return (
       <div
-        className="relative aspect-video w-full group cursor-pointer"
+        className="relative aspect-video w-full h-[20rem] md:h-full top-5 bg-red-700 group cursor-pointer"
         onClick={handlePlay}
       >
         <Image
           src={backdropUrl}
           alt={title}
           fill
-          className="object-cover brightness-50"
+          className="object-cover   brightness-50"
           priority
         />
         <div className="absolute inset-0 flex items-center justify-center">
@@ -71,7 +71,7 @@ export default function VideoPlayer({
   return streamUrl ? (
     <iframe
       src={streamUrl}
-      className="absolute inset-0 w-full h-full"
+      className="absolute inset-0 w-full h-[20rem] lg:h-full"
       allowFullScreen
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
     />

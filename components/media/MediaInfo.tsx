@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Star, Calendar, Clock, Globe, Users, Film } from "lucide-react";
+import { Calendar, Clock, Globe, Users, Film } from "lucide-react";
 
 interface MediaInfoProps {
   title: string;
@@ -31,7 +31,7 @@ export default function MediaInfo({
   return (
     <div className="relative flex flex-col md:flex-row gap-8 bg-black/5 dark:bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
       {/* Poster Section with Gradient Overlay */}
-      <div className="w-full md:w-1/3 lg:w-1/4">
+      <div className="w-1/2 md:w-1/3 lg:w-1/4">
         <div className="aspect-[2/3] relative rounded-xl overflow-hidden group">
           <Image
             src={imageUrl}
@@ -58,13 +58,14 @@ export default function MediaInfo({
 
           <div className="flex items-center gap-4 w-fit">
             <div
-              className="flex items-center px-3 py-1 bg-black/10 dark:bg-white/5 
+              className="flex items-center font-roboto gap-1 px-3 py-1 bg-black/10 dark:bg-white/5 
                          backdrop-blur rounded-lg "
             >
-              <Star className="w-4 h-4 text-yellow-500 mr-1" />
-              <span className="font-roboto text-md">{rating.toFixed(1)}</span>
+              <p className=" text-yellow-600 font-medium ">IMDB:</p>
+
+              <span className=" text-base">{rating.toFixed(1)}</span>
             </div>
-            <button className="bg-black/10 dark:bg-white/5  px-3 py-1 rounded-lg ">
+            <button className="bg-black/10 dark:bg-white/5  text-base px-3 py-1 rounded-lg ">
               Trailer
             </button>
           </div>
@@ -98,7 +99,7 @@ export default function MediaInfo({
                          transition-colors hover:bg-black/10 dark:hover:bg-white/10"
           >
             <Users className="w-5 h-5 text-primary" />
-            <span className="font-roboto truncate">
+            <span className="font-roboto truncate text-base">
               {cast
                 .slice(0, 3)
                 .map((c) => c.name)
@@ -135,7 +136,7 @@ export default function MediaInfo({
                        before:rounded-lg before:p-[1px]
                         before:-z-10"
         >
-          <p className="text-lg font-roboto leading-relaxed">{overview}</p>
+          <p className="text-base  font-roboto leading-relaxed">{overview}</p>
         </div>
       </div>
     </div>
