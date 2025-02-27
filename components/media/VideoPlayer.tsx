@@ -5,7 +5,6 @@ import Image from "next/image";
 import { Play } from "lucide-react";
 import { VideoPlayerProps } from "@/types";
 
-
 export default function VideoPlayer({
   tmdbId,
   type,
@@ -48,20 +47,23 @@ export default function VideoPlayer({
 
   if (!isPlaying) {
     return (
-      <div
-        className="relative aspect-video w-full h-[20rem] md:h-full top-5 bg-red-700 group cursor-pointer"
-        onClick={handlePlay}
-      >
-        <Image
-          src={backdropUrl}
-          alt={title}
-          fill
-          className="object-cover   brightness-50"
-          priority
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="bg-primary/90 p-4 rounded-full transition-transform group-hover:scale-110">
-            <Play className="w-8 h-8 text-white" />
+      <div className="w-full pt-[56px] md:pt-0">
+        {/* Add top padding for mobile */}
+        <div
+          className="relative w-full aspect-video cursor-pointer group"
+          onClick={handlePlay}
+        >
+          <Image
+            src={backdropUrl}
+            alt={title}
+            fill
+            className="object-cover brightness-50"
+            priority
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="bg-primary/90 p-3 sm:p-4 rounded-full transition-transform group-hover:scale-110">
+              <Play className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+            </div>
           </div>
         </div>
       </div>
@@ -69,11 +71,18 @@ export default function VideoPlayer({
   }
 
   return streamUrl ? (
-    <iframe
-      src={streamUrl}
-      className="absolute inset-0 w-full h-[20rem] lg:h-full"
-      allowFullScreen
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    />
+    <div className="w-full pt-[56px] md:pt-0">
+      {/* Add top padding for mobile */}
+      <div className="relative w-full aspect-video">
+        <iframe
+          src={streamUrl}
+          title={title}
+          className="absolute inset-0 w-full h-full"
+          allowFullScreen
+          sandbox="allow-same-origin allow-scripts allow-forms allow-presentation"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        />
+      </div>
+    </div>
   ) : null;
 }
