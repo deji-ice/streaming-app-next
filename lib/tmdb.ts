@@ -17,7 +17,11 @@ interface TMDBResponse<T> {
   total_pages: number;
   total_results: number;
 }
-
+interface VideoResult {
+  key: string;
+  site: string;
+  type: string;
+}
 type MediaType = 'movie' | 'tv';
 
 export const tmdb = {
@@ -138,6 +142,30 @@ export const tmdb = {
     } catch (error) {
       console.error('Error:', error);
       return { results: [] };
+    }
+  },
+  async getTrailers(id: number, type: MediaType): Promise<string | null> {
+    try {
+      const res = await fetch(
+        `${BASE_URL}/${type}/${id}/videos`,
+        options
+      );
+      
+      if (!res.ok) throw new Error('Failed to fetch trailers');
+      
+      const data = await res.json();
+      const trailer = data.results?.find((video: VideoResult) => 
+        video.type === "Trailer" && video.site === "YouTube"
+      );
+  
+      if (!trailer) {
+        return null;
+      }
+  
+      return `https://www.youtube.com/embed/${trailer.key}`;
+    } catch (error) {
+      console.error('Error fetching trailers:', error);
+      return null;
     }
   }
 };
