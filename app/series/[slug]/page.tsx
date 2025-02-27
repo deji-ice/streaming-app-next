@@ -41,7 +41,7 @@ export async function generateMetadata({
 }
 
 async function getSeriesDetails(
-  slug: string, 
+  slug: string,
   currentSeason: number = 1
 ): Promise<SeriesDetails | null> {
   const id = slug.split("-").pop();
@@ -78,6 +78,7 @@ export default async function SeriesPage({
 }: SeriesPageProps) {
   const slug = (await params).slug;
   const seriesId = slug.split("-").pop();
+  const tmdbId = Number(seriesId);
   const { season, episode } = await searchParams;
   const currentSeason = Number(season) || 1;
   const currentEpisode = Number(episode) || 1; // Ensure this is parsed
@@ -112,6 +113,7 @@ export default async function SeriesPage({
 
       <div className="container mx-auto px-4 py-8">
         <MediaInfo
+          tmdbId={tmdbId}
           title={series.name}
           overview={series.overview}
           releaseDate={series.first_air_date}

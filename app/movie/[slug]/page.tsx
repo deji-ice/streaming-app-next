@@ -85,6 +85,7 @@ export default async function MoviePage({ params }: MoviePageProps) {
         <div className="container mx-auto px-4 py-8">
           <Suspense fallback={<div>Loading movie details...</div>}>
             <MediaInfo
+             tmdbId={movie.id}
               title={movie.title}
               overview={movie.overview}
               releaseDate={movie.release_date}
