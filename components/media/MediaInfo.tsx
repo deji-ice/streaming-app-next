@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Calendar, Clock, Globe, Users, Film } from "lucide-react";
 
 interface MediaInfoProps {
+  tmdbId: number;
   title: string;
   overview: string;
   releaseDate: string;
@@ -14,6 +15,7 @@ interface MediaInfoProps {
 }
 
 export default function MediaInfo({
+  // tmdbId,
   title,
   overview,
   releaseDate,
@@ -28,6 +30,9 @@ export default function MediaInfo({
     ? `https://image.tmdb.org/t/p/w500${posterPath}`
     : "/placeholder-poster.jpg";
 
+  // const handleTrailer = async () => {
+  //   const res = await fetch(`/api/trailer?tmdbId=${tmdbId}`);
+  // };
   return (
     <div className="relative flex flex-col md:flex-row gap-8 bg-black/5 dark:bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10">
       {/* Poster Section with Gradient Overlay */}
