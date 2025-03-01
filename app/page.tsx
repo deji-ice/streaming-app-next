@@ -2,8 +2,9 @@ import { Suspense } from "react";
 import HeroSlider from "@/components/media/HeroSlider";
 import MediaTabs from "@/components/media/MediaTabs";
 import { tmdb } from "@/lib/tmdb";
+import AdBlockBanner from "@/components/layout/AdBlockBanner";
 // import BentoGrid from "@/components/media/BentoGrid";
-// 
+//
 
 async function getData() {
   const [
@@ -33,14 +34,22 @@ async function getData() {
 }
 
 export default async function HomePage() {
-  const { trending, popularMovies, popularSeries, latestMovies, latestSeries, genres } = await getData();
+  const {
+    trending,
+    popularMovies,
+    popularSeries,
+    latestMovies,
+    latestSeries,
+    genres,
+  } = await getData();
 
   return (
     <div className="min-h-screen pb-8">
+    <AdBlockBanner/>
       <HeroSlider items={trending} />
 
       <div className="container mx-auto px-4 mt-16">
-      <h2 className="text-2xl font-montserrat font-bold mb-6 ">Popular</h2>
+        <h2 className="text-2xl font-montserrat font-bold mb-6 ">Popular</h2>
         <Suspense fallback={<div>Loading content...</div>}>
           <MediaTabs
             movies={popularMovies}
@@ -50,12 +59,12 @@ export default async function HomePage() {
         </Suspense>
       </div>
       <div className="container mx-auto px-4 mt-16">
-      <h2 className="text-2xl font-montserrat font-bold mb-6 ">Latest</h2>
+        <h2 className="text-2xl font-montserrat font-bold mb-6 ">Latest</h2>
         <Suspense fallback={<div>Loading content...</div>}>
           <MediaTabs
             movies={latestMovies}
             series={latestSeries}
-            genres={genres} 
+            genres={genres}
           />
         </Suspense>
       </div>
