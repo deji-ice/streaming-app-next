@@ -54,7 +54,8 @@ export default function HeroSlider({ items }: Props) {
             src={`https://image.tmdb.org/t/p/original${currentItem.backdrop_path}`}
             alt={isMovie ? currentItem.title : currentItem.name}
             fill
-            className="object-cover"
+            className="object-cover object-top aspect-ratio-16/9"
+            layout="fill"
             priority
           />
           {/* Improved gradient overlay for better text readability on mobile */}

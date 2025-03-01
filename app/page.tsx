@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import HeroSlider from "@/components/media/HeroSlider";
 import MediaTabs from "@/components/media/MediaTabs";
 import { tmdb } from "@/lib/tmdb";
-import AdBlockBanner from "@/components/layout/AdBlockBanner";
+
 // import BentoGrid from "@/components/media/BentoGrid";
 //
 
@@ -45,7 +45,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen pb-8">
-    <AdBlockBanner/>
+
       <HeroSlider items={trending} />
 
       <div className="container mx-auto px-4 mt-16">

@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/react";
+import AdBlockBanner from "@/components/layout/AdBlockBanner";
 
 // Optimize fonts
 const montserrat = Montserrat({
@@ -93,6 +94,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <AdBlockBanner />
             <Navbar />
             <main className="min-h-screen">{children}</main>
             <Footer />
