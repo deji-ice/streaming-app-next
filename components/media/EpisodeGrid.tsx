@@ -59,7 +59,6 @@ export default function EpisodeGrid({
     currentPage * EPISODES_PER_PAGE
   );
 
-
   return (
     <div className="space-y-6">
       <div className="grid gap-4">
@@ -69,6 +68,7 @@ export default function EpisodeGrid({
             className="flex bg-card hover:bg-accent/50 transition-colors rounded-lg overflow-hidden group"
           >
             {/* Episode Thumbnail */}
+
             <div className="relative w-48 aspect-video flex-shrink-0">
               <Image
                 src={
@@ -78,7 +78,13 @@ export default function EpisodeGrid({
                 }
                 alt={episode.name}
                 fill
-                className="object-cover"
+                className={`object-cover ${
+                  episode.still_path ? "" : "bg-gray-300"
+                } ${
+                  new Date() < new Date(episode.air_date)
+                    ? "filter grayscale cursor-not-allowed"
+                    : " cursor-pointer"
+                }`}
               />
               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <Button
@@ -86,7 +92,9 @@ export default function EpisodeGrid({
                   size="icon"
                   className="text-white"
                   onClick={(e) => handlePlayEpisode(episode.episode_number, e)}
-                  disabled={isLoading}
+                  disabled={
+                    isLoading || new Date() < new Date(episode.air_date)
+                  }
                 >
                   <Play className="w-8 h-8" />
                 </Button>
@@ -101,7 +109,11 @@ export default function EpisodeGrid({
                 </span>
                 <span className="text-xs text-muted-foreground">•</span>
                 <span className="text-sm text-muted-foreground">
-                  {new Date(episode.air_date).toLocaleDateString()}
+                  {new Date() > new Date(episode.air_date)
+                    ? new Date(episode.air_date).toLocaleDateString()
+                    : `Available: ${new Date(
+                        episode.air_date
+                      ).toLocaleDateString()} `}
                 </span>
               </div>
               <h3 className="font-montserrat font-bold text-lg">
