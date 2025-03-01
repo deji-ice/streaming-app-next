@@ -46,8 +46,8 @@ export default function EpisodeGrid({
       await router.push(url);
 
       // Verify the URL matches what the API expects
-      console.log("Navigating to:", url);
-      console.log("Episode number:", episodeNumber);
+      // console.log("Navigating to:", url);
+      // console.log("Episode number:", episodeNumber);
     } catch (error) {
       console.error("Navigation error:", error);
     }
