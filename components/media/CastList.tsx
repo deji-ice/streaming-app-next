@@ -14,7 +14,7 @@ export default function CastList({ cast }: CastListProps) {
             <Image
               src={
                 person.profile_path
-                  ? `https://image.tmdb.org/t/p/w300${person.profile_path}`
+                  ? `https://image.tmdb.org/t/p/w500${person.profile_path}`
                   : "/placeholder-cast.jpg"
               }
               alt={person.name}

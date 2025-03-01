@@ -73,7 +73,7 @@ export default function EpisodeGrid({
               <Image
                 src={
                   episode.still_path
-                    ? `https://image.tmdb.org/t/p/w300${episode.still_path}`
+                    ? `https://image.tmdb.org/t/p/w500${episode.still_path}`
                     : "/placeholder-episode.jpg"
                 }
                 alt={episode.name}

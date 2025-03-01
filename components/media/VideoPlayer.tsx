@@ -79,7 +79,7 @@ export default function VideoPlayer({
           title={title}
           className="absolute inset-0 w-full h-full"
           allowFullScreen
-          sandbox="allow-same-origin allow-scripts allow-forms allow-presentation"
+          sandbox="allow-same-origin  allow-forms allow-presentation"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         />
       </div>
