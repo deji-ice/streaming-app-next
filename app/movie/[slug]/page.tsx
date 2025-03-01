@@ -24,7 +24,6 @@ export async function generateMetadata(
   { params }: MoviePageProps
 ): Promise<Metadata> {
   const  slug  = (await params).slug;
-  console.log(slug);
   const movie = await getMovieDetails(slug);
 
   if (!movie) {

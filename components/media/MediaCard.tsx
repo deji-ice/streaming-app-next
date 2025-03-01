@@ -18,7 +18,6 @@ interface MediaCardProps {
 export default function MediaCard({ item, type }: MediaCardProps) {
   const router = useRouter()
   const title = "title" in item ? item.title : item.name;
-  console.log(title)
   const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${item.id}`;
   const imageUrl = item.poster_path
     ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
@@ -45,7 +44,6 @@ export default function MediaCard({ item, type }: MediaCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="group relative bg-card rounded-xl overflow-hidden"
-      onClick={()=> console.log(title)}
     >
       <Link href={`/${type}/${slug}`}>
         <div className="aspect-[2/3] relative">
