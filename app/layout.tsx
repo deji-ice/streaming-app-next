@@ -86,7 +86,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
-      <body className={`${montserrat.variable} ${roboto.variable} antialiased`}>
+      <body className={`${montserrat.variable} ${roboto.variable} antialiased bg-[#eef0f2] dark:bg-gray-950`}>
         <Providers>
           <ThemeProvider
             attribute="class"
