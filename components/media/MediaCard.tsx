@@ -20,7 +20,7 @@ export default function MediaCard({ item, type }: MediaCardProps) {
   const title = "title" in item ? item.title : item.name;
   const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${item.id}`;
   const imageUrl = item.poster_path
-    ? `https://image.tmdb.org/t/p/original${item.poster_path}`
+    ? `https://image.tmdb.org/t/p/w300${item.poster_path}`
     : "/placeholder-poster.jpg";
   const year = new Date(
     "release_date" in item ? item.release_date : item.first_air_date
