@@ -34,7 +34,7 @@ export async function generateMetadata(
   }
 
   return {
-    title: `${movie.title} | StreamScape`,
+    title: `${movie.title} - Watch Now`,
     description: movie.overview,
   };
 }
