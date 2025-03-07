@@ -51,7 +51,7 @@ export default function HeroSlider({ items }: Props) {
           className="absolute inset-0"
         >
           <Image
-            src={`https://image.tmdb.org/t/p/original${currentItem.backdrop_path}`}
+            src={`https://image.tmdb.org/t/p/w500${currentItem.backdrop_path}`}
             alt={isMovie ? currentItem.title : currentItem.name}
             fill
             className="object-cover object-top aspect-ratio-16/9"
