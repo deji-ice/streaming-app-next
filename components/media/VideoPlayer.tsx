@@ -61,7 +61,7 @@ export default function VideoPlayer({
             priority
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-primary/90 p-3 sm:p-4 rounded-full transition-transform group-hover:scale-110">
+            <div className="bg-slate-800 p-3 sm:p-4 rounded-full transition-transform group-hover:scale-110">
               <Play className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </div>
           </div>
