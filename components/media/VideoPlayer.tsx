@@ -42,7 +42,7 @@ export default function VideoPlayer({
   };
 
   const backdropUrl = posterPath
-    ? `https://image.tmdb.org/t/p/w500${posterPath}`
+    ? `https://image.tmdb.org/t/p/w1280${posterPath}`
     : "/placeholder-poster.jpg";
 
   if (!isPlaying) {

@@ -47,17 +47,19 @@ export default function HeroSlider({ items }: Props) {
           initial={{ opacity: 0, scale: 1.1 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.7 }}
+          transition={{ duration: 0.4 }}
           className="absolute inset-0"
         >
           <Image
-            src={`https://image.tmdb.org/t/p/w500${currentItem.backdrop_path}`}
+            src={`https://image.tmdb.org/t/p/original${currentItem.backdrop_path}`}
             alt={isMovie ? currentItem.title : currentItem.name}
-            fill
-            className="object-cover object-top aspect-ratio-16/9"
-            layout="fill"
+            width={1920}
+            height={1080}
+            className="object-contain object-top aspect-ratio-16/9"
             priority
+            layout="fixed"    
           />
+          
           {/* Improved gradient overlay for better text readability on mobile */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent md:bg-gradient-to-r md:from-black/80 md:via-black/50 md:to-transparent">
             <div className="absolute bottom-[15%] left-[5%] w-[90%] md:max-w-2xl">
