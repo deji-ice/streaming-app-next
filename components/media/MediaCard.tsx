@@ -56,13 +56,13 @@ export default function MediaCard({ item, type }: MediaCardProps) {
                      group-hover:scale-105 md:group-hover:brightness-75"
           />
 
-          {/* Always visible gradient for better text readability */}
+     
           <div
             className="absolute inset-0 bg-gradient-to-t 
-                        from-black/80 via-black/20 to-transparent"
+                        from-black/20 via-black/10 to-transparent"
           />
 
-          {/* Mobile-friendly playback button */}
+        
           <Button
             size="icon"
             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
