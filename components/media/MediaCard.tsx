@@ -43,14 +43,15 @@ export default function MediaCard({ item, type }: MediaCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="group relative bg-card rounded-xl overflow-hidden"
+      className="group relative bg-card rounded-xl overflow-hidden w-fit"
     >
-      <Link href={`/${type}/${slug}`}>
-        <div className="aspect-[2/3] relative">
+      <Link href={`/${type}/${slug}`} className=" ">
+        <div className=" w-fit aspect-[2/3] relative">
           <Image
             src={imageUrl}
             alt={title}
-            fill
+            height={300}
+            width={200}
             className="object-cover transition-all duration-500 
                      group-hover:scale-105 md:group-hover:brightness-75"
           />
