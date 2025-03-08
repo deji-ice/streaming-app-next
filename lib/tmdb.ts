@@ -38,8 +38,8 @@ export const tmdb = {
   },
 
   async getPopularSeries(): Promise<TMDBResponse<Series>> {
-    const res = await fetch(`${BASE_URL}/tv/popular`, options);
-    if (!res.ok) throw new Error('Failed to fetch popular series');
+    const res = await fetch(`${BASE_URL}/trending/tv/week`, options);
+    if (!res.ok) throw new Error('Failed to fetch trending series');
     return res.json();
   },
 
@@ -123,25 +123,33 @@ export const tmdb = {
     }
   },
 
-  async getLatestMovies() {
+  async getLatestMovies(sortBy: string = 'release_date.desc'): Promise<TMDBResponse<Movie>> {
     try {
-      const res = await fetch(`${BASE_URL}/movie/now_playing`, options);
-      if (!res.ok) throw new Error('Failed to fetch latest movies');
+      const res = await fetch(
+        `${BASE_URL}/movie/now_playing?language=en-US&page=1&sort_by=${sortBy}`,
+        options
+      );
+      if (!res.ok) throw new Error('Failed to fetch now playing movies');
       return res.json();
     } catch (error) {
       console.error('Error:', error);
-      return { results: [] };
+      return { results: [], page: 1, total_pages: 0, total_results: 0 };
     }
   },
 
-  async getLatestSeries() {
+  async getLatestSeries(sortBy: string = 'latest_air_date.desc'): Promise<TMDBResponse<Series>> {
+    const today = new Date().toISOString().slice(0, 10);
     try {
-      const res = await fetch(`${BASE_URL}/tv/airing_today`, options);
+      // Exclude news (genre ID 10763) and talk shows (genre ID 10767) from results
+      const res = await fetch(
+        `${BASE_URL}/discover/tv?language=en-US&page=1&sort_by=${sortBy}&without_genres=10763,10767,99,10764&first_air_date.lte=${today}`,
+        options
+      );
       if (!res.ok) throw new Error('Failed to fetch latest series');
       return res.json();
     } catch (error) {
       console.error('Error:', error);
-      return { results: [] };
+      return { results: [], page: 1, total_pages: 0, total_results: 0 };
     }
   },
   async getTrailers(id: number, type: MediaType): Promise<string | null> {
@@ -150,18 +158,18 @@ export const tmdb = {
         `${BASE_URL}/${type}/${id}/videos`,
         options
       );
-      
+
       if (!res.ok) throw new Error('Failed to fetch trailers');
-      
+
       const data = await res.json();
-      const trailer = data.results?.find((video: VideoResult) => 
+      const trailer = data.results?.find((video: VideoResult) =>
         video.type === "Trailer" && video.site === "YouTube"
       );
-  
+
       if (!trailer) {
         return null;
       }
-  
+
       return `https://www.youtube.com/embed/${trailer.key}`;
     } catch (error) {
       console.error('Error fetching trailers:', error);
