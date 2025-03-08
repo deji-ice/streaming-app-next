@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import type { Metadata } from 'next'
+import type { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
 import VideoPlayer from "@/components/media/VideoPlayer";
 import MediaInfo from "@/components/media/MediaInfo";
 import CastList from "@/components/media/CastList";
 import RecommendedMedia from "@/components/media/RecommendedMedia";
-import { MovieDetails , MoviePageProps } from "@/types";
+import { MovieDetails, MoviePageProps } from "@/types";
 
 // Type guard for MovieDetails
 function isMovieDetails(movie: unknown): movie is MovieDetails {
@@ -20,10 +20,10 @@ function isMovieDetails(movie: unknown): movie is MovieDetails {
   );
 }
 
-export async function generateMetadata(
-  { params }: MoviePageProps
-): Promise<Metadata> {
-  const  slug  = (await params).slug;
+export async function generateMetadata({
+  params,
+}: MoviePageProps): Promise<Metadata> {
+  const slug = (await params).slug;
   const movie = await getMovieDetails(slug);
 
   if (!movie) {
@@ -57,7 +57,7 @@ async function getMovieDetails(slug: string): Promise<MovieDetails | null> {
 
 export default async function MoviePage({ params }: MoviePageProps) {
   try {
-    const  slug = (await params).slug;
+    const slug = (await params).slug;
     const movie = await getMovieDetails(slug);
 
     if (!movie) {
@@ -84,7 +84,8 @@ export default async function MoviePage({ params }: MoviePageProps) {
         <div className="container mx-auto px-4 py-8">
           <Suspense fallback={<div>Loading movie details...</div>}>
             <MediaInfo
-             tmdbId={movie.id}
+              type={"movie"}
+              tmdbId={movie.id}
               title={movie.title}
               overview={movie.overview}
               releaseDate={movie.release_date}

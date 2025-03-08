@@ -58,6 +58,7 @@ export interface Episode {
   episode_number: number;
   still_path: string | null;
   air_date: string;
+  runtime: number;
 }
 
 export interface Cast {
@@ -103,7 +104,7 @@ export interface SeriesDetails extends Series, MediaDetails {
   seasons: Season[];
 }
 
-export type MediaType = "movie" | "series";
+export type MediaType = "movie" | "tv" | "series";
 
 export type UserData = {
   id: string;

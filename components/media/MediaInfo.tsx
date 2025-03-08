@@ -8,6 +8,7 @@ import { tmdb } from "@/lib/tmdb";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface MediaInfoProps {
+  type: "movie" | "series";
   tmdbId: number;
   title: string;
   overview: string;
@@ -21,6 +22,7 @@ interface MediaInfoProps {
 }
 
 export default function MediaInfo({
+  type,
   tmdbId,
   title,
   overview,
@@ -43,7 +45,8 @@ export default function MediaInfo({
   const handleTrailer = async () => {
     setIsLoadingTrailer(true);
     try {
-      const trailerUrl = await tmdb.getTrailers(tmdbId, "movie");
+      const trailerType = type == "series" ? "tv"  : "movie"
+      const trailerUrl = await tmdb.getTrailers(tmdbId, trailerType);
 
       if (!trailerUrl) {
         toast.error("No trailer available");
@@ -64,14 +67,11 @@ export default function MediaInfo({
     <>
       {/* Mobile-optimized layout */}
       <div className="relative bg-background/80 rounded-2xl p-4 md:p-6 border border-border">
-        {/* Mobile layout (stack everything) */}
         <div className="md:hidden">
-          {/* Title first on mobile */}
           <h1 className="text-xl  sm:text-2xl font-montserrat font-bold text-foreground mb-3 ">
             {title}
           </h1>
 
-          {/* Rating and trailer button */}
           <div className="flex items-center gap-2 mb-4">
             <div className="flex items-center font-roboto gap-1 px-2 py-1 bg-muted rounded-lg">
               <p className="text-yellow-600 font-medium text-sm">IMDB:</p>
@@ -88,7 +88,7 @@ export default function MediaInfo({
                 isLoadingTrailer && "opacity-50 cursor-not-allowed"
               )}
             >
-              {isLoadingTrailer ? "Loading..." : "Trailer"}
+              {isLoadingTrailer ? "Loading..." : "Watch Trailer"}
             </button>
           </div>
 
@@ -135,7 +135,9 @@ export default function MediaInfo({
                   <p className="text-xs text-muted-foreground font-medium">
                     {label}
                   </p>
-                  <p className="font-roboto text-xs text-foreground">{text}</p>
+                  <p className="font-roboto text-xs text-foreground">
+                    {text || "N/A"}
+                  </p>
                 </div>
               </div>
             ))}
@@ -192,7 +194,7 @@ export default function MediaInfo({
                     isLoadingTrailer && "opacity-50 cursor-not-allowed"
                   )}
                 >
-                  {isLoadingTrailer ? "Loading..." : "Trailer"}
+                  {isLoadingTrailer ? "Loading..." : "Watch Trailer"}
                 </button>
               </div>
             </div>
@@ -228,8 +230,9 @@ export default function MediaInfo({
                       <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
                         {label}
                       </p>
+
                       <p className="font-roboto text-sm text-foreground">
-                        {text}
+                        {text || "N/A"}
                       </p>
                     </div>
                   </div>

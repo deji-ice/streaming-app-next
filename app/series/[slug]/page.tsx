@@ -113,6 +113,7 @@ export default async function SeriesPage({
 
       <div className="container mx-auto px-4 py-8">
         <MediaInfo
+          type={"series"}
           tmdbId={tmdbId}
           title={series.name}
           overview={series.overview}
