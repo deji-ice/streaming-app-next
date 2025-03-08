@@ -32,7 +32,7 @@ export default function MediaInfo({
   cast,
   country,
 }: MediaInfoProps) {
-  const [isLoadingTrailer, setIsLoadingTrailer] = useState(false);
+  const [isLoadingTrailer, setIsLoadingTrailer] = useState<boolean>(false);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
   const [showTrailer, setShowTrailer] = useState(false);
 
