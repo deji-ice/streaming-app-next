@@ -39,7 +39,7 @@ export default function MediaInfo({
   const [showTrailer, setShowTrailer] = useState(false);
 
   const imageUrl = posterPath
-    ? `https://image.tmdb.org/t/p/w500${posterPath}`
+    ? `https://image.tmdb.org/t/p/original${posterPath}`
     : "/placeholder-poster.jpg";
 
   const handleTrailer = async () => {
