@@ -13,26 +13,42 @@ export default function Footer() {
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <div className="relative w-10 h-10">
-              <h2 className="font-montserrat font-bold text-xl text-gray-900 dark:text-white">
-                StreamScape
-              </h2>
+                <h2 className="font-montserrat font-bold text-xl text-gray-900 dark:text-white">
+                  StreamScape
+                </h2>
               </div>
-             
             </div>
             <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-              Your premier destination for streaming the latest movies and TV shows in high definition.
+              Your premier destination for streaming the latest movies and TV
+              shows in high definition.
             </p>
             <div className="flex space-x-4">
-              <a href="https://twitter.com" aria-label="Twitter" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors">
+              <a
+                href="https://twitter.com"
+                aria-label="Twitter"
+                className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors"
+              >
                 <Twitter size={18} />
               </a>
-              <a href="https://facebook.com" aria-label="Facebook" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors">
+              <a
+                href="https://facebook.com"
+                aria-label="Facebook"
+                className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors"
+              >
                 <Facebook size={18} />
               </a>
-              <a href="https://instagram.com" aria-label="Instagram" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors">
+              <a
+                href="https://instagram.com"
+                aria-label="Instagram"
+                className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors"
+              >
                 <Instagram size={18} />
               </a>
-              <a href="https://youtube.com" aria-label="YouTube" className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors">
+              <a
+                href="https://youtube.com"
+                aria-label="YouTube"
+                className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors"
+              >
                 <Youtube size={18} />
               </a>
             </div>
@@ -44,16 +60,18 @@ export default function Footer() {
               Quick Links
             </h3>
             <ul className="space-y-2">
-              {["Home", "Movies", "TV Shows", "New Releases", "Popular"].map((item) => (
-                <li key={item}>
-                  <Link 
-                    href={`/${item.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors text-sm"
-                  >
-                    {item}
-                  </Link>
-                </li>
-              ))}
+              {["Home", "Movies", "TV Shows", "New Releases", "Popular"].map(
+                (item) => (
+                  <li key={item}>
+                    <Link
+                      href={`/${item.toLowerCase().replace(/\s+/g, "-")}`}
+                      className="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors text-sm"
+                    >
+                      {item}
+                    </Link>
+                  </li>
+                )
+              )}
             </ul>
           </div>
 
@@ -68,10 +86,10 @@ export default function Footer() {
                 ["Contact", "/contact"],
                 ["FAQ", "/faq"],
                 ["Terms of Service", "/terms"],
-                ["Privacy Policy", "/privacy"]
+                ["Privacy Policy", "/privacy"],
               ].map(([label, href]) => (
                 <li key={label}>
-                  <Link 
+                  <Link
                     href={href}
                     className="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors text-sm"
                   >
@@ -103,32 +121,42 @@ export default function Footer() {
             </form>
           </div>
         </div>
-        
+
         {/* Bottom Bar */}
         <div className="border-t border-gray-200 dark:border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">
             © {new Date().getFullYear()} StreamScape. All rights reserved.
           </p>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <Link 
+            <Link
               href="/cookie-policy"
               className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             >
               Cookie Policy
             </Link>
-            <Link 
+            <Link
               href="/dmca"
               className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             >
               DMCA
             </Link>
-            <Link 
+            <Link
               href="/sitemap"
               className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             >
               Sitemap
             </Link>
           </div>
+        </div>
+        <div className="mt-8 border-t pt-4">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            <strong>DISCLAIMER:</strong> This website is a personal project
+            created for educational, demonstration, and portfolio purposes only.
+            StreamScape does not host any content; it utilizes TMDB API for
+            metadata and external services for streaming. No copyright
+            infringement is intended.
+          </p>
+          
         </div>
       </div>
     </footer>
