@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Play } from "lucide-react";
 import { VideoPlayerProps } from "@/types";
+import { trackEvent } from "@/lib/analytics";
 
 export default function VideoPlayer({
   tmdbId,
@@ -35,6 +36,13 @@ export default function VideoPlayer({
       if (data.url) {
         setStreamUrl(data.url);
         setIsPlaying(true);
+        // Track play event
+        trackEvent("video_play", {
+          content_type: type,
+          content_id: tmdbId,
+          title: title,
+          ...(episode && { season: episode.season, episode: episode.number }),
+        });
       }
     } catch (error) {
       console.error("Error fetching stream URL:", error);

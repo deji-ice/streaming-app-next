@@ -3,13 +3,17 @@ import { Montserrat, Roboto } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import CookieConsent   from "@/components/layout/CookieConsent";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/react";
+import { GoogleTagManager } from "@next/third-parties/google";
+
 import AdBlockBanner from "@/components/layout/AdBlockBanner";
 import Script from "next/script";
 
-// Optimize font loading with display=swap
+
+
 const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["400", "700", "800"],
@@ -96,7 +100,7 @@ export const metadata: Metadata = {
   category: "entertainment",
 };
 
-// Enhanced viewport configuration
+
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f8f9fa" },
@@ -131,7 +135,7 @@ export default function RootLayout({
       <body
         className={`${montserrat.variable} ${roboto.variable} antialiased bg-[#f8f9fa] dark:bg-gray-950 transition-colors duration-300`}
       >
-        {/* Add skip to content for accessibility */}
+        {/* skip to content for accessibility */}
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-primary focus:text-white focus:z-50"
@@ -152,12 +156,26 @@ export default function RootLayout({
               {children}
             </main>
             <Footer />
+            <CookieConsent />
           </ThemeProvider>
         </Providers>
 
         <Analytics />
-
-        {/* Add structured data for SEO */}
+        <GoogleTagManager gtmId="GTM-PSDLSB6V" />
+        {/* Google Analytics 4 */}
+        <Script
+          strategy="afterInteractive"
+          src={`https://www.googletagmanager.com/gtag/js?id=G-BLDSSJGKXF`} // Replace with your GA4 ID
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-BLDSSJGKXF');
+    `}
+        </Script>
+        {/* data for SEO */}
         <Script
           id="schema-org"
           type="application/ld+json"
