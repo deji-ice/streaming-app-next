@@ -59,6 +59,7 @@ export interface Episode {
   still_path: string | null;
   air_date: string;
   runtime: number;
+  vote_average: number;
 }
 
 export interface Cast {

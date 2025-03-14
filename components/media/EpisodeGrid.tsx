@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Play } from "lucide-react";
+import { Play, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Pagination,
@@ -90,31 +90,31 @@ export default function EpisodeGrid({
                   onClick={(e) => handlePlayEpisode(episode.episode_number, e)}
                 >
                   <Image
-                  src={
-                    episode.still_path
-                    ? `https://image.tmdb.org/t/p/w780${episode.still_path}`
-                    : "/placeholder-episode.jpg"
-                  }
-                  alt={episode.name}
-                  fill
-                  className={`object-cover ${
-                    isAvailable
-                    ? "hover:brightness-75 cursor-pointer"
-                    : "brightness-50 grayscale cursor-not-allowed"
-                  }`}
+                    src={
+                      episode.still_path
+                        ? `https://image.tmdb.org/t/p/w780${episode.still_path}`
+                        : "/placeholder-episode.jpg"
+                    }
+                    alt={episode.name}
+                    fill
+                    className={`object-cover ${
+                      isAvailable
+                        ? "hover:brightness-75 cursor-pointer"
+                        : "brightness-50 grayscale cursor-not-allowed"
+                    }`}
                   />
 
                   {isAvailable && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 dark:bg-black/40 transition-opacity hover:bg-black/30 dark:hover:bg-black/50">
-                    <Button
-                    variant="secondary"
-                    size="default"
-                    disabled={isLoading}
-                    className="gap-2 font-medium bg-background/80 backdrop-blur-sm text-foreground border-primary/30"
-                    >
-                    <Play className="w-5 h-5" />
-                    </Button>
-                  </div>
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 dark:bg-black/40 transition-opacity hover:bg-black/30 dark:hover:bg-black/50">
+                      <Button
+                        variant="secondary"
+                        size="default"
+                        disabled={isLoading}
+                        className="gap-2 font-medium bg-background/80 backdrop-blur-sm text-foreground border-primary/30"
+                      >
+                        <Play className="w-5 h-5" />
+                      </Button>
+                    </div>
                   )}
                 </div>
 
@@ -124,7 +124,7 @@ export default function EpisodeGrid({
                     {episode.name}
                   </h3>
 
-                  <div className="flex flex-wrap gap-1 mb-3 items-center font-semibold text-sm text-slate-700 dark:text-slate-400">
+                  <div className="flex flex-wrap gap-1.5  mb-3 items-center font-semibold text-sm text-slate-700 dark:text-slate-400">
                     <div className="flex items-center  gap-1">
                       {episode.runtime ?? 0}min
                     </div>
@@ -133,6 +133,11 @@ export default function EpisodeGrid({
                       <span>
                         {new Date(episode.air_date).toLocaleDateString()}
                       </span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">•</span>
+                    <div className="flex items-center gap-1">
+                      <Star className="w-4 h-4 text-yellow-500" />
+                      <span>{episode.vote_average.toFixed(1)}</span>
                     </div>
                   </div>
 
