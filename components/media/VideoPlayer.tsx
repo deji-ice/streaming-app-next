@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Play } from "lucide-react";
+import { Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { VideoPlayerProps } from "@/types";
 import { trackEvent } from "@/lib/analytics";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 export default function VideoPlayer({
   tmdbId,
@@ -12,10 +14,12 @@ export default function VideoPlayer({
   posterPath,
   title,
   episode,
+  seasonLength,
 }: VideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [streamUrl, setStreamUrl] = useState("");
 
+ 
   const handlePlay = async () => {
     try {
       // Base params for all types
@@ -24,7 +28,7 @@ export default function VideoPlayer({
         id: tmdbId.toString(),
       });
 
-      // Add season and episode params only for series
+      // season and episode params only for series
       if (type === "series" && episode) {
         params.append("season", episode.season.toString());
         params.append("episode", episode.number.toString());
@@ -53,10 +57,46 @@ export default function VideoPlayer({
     ? `https://image.tmdb.org/t/p/original${posterPath}`
     : "/placeholder-poster.jpg";
 
+  // episode navigation controls
+  const EpisodeControls = () => {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    const navigateEpisode = (direction: "prev" | "next") => {
+      if (type !== "series" || !episode) return;
+      const newEpisode =
+        direction === "next"
+          ? episode.number + 1
+          : Math.max(1, episode.number - 1);
+      const params = new URLSearchParams(searchParams);
+      params.set("episode", newEpisode.toString());
+      router.push(`${pathname}?${params.toString()}`);
+    };
+
+    return type === "series" ? (
+      <div className="flex justify-center mt-2 gap-4">
+        <Button
+          variant="outline"
+          onClick={() => navigateEpisode("prev")}
+          disabled={!episode || episode.number <= 1}
+        >
+          <ChevronLeft className="mr-2 h-4 w-4" /> Previous Episode
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => navigateEpisode("next")}
+          disabled={!episode || (seasonLength !== undefined && episode.number >= seasonLength)}
+        >
+          Next Episode <ChevronRight className="ml-2 h-4 w-4" />
+        </Button>
+     </div>
+    ) : null;
+  };
+
   if (!isPlaying) {
     return (
       <div className="w-full pt-[56px] md:pt-0">
-        {/* Add top padding for mobile */}
         <div
           className="relative w-full aspect-video cursor-pointer group"
           onClick={handlePlay}
@@ -80,7 +120,6 @@ export default function VideoPlayer({
 
   return streamUrl ? (
     <div className="w-full pt-[56px] md:pt-0">
-      {/* Add top padding for mobile */}
       <div className="relative w-full aspect-video">
         <iframe
           src={streamUrl}
@@ -91,6 +130,7 @@ export default function VideoPlayer({
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         />
       </div>
+      <EpisodeControls />
     </div>
   ) : null;
 }

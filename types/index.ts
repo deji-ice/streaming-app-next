@@ -17,6 +17,7 @@ export interface VideoPlayerProps {
     season: number;
     number: number;
   };
+  seasonLength?: number
 }
 
 export interface BaseMediaItem {

@@ -10,7 +10,6 @@ import EpisodeGrid from "@/components/media/EpisodeGrid";
 import RecommendedMedia from "@/components/media/RecommendedMedia";
 import { SeriesPageProps, SeriesDetails, Season } from "@/types";
 
-// Type guard for series data
 function isSeriesDetails(data: unknown): data is SeriesDetails {
   return (
     data !== null &&
@@ -81,9 +80,14 @@ export default async function SeriesPage({
   const tmdbId = Number(seriesId);
   const { season, episode } = await searchParams;
   const currentSeason = Number(season) || 1;
-  const currentEpisode = Number(episode) || 1; // Ensure this is parsed
+
+  const currentEpisode = Number(episode) || 1; // default to first episode
 
   const series = await getSeriesDetails(slug, currentSeason);
+  const seasonData = series?.seasons.find(
+    (s) => s.season_number === currentSeason
+  );
+  const seasonEpisodesLength = seasonData?.episodes.length || 0;
 
   if (!series) {
     notFound();
@@ -105,8 +109,9 @@ export default async function SeriesPage({
             title={series.name}
             episode={{
               season: currentSeason,
-              number: currentEpisode, // Pass the correct episode number from URL
+              number: currentEpisode,
             }}
+            seasonLength={seasonEpisodesLength}
           />
         </Suspense>
       </div>
