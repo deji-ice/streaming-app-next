@@ -43,7 +43,7 @@ export default function SeriesClientPage({
   totalPages,
   genres,
 }: SeriesClientPageProps) {
-  const [series, setSeries] = useState<Series[]>(initialSeries);
+  const [series] = useState<Series[]>(initialSeries);
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -110,7 +110,7 @@ export default function SeriesClientPage({
   const getPaginationRange = () => {
     const maxPages = 5; // Max number of page buttons to show
     let start = Math.max(1, currentPage - Math.floor(maxPages / 2));
-    let end = Math.min(totalPages, start + maxPages - 1);
+    const end = Math.min(totalPages, start + maxPages - 1);
     
     // Adjust start if end is capped
     if (end - start + 1 < maxPages) {

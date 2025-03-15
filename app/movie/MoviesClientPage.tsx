@@ -43,7 +43,7 @@ export default function MoviesClientPage({
   totalPages,
   genres,
 }: MoviesClientPageProps) {
-  const [movies, setMovies] = useState<Movie[]>(initialMovies);
+  const [movies] = useState<Movie[]>(initialMovies);
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -111,7 +111,7 @@ export default function MoviesClientPage({
   const getPaginationRange = () => {
     const maxPages = 5; // Max number of page buttons to show
     let start = Math.max(1, currentPage - Math.floor(maxPages / 2));
-    let end = Math.min(totalPages, start + maxPages - 1);
+    const end = Math.min(totalPages, start + maxPages - 1);
     
     // Adjust start if end is capped
     if (end - start + 1 < maxPages) {

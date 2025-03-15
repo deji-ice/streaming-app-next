@@ -9,8 +9,6 @@ export const metadata: Metadata = {
   description: "Browse and watch the latest TV shows and series on StreamScape",
 };
 
-// Number of series per page
-const ITEMS_PER_PAGE = 20;
 
 async function getSeriesData(
   sortBy: string = "popularity.desc",
