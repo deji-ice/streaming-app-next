@@ -2,7 +2,7 @@ import type { Config } from "tailwindcss";
 import { fontFamily } from 'tailwindcss/defaultTheme';
 import tailwindcssForms from '@tailwindcss/forms';
 import tailwindcssAnimate from "tailwindcss-animate";
-
+import tailwindScrollbar from "tailwind-scrollbar"
 
 export default {
     darkMode: ["class"],
@@ -79,5 +79,5 @@ export default {
       borderWidth: '0',
     },
   },
-  plugins: [tailwindcssAnimate, tailwindcssForms],
+  plugins: [tailwindcssAnimate, tailwindcssForms, tailwindScrollbar],
 } satisfies Config;

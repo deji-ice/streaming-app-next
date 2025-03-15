@@ -27,6 +27,7 @@ export interface BaseMediaItem {
   backdrop_path: string | null;
   vote_average: number;
   genre_ids: number[];
+  popularity: number;
 }
 
 export interface Movie extends BaseMediaItem {
