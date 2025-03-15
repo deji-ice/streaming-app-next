@@ -3,19 +3,24 @@ import { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
 import SeriesClientPage from "./SeriesClientPage";
 import { Tv } from "lucide-react";
+import { SeriesPageProps, Series } from "@/types";
 
 export const metadata: Metadata = {
   title: "TV Series | StreamScape",
   description: "Browse and watch the latest TV shows and series on StreamScape",
 };
-
+type SeriesData = {
+  results: Series[];
+  page: number;
+  total_pages: number;
+  total_results: number;
+};
 
 async function getSeriesData(
   sortBy: string = "popularity.desc",
   page: number = 1
-) {
+): Promise<SeriesData | null> {
   try {
-
     let endpoint;
     switch (sortBy) {
       case "first_air_date.desc":
@@ -35,32 +40,31 @@ async function getSeriesData(
       {
         headers: {
           accept: "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
-        }
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_API_KEY}`,
+        },
       }
     );
 
     if (!res.ok) throw new Error(`Failed to fetch series: ${res.status}`);
-    
+
     const data = await res.json();
     return data;
   } catch (error) {
     console.error("Error fetching series:", error);
-    return { results: [], page: 1, total_pages: 0, total_results: 0 };
+    return { results: [] as Series[], page: 1, total_pages: 0, total_results: 0 };
   }
 }
 
-export default async function SeriesPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const sortParam = searchParams.sort?.toString() || "popularity.desc";
-  const pageParam = searchParams.page?.toString() || "1";
+export default async function SeriesPage({ searchParams }: SeriesPageProps) {
+  const params = await searchParams;
+  const sortParam = params.sort?.toString() || "popularity.desc";
+  const pageParam = params.page?.toString() || "1";
   const currentPage = parseInt(pageParam, 10) || 1;
-  
+
   const genres = await tmdb.getGenres();
-  const { results: series, total_pages } = await getSeriesData(sortParam, currentPage);
+  const seriesData = await getSeriesData(sortParam, currentPage);
+  const series = seriesData ? seriesData.results : [];
+  const total_pages = seriesData ? seriesData.total_pages : 0;
 
   const sortOptions = [
     { value: "popularity.desc", label: "Most Popular" },
@@ -91,7 +95,8 @@ export default async function SeriesPage({
                   TV Series Collection
                 </h1>
                 <p className="text-muted-foreground text-lg">
-                  Discover and stream the latest TV shows, binge-worthy series, and critically acclaimed dramas.
+                  Discover and stream the latest TV shows, binge-worthy series,
+                  and critically acclaimed dramas.
                 </p>
               </div>
 
@@ -113,8 +118,8 @@ export default async function SeriesPage({
 
       <div className="container mx-auto px-4 mt-8">
         <Suspense fallback={<div>Loading series...</div>}>
-          <SeriesClientPage 
-            initialSeries={series} 
+          <SeriesClientPage
+            initialSeries={series}
             sortOptions={sortOptions}
             currentSort={sortParam}
             currentPage={currentPage}

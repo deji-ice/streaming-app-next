@@ -9,10 +9,38 @@ export const metadata: Metadata = {
   description: "Browse and watch the latest movies on StreamScape",
 };
 
+// interface SearchParams {
+//   sort?: Promise<{ string | string[]}>
+//   page?: Promise<{ string | string[] }>
+// }
+
+interface MoviePageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+// interface MoviePageProps {
+//   searchParams: SearchParams;
+// }
+
+import { Movie as MovieType } from "@/types";
+
+interface Movie extends MovieType {
+  title: string;
+  release_date: string;
+}
+
+type MovieData = {
+  sortBy: string;
+  page: number;
+  results: Movie[];
+  total_pages: number;
+  total_results: number;
+};
+
 async function getMoviesData(
   sortBy: string = "popularity.desc",
   page: number = 1
-) {
+): Promise<MovieData | null> {
   try {
     let endpoint;
     switch (sortBy) {
@@ -44,24 +72,21 @@ async function getMoviesData(
     return data;
   } catch (error) {
     console.error("Error fetching movies:", error);
-    return { results: [], page: 1, total_pages: 0, total_results: 0 };
+    return { results: [], page: 1, total_pages: 0, total_results: 0, sortBy };
   }
 }
 
 export default async function MoviesPage({
   searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const sortParam = searchParams.sort?.toString() || "popularity.desc";
-  const pageParam = searchParams.page?.toString() || "1";
+}: MoviePageProps) {
+  const sortParam = (await searchParams).sort?.toString() || "popularity.desc";
+  const pageParam = (await searchParams).page?.toString() || "1";
   const currentPage = parseInt(pageParam, 10) || 1;
 
   const genres = await tmdb.getGenres();
-  const { results: movies, total_pages } = await getMoviesData(
-    sortParam,
-    currentPage
-  );
+  const movieData = await getMoviesData(sortParam, currentPage);
+  const movies = movieData ? movieData.results : [];
+  const total_pages = movieData ? movieData.total_pages : 0;
 
   const sortOptions = [
     { value: "popularity.desc", label: "Most Popular" },
