@@ -59,20 +59,29 @@ export default function Footer() {
             <h3 className="font-montserrat font-bold text-gray-900 dark:text-white">
               Quick Links
             </h3>
-            <ul className="space-y-2">
-              {["Home", "Movies", "TV Shows", "New Releases", "Popular"].map(
-                (item) => (
-                  <li key={item}>
-                    <Link
-                      href={`/${item.toLowerCase().replace(/\s+/g, "-")}`}
-                      className="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors text-sm"
-                    >
-                      {item}
-                    </Link>
-                  </li>
-                )
-              )}
-            </ul>
+            {(() => {
+              const quickLinks = [
+              { title: "Home", href: "/" },
+              { title: "Movies", href: "/movie" },
+              { title: "TV Shows", href: "/series" },
+              { title: "New Releases", href: "/new-releases" },
+              { title: "Popular", href: "/popular" },
+              ];
+              return (
+              <ul className="space-y-2">
+                {quickLinks.map((item) => (
+                <li key={item.title}>
+                  <Link
+                  href={item.href}
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors text-sm"
+                  >
+                  {item.title}
+                  </Link>
+                </li>
+                ))}
+              </ul>
+              );
+            })()}
           </div>
 
           {/* Column 3: Help & Support */}
