@@ -1,103 +1,424 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X } from "lucide-react";
+import {
+  Search,
+  X,
+  Film,
+  Tv,
+  Star,
+  Clock,
+  TrendingUp,
+  History,
+} from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Movie, Series } from "@/types";
 import { tmdb } from "@/lib/tmdb";
 import Image from "next/image";
 import Link from "next/link";
-import { sluggify } from "@/lib/utils";
+import { sluggify, cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const RECENT_SEARCHES_KEY = "recent-searches";
+const MAX_RECENT_SEARCHES = 5;
+
+// Animation variants
+const backdropVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.2, delay: 0.1 } },
+};
+
+const modalVariants = {
+  hidden: { y: -20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.3, ease: "easeOut" } },
+  exit: { y: -20, opacity: 0, transition: { duration: 0.2 } },
+};
+
+const resultItemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.05, duration: 0.3 },
+  }),
+};
+
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<(Movie | Series)[]>([]);
-  const debouncedQuery = useDebounce(query, 500);
+  const [isLoading, setIsLoading] = useState(false);
+  const [tabIndex, setTabIndex] = useState(0); // 0: All, 1: Movies, 2: Series
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const debouncedQuery = useDebounce(query, 400);
+
+  // Load recent searches on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(RECENT_SEARCHES_KEY);
+    if (saved) {
+      try {
+        setRecentSearches(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse recent searches", e);
+      }
+    }
+  }, []);
+
+  // Save recent search
+  const saveRecentSearch = (term: string) => {
+    if (term.trim().length < 3) return;
+
+    setRecentSearches((prev) => {
+      const filtered = prev.filter((s) => s !== term);
+      const updated = [term, ...filtered].slice(0, MAX_RECENT_SEARCHES);
+      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  // Clear recent searches
+  const clearRecentSearches = () => {
+    setRecentSearches([]);
+    localStorage.removeItem(RECENT_SEARCHES_KEY);
+  };
+
+  // Apply search term from recent searches
+  const applySearchTerm = (term: string) => {
+    setQuery(term);
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  };
 
   useEffect(() => {
     if (debouncedQuery.length > 2) {
-      tmdb.searchMulti(debouncedQuery).then((data) => setResults(data.results));
+      setIsLoading(true);
+      tmdb
+        .searchMulti(debouncedQuery)
+        .then((data) => {
+          const filteredResults = data.results.filter((item) => {
+            const isMovie = "title" in item;
+            const isSeries = "name" in item;
+
+            if (tabIndex === 1) return isMovie;
+            if (tabIndex === 2) return isSeries;
+            return true; // All results for index 0
+          });
+
+          setResults(filteredResults);
+        })
+        .finally(() => setIsLoading(false));
     } else {
       setResults([]);
     }
-  }, [debouncedQuery]);
+  }, [debouncedQuery, tabIndex]);
+
+  // Prevent body scrolling when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      // Store the original overflow value
+      const originalOverflow = document.body.style.overflow;
+      const originalPaddingRight = document.body.style.paddingRight;
+
+      // Calculate scroll bar width to prevent layout shift
+      const scrollBarWidth =
+        window.innerWidth - document.documentElement.clientWidth;
+
+      // Lock the body scroll
+      document.body.style.overflow = "hidden";
+
+      // Add padding right to prevent content shift when scrollbar disappears
+      if (scrollBarWidth > 0) {
+        document.body.style.paddingRight = `${scrollBarWidth}px`;
+      }
+
+      return () => {
+        // Restore original values when component unmounts or modal closes
+        document.body.style.overflow = originalOverflow;
+        document.body.style.paddingRight = originalPaddingRight;
+      };
+    }
+  }, [isOpen]);
 
   // Close on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
+
+    if (isOpen && searchInputRef.current) {
+      // Focus input when modal opens
+      setTimeout(() => searchInputRef.current?.focus(), 100);
+    }
+
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [onClose]);
+  }, [onClose, isOpen]);
+
+  const handleItemClick = () => {
+    saveRecentSearch(query);
+    onClose();
+  };
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          variants={backdropVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
           className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) onClose();
+          }}
         >
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -20, opacity: 0 }}
-            className="container mx-auto max-w-2xl mt-20 p-4 bg-card rounded-lg shadow-lg"
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Search className="w-5 h-5 text-muted-foreground" />
-              <input
-                type="search"
-                placeholder="Search movies & series..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="flex-1 bg-transparent border-none outline-none"
-                autoFocus
-              />
-              <button onClick={onClose}>
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+          <div className="container mx-auto max-w-3xl px-4">
+            <motion.div
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="mt-20 bg-card/90 backdrop-blur-md rounded-2xl overflow-hidden border shadow-xl"
+            >
+              {/* Header section */}
+              <div className="p-6 pb-4 border-b">
+                <div className="relative flex items-center gap-3 rounded-full bg-muted/50 px-4 py-2 ring-1 ring-border">
+                  <Search
+                    className={cn(
+                      "w-5 h-5 flex-shrink-0 transition-all",
+                      isLoading
+                        ? "text-primary animate-pulse"
+                        : "text-muted-foreground"
+                    )}
+                  />
+                  <input
+                    ref={searchInputRef}
+                    type="search"
+                    placeholder="Search for movies, TV shows, and more..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="w-full bg-transparent border-none outline-none text-lg"
+                  />
+                  {query && (
+                    <button
+                      onClick={() => setQuery("")}
+                      className="p-1 hover:bg-accent rounded-full"
+                      aria-label="Clear search"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
 
-            <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-              {results.map((item) => {
-                const title = "title" in item ? item.title : item.name;
-                const type = "title" in item ? "movie" : "series";
-                const slug = `${sluggify(title)}-${item.id}`;
+                {/* Tabs */}
+                <Tabs
+                  value={String(tabIndex)}
+                  onValueChange={(value) => setTabIndex(Number(value))}
+                  className="mt-4"
+                >
+                  <TabsList>
+                    <TabsTrigger value="0">All</TabsTrigger>
+                    <TabsTrigger value="1">Movies</TabsTrigger>
+                    <TabsTrigger value="2">Series</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
 
-                return (
-                  <Link
-                    key={item.id}
-                    href={`/${type}/${slug}`}
-                    onClick={onClose}
-                    className="flex items-center gap-4 p-2 hover:bg-accent rounded-md"
-                  >
-                    <Image
-                      src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
-                      alt={title}
-                      width={46}
-                      height={69}
-                      className="rounded"
-                    />
-                    <div>
-                      <h3 className="font-montserrat font-semibold">{title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </p>
+              {/* Results section */}
+              <div className="p-2 max-h-[60vh] overflow-y-auto">
+                {/* Recent searches section */}
+                {query.length === 0 && recentSearches.length > 0 && (
+                  <div className="mb-4 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                        <History className="w-4 h-4" /> Recent Searches
+                      </h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearRecentSearches}
+                        className="text-xs"
+                      >
+                        Clear All
+                      </Button>
                     </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </motion.div>
+                    <div className="flex flex-wrap gap-2">
+                      {recentSearches.map((term) => (
+                        <Badge
+                          key={term}
+                          variant="outline"
+                          className="cursor-pointer hover:bg-accent transition-colors"
+                          onClick={() => applySearchTerm(term)}
+                        >
+                          {term}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Loading state */}
+                {isLoading && (
+                  <div className="space-y-3 p-2">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="flex items-center gap-4 p-3">
+                        <Skeleton className="w-12 h-16 rounded" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-40" />
+                          <Skeleton className="h-3 w-20" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Results */}
+                {!isLoading && (
+                  <div className="divide-y divide-border/30">
+                    <AnimatePresence mode="wait">
+                      {results.map((item, i) => {
+                        const title = "title" in item ? item.title : item.name;
+                        const type = "title" in item ? "movie" : "series";
+                        const releaseDate =
+                          "release_date" in item
+                            ? item.release_date
+                            : item.first_air_date;
+                        const year = releaseDate
+                          ? new Date(releaseDate).getFullYear()
+                          : null;
+                        const rating = item.vote_average
+                          ? Math.round(item.vote_average * 10) / 10
+                          : null;
+                        const slug = `${sluggify(title)}-${item.id}`;
+                        const posterPath =
+                          item.poster_path || "/placeholder-poster.jpg";
+
+                        return (
+                          <motion.div
+                            key={item.id}
+                            custom={i}
+                            variants={resultItemVariants}
+                            initial="hidden"
+                            animate="visible"
+                          >
+                            <Link
+                              href={`/${type}/${slug}`}
+                              onClick={handleItemClick}
+                              className="flex items-center gap-4 p-3 hover:bg-accent/30 transition-colors group"
+                            >
+                              <div className="relative overflow-hidden rounded-md">
+                                <Image
+                                  src={`https://image.tmdb.org/t/p/w92${posterPath}`}
+                                  alt={title}
+                                  width={48}
+                                  height={72}
+                                  className="group-hover:scale-105 transition-transform duration-300 object-cover"
+                                />
+                                <div className="absolute top-0 right-0 bottom-0 left-0 bg-gradient-to-b from-transparent to-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-1">
+                                  <div className="text-white text-xs font-medium">
+                                    View
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-montserrat font-semibold group-hover:text-primary transition-colors truncate">
+                                  {title}
+                                </h3>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                                  {type === "movie" ? (
+                                    <span className="flex items-center gap-1">
+                                      <Film className="w-3 h-3" /> Movie
+                                    </span>
+                                  ) : (
+                                    <span className="flex items-center gap-1">
+                                      <Tv className="w-3 h-3" /> Series
+                                    </span>
+                                  )}
+                                  {year && (
+                                    <>
+                                      <span className="text-muted-foreground/50">
+                                        •
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <Clock className="w-3 h-3" /> {year}
+                                      </span>
+                                    </>
+                                  )}
+                                  {rating && (
+                                    <>
+                                      <span className="text-muted-foreground/50">
+                                        •
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <Star className="w-3 h-3 text-yellow-500" />{" "}
+                                        {rating}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                              {item?.popularity > 50 && (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-primary/10 text-primary text-xs"
+                                >
+                                  <TrendingUp className="w-3 h-3 mr-1" />{" "}
+                                  Trending
+                                </Badge>
+                              )}
+                            </Link>
+                          </motion.div>
+                        );
+                      })}
+
+                      {query.length > 2 &&
+                        results.length === 0 &&
+                        !isLoading && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="py-16 text-center"
+                          >
+                            <div className="bg-muted/30 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                              <Search className="w-8 h-8 text-muted-foreground/50" />
+                            </div>
+                            <h3 className="text-lg font-montserrat font-medium mb-1">
+                              No results found
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              Try adjusting your search or filter to find what
+                              you're looking for
+                            </p>
+                          </motion.div>
+                        )}
+                    </AnimatePresence>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="border-t p-4 flex justify-between items-center">
+                <p className="text-xs text-muted-foreground">
+                  Search powered by TMDB
+                </p>
+                <Button variant="outline" size="sm" onClick={onClose}>
+                  Close
+                </Button>
+              </div>
+            </motion.div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
