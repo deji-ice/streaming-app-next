@@ -399,7 +399,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             </h3>
                             <p className="text-sm text-muted-foreground">
                               Try adjusting your search or filter to find what
-                              you're looking for
+                              you&apos;re looking for
                             </p>
                           </motion.div>
                         )}
