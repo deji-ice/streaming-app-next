@@ -38,7 +38,7 @@ export default function Navbar() {
             <span
               className={cn(
                 "font-montserrat font-bold text-xl",
-                scrolled ? "text-slate-800" : "text-white"
+                scrolled ? "text-slate-800 dark:text-white" : "text-white"
               )}
             >
               StreamScape
@@ -51,7 +51,7 @@ export default function Navbar() {
               href="/movie"
               className={cn(
                 "px-4 py-2 rounded-lg hover:bg-white/10 transition-colors flex items-center gap-2",
-                scrolled ? "text-slate-800" : "text-white"
+                scrolled ? "text-slate-800 dark:text-white" : "text-white"
               )}
             >
               <Film className="w-4 h-4" />
@@ -61,7 +61,7 @@ export default function Navbar() {
               href="/series"
               className={cn(
                 "px-4 py-2 rounded-lg hover:bg-white/10 transition-colors flex items-center gap-2",
-                scrolled ? "text-slate-800" : "text-white"
+                scrolled ? "text-slate-800 dark:text-white" : "text-white"
               )}
             >
               <Tv className="w-4 h-4" />
@@ -74,7 +74,7 @@ export default function Navbar() {
             <button
               className={cn(
                 "p-2 hover:bg-white/10 rounded-full",
-                scrolled ? "text-slate-800" : "text-white"
+                scrolled ? "text-slate-800 dark:text-white" : "text-white"
               )}
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               aria-label="Toggle theme"
@@ -90,7 +90,7 @@ export default function Navbar() {
               onClick={() => setSearchOpen(true)}
               className={cn(
                 "p-2 hover:bg-white/10 rounded-full",
-                scrolled ? "text-slate-800" : "text-white"
+                scrolled ? "text-slate-800 dark:text-white" : "text-white"
               )}
               aria-label="Search"
             >
@@ -101,7 +101,7 @@ export default function Navbar() {
               href="/profile"
               className={cn(
                 "p-2 hover:bg-white/10 rounded-full",
-                scrolled ? "text-slate-800" : "text-white"
+                scrolled ? "text-slate-800 dark:text-white" : "text-white"
               )}
               aria-label="Profile"
             >
@@ -113,7 +113,7 @@ export default function Navbar() {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={cn(
                 "p-2 hover:bg-white/10 rounded-full md:hidden",
-                scrolled ? "text-slate-800" : "text-white"
+                scrolled ? "text-slate-800 dark:text-white" : "text-white"
               )}
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
