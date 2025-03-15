@@ -97,7 +97,6 @@ export default async function MoviesPage({
   return (
     <div className="min-h-screen pb-16">
       <div className="relative">
-        {/* Hero Section - Redesigned for both dark and light modes */}
         <div className="bg-card border-b border-border pt-28 pb-16 relative">
           <div className="absolute inset-0 overflow-hidden z-0">
             <div className="absolute inset-0 bg-primary/5 dark:bg-primary/10"></div>
