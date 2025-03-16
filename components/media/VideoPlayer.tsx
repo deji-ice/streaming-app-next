@@ -75,7 +75,7 @@ export default function VideoPlayer({
     };
 
     return type === "series" ? (
-      <div className="flex justify-center mt-2 gap-4">
+      <div className="flex justify-center gap-4">
         <Button
           variant="outline"
           onClick={() => navigateEpisode("prev")}
