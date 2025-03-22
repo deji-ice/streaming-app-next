@@ -93,7 +93,9 @@ export interface SeriesDetails extends Series, MediaDetails {
   vote_average: number;
   poster_path: string | null;
   backdrop_path: string | null;
-  episode_run_time: number[];
+  last_episode_to_air: {
+    runtime: number;
+  };
   genres: Array<{ id: number; name: string }>;
   credits: {
     cast: Array<{

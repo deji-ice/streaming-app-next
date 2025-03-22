@@ -93,6 +93,7 @@ export default async function SeriesPage({
     notFound();
   }
 
+  console.log(series)
   const recommendations = await tmdb
     .getRecommendations(series.id, "tv")
     .catch(() => []);
@@ -126,7 +127,7 @@ export default async function SeriesPage({
           rating={series.vote_average}
           posterPath={series.poster_path ?? ""}
           genres={series.genres.map((g) => g.name)}
-          duration={series.episode_run_time?.[0] ?? 0}
+          duration={series.last_episode_to_air.runtime ?? 0}
           cast={series.credits.cast}
           country={series.production_countries[0]?.name ?? "United States"}
         />

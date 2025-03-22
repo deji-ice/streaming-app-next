@@ -6,10 +6,11 @@ import { useEffect, useState } from "react";
 
 // Create a dismissible banner component
 const AdBlockBanner = () => {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     // Check if user has already dismissed the banner
+    setIsVisible(true)
     const dismissed = localStorage.getItem("adblock-banner-dismissed");
     if (dismissed) setIsVisible(false);
   }, []);

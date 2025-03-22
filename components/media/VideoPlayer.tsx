@@ -105,7 +105,7 @@ export default function VideoPlayer({
             src={backdropUrl}
             alt={title}
             fill
-            className="object-cover mt-5 brightness-50"
+            className="object-cover  brightness-50"
             priority
           />
           <div className="absolute inset-0 flex items-center justify-center">
