@@ -61,7 +61,7 @@ export default function Navbar() {
                     : "text-white"
                 )}
               >
-                StreamScape
+                StreamScapeX
               </span>
             </Link>
 

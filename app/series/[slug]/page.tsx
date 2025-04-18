@@ -33,9 +33,43 @@ export async function generateMetadata({
     };
   }
 
+  const posterUrl = series.poster_path
+    ? `https://image.tmdb.org/t/p/w500${series.poster_path}`
+    : "https://www.streamscapex.live/placeholder-poster.jpg";
+
   return {
     title: `${series.name} - Watch Now`,
     description: series.overview,
+    keywords: [
+      series.name,
+      ...series.genres.map((g) => g.name),
+      "TV series",
+      "watch online",
+      "streaming",
+      "episodes",
+      "seasons",
+    ],
+    openGraph: {
+      title: `${series.name} - StreamScapeX`,
+      description: series.overview,
+      url: `https://www.streamscapex.live/series/${slug}`,
+      type: "video.tv_show",
+      images: [
+        {
+          url: posterUrl,
+          width: 500,
+          height: 750,
+          alt: series.name,
+        },
+      ],
+      tags: series.genres.map((g) => g.name),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${series.name} - Watch Now`,
+      description: series.overview,
+      images: [posterUrl],
+    },
   };
 }
 
@@ -93,13 +127,63 @@ export default async function SeriesPage({
     notFound();
   }
 
-  console.log(series)
+  console.log(series);
   const recommendations = await tmdb
     .getRecommendations(series.id, "tv")
     .catch(() => []);
 
   return (
     <div className="min-h-screen pb-8">
+      {/* TV Series Schema.org structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "TVSeries",
+            name: series.name,
+            description: series.overview,
+            image: series.poster_path
+              ? `https://image.tmdb.org/t/p/w500${series.poster_path}`
+              : "https://www.streamscapex.live/placeholder-poster.jpg",
+            datePublished: series.first_air_date,
+            contentRating: series.adult ? "Mature" : "General",
+            genre: series.genres.map((g) => g.name),
+            numberOfSeasons: series.number_of_seasons,
+            numberOfEpisodes: series.number_of_episodes,
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: series.vote_average.toFixed(1),
+              bestRating: "10",
+              worstRating: "0",
+              ratingCount: series.vote_count,
+            },
+            actor: series.credits.cast.slice(0, 5).map((actor) => ({
+              "@type": "Person",
+              name: actor.name,
+            })),
+            director: series.credits?.crew
+              ?.filter((person) => person.job === "Director")
+              .map((director) => ({
+                "@type": "Person",
+                name: director.name,
+              })),
+            creator: series.created_by?.map((creator) => ({
+              "@type": "Person",
+              name: creator.name,
+            })),
+            season: series.seasons
+              .filter((season) => season.season_number > 0)
+              .map((season) => ({
+                "@type": "TVSeason",
+                seasonNumber: season.season_number,
+                name: season.name,
+                numberOfEpisodes: season.episode_count,
+              })),
+          }),
+        }}
+      />
+
       <div className="relative aspect-video w-full">
         <Suspense fallback={<div>Loading player...</div>}>
           <VideoPlayer

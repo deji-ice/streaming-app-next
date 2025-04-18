@@ -81,7 +81,7 @@ export const metadata: Metadata = {
       "Stream your favorite movies and TV shows in HD quality. Watch the latest releases and popular classics on StreamScapeX.",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "https://www.streamscapex.live/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "StreamScapeX - Watch Movies & TV Shows",
@@ -91,9 +91,25 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "StreamScapeX - Watch Movies & TV Shows",
-    description: "Stream your favorite movies and TV shows in HD quality",
-    images: ["/twitter-image.jpg"],
+    description:
+      "Stream your favorite movies and TV shows in HD quality. Watch the latest releases and popular classics on StreamScapeX.",
+    images: ["https://www.streamscapex.live/twitter-image.jpg"],
     creator: "@StreamScapeX",
+  },
+  icons: {
+    icon: [{ url: "/favicon.ico" }, { url: "/icon.png", type: "image/png" }],
+    apple: [{ url: "/apple-icon.png", type: "image/png" }],
+    other: [
+      {
+        rel: "apple-touch-icon-precomposed",
+        url: "/apple-touch-icon-precomposed.png",
+      },
+    ],
+  },
+  verification: {
+    google: "googleca5e3c6b4470fb54", // Using the file name from your public directory
+    yandex: "yandexverificationcode",
+    yahoo: "yahooVerificationCode",
   },
   category: "entertainment",
 };
@@ -116,7 +132,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning >
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Preconnect to external domains */}
         <link rel="preconnect" href="https://image.tmdb.org" />
@@ -189,14 +205,29 @@ export default function RootLayout({
                 "query-input": "required name=search_term_string",
               },
               description:
-                "Stream your favorite movies and TV shows in HD quality",
+                "Stream your favorite movies and TV shows in HD quality. Watch the latest releases and popular classics on StreamScapeX.",
               publisher: {
                 "@type": "Organization",
                 name: "StreamScapeX",
                 logo: {
                   "@type": "ImageObject",
                   url: "https://www.streamscapex.live/logo.png",
+                  width: 112,
+                  height: 112,
                 },
+                sameAs: [
+                  "https://facebook.com/streamscapex",
+                  "https://twitter.com/streamscapex",
+                  "https://instagram.com/streamscapex",
+                ],
+              },
+              inLanguage: "en-US",
+              copyrightYear: "2025",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+                availability: "https://schema.org/InStock",
               },
             }),
           }}

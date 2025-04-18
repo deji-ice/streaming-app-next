@@ -13,7 +13,7 @@ export default function Footer() {
           <div className="space-y-3 sm:space-y-4">
             <div className="flex items-center">
               <h2 className="font-montserrat font-bold text-base sm:text-lg lg:text-xl text-gray-900 dark:text-white">
-                StreamScape
+                StreamScapeX
               </h2>
             </div>
             <p className="text-gray-600 dark:text-gray-300 text-xs sm:text-sm leading-relaxed">
@@ -148,7 +148,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-gray-200 dark:border-gray-800 pt-4 sm:pt-6 flex flex-col xs:flex-row justify-between items-center">
           <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-            © {new Date().getFullYear()} StreamScape. All rights reserved.
+            © {new Date().getFullYear()} StreamScapeX. All rights reserved.
           </p>
           <div className="flex gap-4 sm:gap-6 mt-3 xs:mt-0">
             <Link
@@ -175,7 +175,7 @@ export default function Footer() {
           <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 text-center sm:text-left">
             <strong>DISCLAIMER:</strong> This website is a personal project
             created for educational, demonstration, and portfolio purposes only.
-            StreamScape does not host any content; it utilizes TMDB API for
+            StreamScapeX does not host any content; it utilizes TMDB API for
             metadata and external services for streaming. No copyright
             infringement is intended.
           </p>
