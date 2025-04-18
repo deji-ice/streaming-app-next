@@ -72,6 +72,8 @@ export default function HeroSlider({ items }: Props) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
 
   useEffect(() => {
     if (isHovered) return;
@@ -90,12 +92,50 @@ export default function HeroSlider({ items }: Props) {
     setCurrent(newIndex);
   };
 
+  // Swipe handlers for mobile navigation
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart - touchEnd > 100) {
+      // Swipe left, go to next slide
+      setDirection(1);
+      setCurrent((prev) => (prev + 1) % items.length);
+    }
+
+    if (touchStart - touchEnd < -100) {
+      // Swipe right, go to previous slide
+      setDirection(-1);
+      setCurrent((prev) => (prev - 1 + items.length) % items.length);
+    }
+  };
+
   return (
     <div
       className="relative h-[60vh] md:h-[80vh] w-full overflow-hidden bg-black"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
+      {/* Visual indicator for swipe on mobile */}
+      <div className="absolute z-30 left-0 top-1/2 -translate-y-1/2 md:hidden">
+        <div className="bg-white/10 backdrop-blur-sm p-1 rounded-r-lg">
+          <ChevronLeft className="w-6 h-6 text-white/70" />
+        </div>
+      </div>
+      <div className="absolute z-30 right-0 top-1/2 -translate-y-1/2 md:hidden">
+        <div className="bg-white/10 backdrop-blur-sm p-1 rounded-l-lg">
+          <ChevronRight className="w-6 h-6 text-white/70" />
+        </div>
+      </div>
+
       <AnimatePresence initial={false} mode="wait" custom={direction}>
         <motion.div
           key={currentItem.id}
