@@ -183,20 +183,20 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             if (e.target === e.currentTarget) onClose();
           }}
         >
-          <div className="container mx-auto max-w-3xl px-4">
+          <div className="container mx-auto max-w-3xl px-2 sm:px-4">
             <motion.div
               variants={modalVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="mt-20 bg-card/90 backdrop-blur-md rounded-2xl overflow-hidden border shadow-xl"
+              className="mt-12 sm:mt-16 md:mt-20 bg-card/90 backdrop-blur-md rounded-xl sm:rounded-2xl overflow-hidden border shadow-xl"
             >
               {/* Header section */}
-              <div className="p-6 pb-4 border-b">
-                <div className="relative flex items-center gap-3 rounded-full bg-muted/50 px-4 py-2 ring-1 ring-border">
+              <div className="p-3 sm:p-4 md:p-6 pb-2 sm:pb-3 md:pb-4 border-b">
+                <div className="relative flex items-center gap-2 sm:gap-3 rounded-full bg-muted/50 px-3 sm:px-4 py-1.5 sm:py-2 ring-1 ring-border">
                   <Search
                     className={cn(
-                      "w-5 h-5 flex-shrink-0 transition-all",
+                      "w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 transition-all",
                       isLoading
                         ? "text-primary animate-pulse"
                         : "text-muted-foreground"
@@ -208,7 +208,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     placeholder="Search for movies, TV shows, and more..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    className="w-full bg-transparent border-none outline-none text-lg"
+                    className="w-full bg-transparent border-none outline-none text-sm sm:text-base md:text-lg"
                   />
                   {query && (
                     <button
@@ -216,7 +216,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       className="p-1 hover:bg-accent rounded-full"
                       aria-label="Clear search"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                   )}
                 </div>
@@ -225,9 +225,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 <Tabs
                   value={String(tabIndex)}
                   onValueChange={(value) => setTabIndex(Number(value))}
-                  className="mt-4"
+                  className="mt-3 sm:mt-4"
                 >
-                  <TabsList>
+                  <TabsList className="h-8 sm:h-9 text-xs sm:text-sm">
                     <TabsTrigger value="0">All</TabsTrigger>
                     <TabsTrigger value="1">Movies</TabsTrigger>
                     <TabsTrigger value="2">Series</TabsTrigger>
@@ -236,29 +236,30 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               </div>
 
               {/* Results section */}
-              <div className="p-2 max-h-[60vh] overflow-y-auto">
+              <div className="p-2 max-h-[50vh] sm:max-h-[55vh] md:max-h-[60vh] overflow-y-auto">
                 {/* Recent searches section */}
                 {query.length === 0 && recentSearches.length > 0 && (
-                  <div className="mb-4 p-4">
+                  <div className="mb-3 sm:mb-4 p-2 sm:p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
-                        <History className="w-4 h-4" /> Recent Searches
+                      <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground flex items-center gap-1.5 sm:gap-2">
+                        <History className="w-3 h-3 sm:w-4 sm:h-4" /> Recent
+                        Searches
                       </h3>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={clearRecentSearches}
-                        className="text-xs"
+                        className="text-xs h-7 sm:h-8"
                       >
                         Clear All
                       </Button>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
                       {recentSearches.map((term) => (
                         <Badge
                           key={term}
                           variant="outline"
-                          className="cursor-pointer hover:bg-accent transition-colors"
+                          className="cursor-pointer hover:bg-accent transition-colors text-xs"
                           onClick={() => applySearchTerm(term)}
                         >
                           {term}
@@ -270,13 +271,16 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
                 {/* Loading state */}
                 {isLoading && (
-                  <div className="space-y-3 p-2">
+                  <div className="space-y-2 sm:space-y-3 p-2">
                     {[...Array(5)].map((_, i) => (
-                      <div key={i} className="flex items-center gap-4 p-3">
-                        <Skeleton className="w-12 h-16 rounded" />
-                        <div className="space-y-2">
-                          <Skeleton className="h-4 w-40" />
-                          <Skeleton className="h-3 w-20" />
+                      <div
+                        key={i}
+                        className="flex items-center gap-3 sm:gap-4 p-2 sm:p-3"
+                      >
+                        <Skeleton className="w-10 h-14 sm:w-12 sm:h-16 rounded" />
+                        <div className="space-y-1.5 sm:space-y-2">
+                          <Skeleton className="h-3 sm:h-4 w-28 sm:w-40" />
+                          <Skeleton className="h-2 sm:h-3 w-16 sm:w-20" />
                         </div>
                       </div>
                     ))}
@@ -315,34 +319,36 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             <Link
                               href={`/${type}/${slug}`}
                               onClick={handleItemClick}
-                              className="flex items-center gap-4 p-3 hover:bg-accent/30 transition-colors group"
+                              className="flex items-center gap-3 sm:gap-4 p-2 sm:p-3 hover:bg-accent/30 transition-colors group"
                             >
                               <div className="relative overflow-hidden rounded-md">
                                 <Image
                                   src={`https://image.tmdb.org/t/p/w92${posterPath}`}
                                   alt={title}
-                                  width={48}
-                                  height={72}
-                                  className="group-hover:scale-105 transition-transform duration-300 object-cover"
+                                  width={40}
+                                  height={60}
+                                  className="group-hover:scale-105 transition-transform duration-300 object-cover sm:w-[48px] sm:h-[72px]"
                                 />
                                 <div className="absolute top-0 right-0 bottom-0 left-0 bg-gradient-to-b from-transparent to-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-1">
-                                  <div className="text-white text-xs font-medium">
+                                  <div className="text-white text-[10px] sm:text-xs font-medium">
                                     View
                                   </div>
                                 </div>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h3 className="font-montserrat font-semibold group-hover:text-primary transition-colors truncate">
+                                <h3 className="font-montserrat font-semibold group-hover:text-primary transition-colors truncate text-sm sm:text-base">
                                   {title}
                                 </h3>
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                                <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
                                   {type === "movie" ? (
-                                    <span className="flex items-center gap-1">
-                                      <Film className="w-3 h-3" /> Movie
+                                    <span className="flex items-center gap-0.5 sm:gap-1">
+                                      <Film className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{" "}
+                                      Movie
                                     </span>
                                   ) : (
-                                    <span className="flex items-center gap-1">
-                                      <Tv className="w-3 h-3" /> Series
+                                    <span className="flex items-center gap-0.5 sm:gap-1">
+                                      <Tv className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{" "}
+                                      Series
                                     </span>
                                   )}
                                   {year && (
@@ -350,8 +356,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                       <span className="text-muted-foreground/50">
                                         •
                                       </span>
-                                      <span className="flex items-center gap-1">
-                                        <Clock className="w-3 h-3" /> {year}
+                                      <span className="flex items-center gap-0.5 sm:gap-1">
+                                        <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{" "}
+                                        {year}
                                       </span>
                                     </>
                                   )}
@@ -360,8 +367,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                       <span className="text-muted-foreground/50">
                                         •
                                       </span>
-                                      <span className="flex items-center gap-1">
-                                        <Star className="w-3 h-3 text-yellow-500" />{" "}
+                                      <span className="flex items-center gap-0.5 sm:gap-1">
+                                        <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500" />{" "}
                                         {rating}
                                       </span>
                                     </>
@@ -371,9 +378,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                               {item?.popularity > 50 && (
                                 <Badge
                                   variant="outline"
-                                  className="bg-primary/10 text-primary text-xs"
+                                  className="bg-primary/10 text-primary text-[10px] sm:text-xs hidden xs:inline-flex"
                                 >
-                                  <TrendingUp className="w-3 h-3 mr-1" />{" "}
+                                  <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />{" "}
                                   Trending
                                 </Badge>
                               )}
@@ -389,15 +396,15 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="py-16 text-center"
+                            className="py-10 sm:py-16 text-center"
                           >
-                            <div className="bg-muted/30 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                              <Search className="w-8 h-8 text-muted-foreground/50" />
+                            <div className="bg-muted/30 rounded-full w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                              <Search className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground/50" />
                             </div>
-                            <h3 className="text-lg font-montserrat font-medium mb-1">
+                            <h3 className="text-base sm:text-lg font-montserrat font-medium mb-1">
                               No results found
                             </h3>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-xs sm:text-sm text-muted-foreground px-4">
                               Try adjusting your search or filter to find what
                               you&apos;re looking for
                             </p>
@@ -409,11 +416,16 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               </div>
 
               {/* Footer */}
-              <div className="border-t p-4 flex justify-between items-center">
-                <p className="text-xs text-muted-foreground">
+              <div className="border-t p-2 sm:p-3 md:p-4 flex justify-between items-center">
+                <p className="text-[10px] sm:text-xs text-muted-foreground">
                   Search powered by TMDB
                 </p>
-                <Button variant="outline" size="sm" onClick={onClose}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onClose}
+                  className="h-7 sm:h-8 text-xs sm:text-sm"
+                >
                   Close
                 </Button>
               </div>
