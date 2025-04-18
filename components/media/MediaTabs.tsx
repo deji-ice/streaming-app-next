@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MediaGrid from "./MediaGrid";
+import MediaGridSkeleton from "./MediaGridSkeleton";
 import GenreFilter from "./GenreFilter";
 import { type Movie, type Series } from "@/types";
 
@@ -20,6 +21,8 @@ export default function MediaTabs({
   defaultTab = "movies",
 }: MediaTabsProps) {
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
+  const [activeTab, setActiveTab] = useState(defaultTab);
+  const [isLoading, setIsLoading] = useState(false);
 
   const filterByGenres = (items: (Movie | Series)[]) => {
     if (selectedGenres.length === 0) return items;
@@ -28,27 +31,56 @@ export default function MediaTabs({
     );
   };
 
+  // When tab changes or genres change, briefly show loading state
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [activeTab, selectedGenres]);
+
   return (
     <div className="space-y-6">
-      <Tabs defaultValue={defaultTab}>
-      <div className="flex items-center justify-between mb-6">
-        <TabsList className="grid w-[200px] grid-cols-2">
-          <TabsTrigger value="movies">Movies</TabsTrigger>
-          <TabsTrigger value="series">Series</TabsTrigger>
-        </TabsList>
+      <Tabs
+        defaultValue={defaultTab}
+        onValueChange={(value) => setActiveTab(value as "movies" | "series")}
+      >
+        <div className="flex items-center justify-between mb-6">
+          <TabsList className="grid w-[200px] grid-cols-2">
+            <TabsTrigger value="movies">Movies</TabsTrigger>
+            <TabsTrigger value="series">Series</TabsTrigger>
+          </TabsList>
 
-        <GenreFilter
-          genres={genres}
-          selectedGenres={selectedGenres}
-          onGenreSelect={setSelectedGenres}
-        />
-      </div>
+          <GenreFilter
+            genres={genres}
+            selectedGenres={selectedGenres}
+            onGenreSelect={setSelectedGenres}
+          />
+        </div>
 
         <TabsContent value="movies">
-          <MediaGrid items={filterByGenres(movies)} type="movie" title="Movies" />
+          {isLoading ? (
+            <MediaGridSkeleton count={10} title="Movies" />
+          ) : (
+            <MediaGrid
+              items={filterByGenres(movies)}
+              type="movie"
+              title="Movies"
+            />
+          )}
         </TabsContent>
+
         <TabsContent value="series">
-          <MediaGrid items={filterByGenres(series)} type="series" title="Series" />
+          {isLoading ? (
+            <MediaGridSkeleton count={10} title="Series" />
+          ) : (
+            <MediaGrid
+              items={filterByGenres(series)}
+              type="series"
+              title="Series"
+            />
+          )}
         </TabsContent>
       </Tabs>
     </div>
