@@ -2,10 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Film, Home, SearchX } from "lucide-react";
+import { ArrowLeft, Film, Home } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import Image from "next/image";
 
 export default function NotFound() {
   const router = useRouter();
@@ -20,8 +19,6 @@ export default function NotFound() {
 
       {/* Content container */}
       <div className="max-w-xl w-full text-center relative z-10">
- 
-
         {/* Main content */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
@@ -37,8 +34,9 @@ export default function NotFound() {
           </h2>
 
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-            The content you're looking for may have been moved, deleted, or
-            never existed. Let's get you back to watching something amazing.
+            The content you&apos;re looking for may have been moved, deleted, or
+            never existed. Let&apos;s get you back to watching something
+            amazing.
           </p>
 
           {/* Recommendations */}
