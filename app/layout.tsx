@@ -3,7 +3,7 @@ import { Montserrat, Roboto } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import CookieConsent   from "@/components/layout/CookieConsent";
+import CookieConsent from "@/components/layout/CookieConsent";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/react";
@@ -11,8 +11,6 @@ import { GoogleTagManager } from "@next/third-parties/google";
 
 import AdBlockBanner from "@/components/layout/AdBlockBanner";
 import Script from "next/script";
-
-
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -31,13 +29,13 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://streamscape.vercel.app"),
+  metadataBase: new URL("https://www.streamscapex.live"),
   title: {
-    default: "StreamScape - Watch Movies & TV Shows Online",
-    template: "%s | StreamScape",
+    default: "StreamScapeX - Watch Movies & TV Shows Online",
+    template: "%s | StreamScapeX",
   },
   description:
-    "Stream your favorite movies and TV shows in HD quality. Watch the latest releases and popular classics on StreamScape.",
+    "Stream your favorite movies and TV shows in HD quality. Watch the latest releases and popular classics on StreamScapeX.",
   keywords: [
     "streaming platform",
     "movies online",
@@ -49,9 +47,9 @@ export const metadata: Metadata = {
     "popular series",
     "binge watch",
   ],
-  authors: [{ name: "ice", url: "https://streamscape.vercel.app" }],
+  authors: [{ name: "ice", url: "https://www.streamscapex.live" }],
   creator: "ice",
-  publisher: "StreamScape",
+  publisher: "StreamScapeX",
   formatDetection: {
     email: false,
     telephone: false,
@@ -68,38 +66,37 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://streamscape.vercel.app",
+    canonical: "https://www.streamscapex.live",
     languages: {
-      "en-US": "https://streamscape.vercel.app",
+      "en-US": "https://www.streamscapex.live",
     },
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://streamscape.vercel.app",
-    siteName: "StreamScape",
-    title: "StreamScape - Your Ultimate Streaming Platform",
+    url: "https://www.streamscapex.live",
+    siteName: "StreamScapeX",
+    title: "StreamScapeX - Your Ultimate Streaming Platform",
     description:
-      "Stream your favorite movies and TV shows in HD quality. Watch the latest releases and popular classics on StreamScape.",
+      "Stream your favorite movies and TV shows in HD quality. Watch the latest releases and popular classics on StreamScapeX.",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "StreamScape - Watch Movies & TV Shows",
+        alt: "StreamScapeX - Watch Movies & TV Shows",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "StreamScape - Watch Movies & TV Shows",
+    title: "StreamScapeX - Watch Movies & TV Shows",
     description: "Stream your favorite movies and TV shows in HD quality",
     images: ["/twitter-image.jpg"],
-    creator: "@streamscape",
+    creator: "@StreamScapeX",
   },
   category: "entertainment",
 };
-
 
 export const viewport: Viewport = {
   themeColor: [
@@ -119,7 +116,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className="scroll-smooth">
+    <html lang="en" suppressHydrationWarning >
       <head>
         {/* Preconnect to external domains */}
         <link rel="preconnect" href="https://image.tmdb.org" />
@@ -183,22 +180,22 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebSite",
-              name: "StreamScape",
-              url: "https://streamscape.vercel.app",
+              name: "StreamScapeX",
+              url: "https://www.streamscapex.live",
               potentialAction: {
                 "@type": "SearchAction",
                 target:
-                  "https://streamscape.vercel.app/search?q={search_term_string}",
+                  "https://www.streamscapex.live/search?q={search_term_string}",
                 "query-input": "required name=search_term_string",
               },
               description:
                 "Stream your favorite movies and TV shows in HD quality",
               publisher: {
                 "@type": "Organization",
-                name: "StreamScape",
+                name: "StreamScapeX",
                 logo: {
                   "@type": "ImageObject",
-                  url: "https://streamscape.vercel.app/logo.png",
+                  url: "https://www.streamscapex.live/logo.png",
                 },
               },
             }),
