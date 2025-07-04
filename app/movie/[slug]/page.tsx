@@ -22,7 +22,7 @@ const VideoPlayer = dynamic(() => import("@/components/media/VideoPlayer"), {
 });
 
 // Type guard for MovieDetails
-function isMovieDetails(movie: any): movie is MovieDetails {
+function isMovieDetails(movie: unknown): movie is MovieDetails {
   return (
     movie !== null &&
     typeof movie === "object" &&
