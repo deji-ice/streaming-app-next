@@ -2,8 +2,20 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
 import SeasonSelector from "@/components/media/SeasonSelector";
-import { SeriesPageProps, SeriesDetails, Season } from "@/types";
+import { SeriesPageProps, SeriesDetails, Season, Series } from "@/types";
 import dynamic from "next/dynamic";
+
+export async function generateStaticParams() {
+  const popularSeries = await tmdb.getPopularSeries();
+  return popularSeries.results.slice(0, 10).map((s: Series) => ({
+    slug: `${s.name
+      .toLowerCase()
+      .replace(/['":]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")}-${s.id}`,
+  }));
+}
+
+export const revalidate = 3600;
 
 const VideoPlayer = dynamic(() => import("@/components/media/VideoPlayer"), {
   loading: () => <div>Loading player...</div>,
@@ -123,7 +135,6 @@ async function getSeriesDetails(
     return null;
   }
 }
-export const revalidate = 60;
 
 export default async function SeriesPage({
   params,

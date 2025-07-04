@@ -1,8 +1,20 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
-import { MovieDetails, MoviePageProps } from "@/types";
+import { Movie, MovieDetails, MoviePageProps } from "@/types";
 import dynamic from "next/dynamic";
+
+export async function generateStaticParams() {
+  const popularMovies = await tmdb.getPopularMovies();
+  return popularMovies.results.slice(0, 10).map((m: Movie) => ({
+    slug: `${m.title
+      .toLowerCase()
+      .replace(/['":]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")}-${m.id}`,
+  }));
+}
+
+export const revalidate = 3600;
 
 const CastList = dynamic(() => import("@/components/media/CastList"), {
   loading: () => <div>Loading cast...</div>,
@@ -14,7 +26,7 @@ const RecommendedMedia = dynamic(
   }
 );
 const MediaInfo = dynamic(() => import("@/components/media/MediaInfo"), {
-  loading: () => <div>Loading movie details...</div>
+  loading: () => <div>Loading movie details...</div>,
 });
 
 const VideoPlayer = dynamic(() => import("@/components/media/VideoPlayer"), {
@@ -89,7 +101,7 @@ export async function generateMetadata({
     },
   };
 }
-export const revalidate = 60;
+
 async function getMovieDetails(slug: string): Promise<MovieDetails | null> {
   const id = slug.split("-").pop();
   if (!id || isNaN(Number(id))) return null;
