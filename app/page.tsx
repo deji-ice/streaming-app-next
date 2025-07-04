@@ -1,11 +1,15 @@
-import { Suspense } from "react";
+// import { Suspense } from "react";
 import HeroSlider from "@/components/media/HeroSlider";
-import MediaTabs from "@/components/media/MediaTabs";
 import MediaGridSkeleton from "@/components/media/MediaGridSkeleton";
 import { tmdb } from "@/lib/tmdb";
+import dynamic from "next/dynamic";
 
 // import BentoGrid from "@/components/media/BentoGrid";
 //
+
+const MediaTabs = dynamic(() => import("@/components/media/MediaTabs"), {
+  loading: () => <MediaGridSkeleton count={10} />,
+});
 
 async function getData() {
   const [
@@ -15,7 +19,7 @@ async function getData() {
     latestMovies,
     latestSeries,
     genres,
-  ] = await Promise.all([
+] = await Promise.all([
     tmdb.getTrending(),
     tmdb.getPopularMovies(),
     tmdb.getPopularSeries(),
@@ -50,23 +54,21 @@ export default async function HomePage() {
 
       <div className="container mx-auto px-4 mt-16">
         <h2 className="text-2xl font-montserrat font-bold mb-6 ">Popular</h2>
-        <Suspense fallback={<MediaGridSkeleton count={10} />}>
-          <MediaTabs
-            movies={popularMovies}
-            series={popularSeries}
-            genres={genres}
-          />
-        </Suspense>
+
+        <MediaTabs
+          movies={popularMovies}
+          series={popularSeries}
+          genres={genres}
+        />
       </div>
       <div className="container mx-auto px-4 mt-16">
         <h2 className="text-2xl font-montserrat font-bold mb-6 ">Latest</h2>
-        <Suspense fallback={<MediaGridSkeleton count={10} />}>
-          <MediaTabs
-            movies={latestMovies}
-            series={latestSeries}
-            genres={genres}
-          />
-        </Suspense>
+
+        <MediaTabs
+          movies={latestMovies}
+          series={latestSeries}
+          genres={genres}
+        />
       </div>
     </div>
   );
