@@ -2,13 +2,35 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
-import VideoPlayer from "@/components/media/VideoPlayer";
-import MediaInfo from "@/components/media/MediaInfo";
-import CastList from "@/components/media/CastList";
+
 import SeasonSelector from "@/components/media/SeasonSelector";
-import EpisodeGrid from "@/components/media/EpisodeGrid";
-import RecommendedMedia from "@/components/media/RecommendedMedia";
 import { SeriesPageProps, SeriesDetails, Season } from "@/types";
+import dynamic from "next/dynamic";
+
+const VideoPlayer = dynamic(() => import("@/components/media/VideoPlayer"), {
+  loading: () => <div>Loading player...</div>,
+});
+const MediaInfo = dynamic(() => import("@/components/media/MediaInfo"), {
+  loading: () => <div>Loading movie details...</div>,
+});
+const CastList = dynamic(() => import("@/components/media/CastList"), {
+  loading: () => <div>Loading cast...</div>,
+});
+const RecommendedMedia = dynamic(
+  () => import("@/components/media/RecommendedMedia"),
+  {
+    loading: () => <div>Loading recommendations...</div>,
+  }
+);
+const EpisodeGrid = dynamic(() => import("@/components/media/EpisodeGrid"), {
+  loading: () => (
+    <div className="grid gap-4">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="h-32 bg-white animate-pulse rounded-lg" />
+      ))}
+    </div>
+  ),
+});
 
 function isSeriesDetails(data: unknown): data is SeriesDetails {
   return (
@@ -62,7 +84,6 @@ export async function generateMetadata({
           alt: series.name,
         },
       ],
-  
     },
     twitter: {
       card: "summary_large_image",
@@ -135,23 +156,19 @@ export default async function SeriesPage({
   return (
     <div className="min-h-screen pb-8">
       {/* TV Series Schema.org structured data */}
-  
-
       <div className="relative aspect-video w-full">
-        <Suspense fallback={<div>Loading player...</div>}>
-          <VideoPlayer
-            key={`${currentSeason}-${currentEpisode}`}
-            tmdbId={seriesId!}
-            type="series"
-            posterPath={series.backdrop_path ?? series.poster_path ?? ""}
-            title={series.name}
-            episode={{
-              season: currentSeason,
-              number: currentEpisode,
-            }}
-            seasonLength={seasonEpisodesLength}
-          />
-        </Suspense>
+        <VideoPlayer
+          key={`${currentSeason}-${currentEpisode}`}
+          tmdbId={seriesId!}
+          type="series"
+          posterPath={series.backdrop_path ?? series.poster_path ?? ""}
+          title={series.name}
+          episode={{
+            season: currentSeason,
+            number: currentEpisode,
+          }}
+          seasonLength={seasonEpisodesLength}
+        />
       </div>
 
       <div className="container mx-auto px-4 py-8">
@@ -177,27 +194,15 @@ export default async function SeriesPage({
               currentSeason={currentSeason}
             />
           </div>
-          <Suspense
-            fallback={
-              <div className="grid gap-4">
-                {[...Array(5)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-32 bg-white animate-pulse rounded-lg"
-                  />
-                ))}
-              </div>
+
+          <EpisodeGrid
+            episodes={
+              series.seasons.find((s) => s.season_number === currentSeason)
+                ?.episodes || []
             }
-          >
-            <EpisodeGrid
-              episodes={
-                series.seasons.find((s) => s.season_number === currentSeason)
-                  ?.episodes || []
-              }
-              seriesId={slug}
-              currentSeason={currentSeason}
-            />
-          </Suspense>
+            seriesId={slug}
+            currentSeason={currentSeason}
+          />
         </div>
 
         <div className="mt-12">
