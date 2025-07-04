@@ -159,7 +159,7 @@ export default function HeroSlider({ items }: Props) {
               fill
               sizes="100vw"
               className="object-cover object-center w-full h-full"
-              priority
+              loading={"lazy"}
             />
           </motion.div>
 
@@ -236,8 +236,6 @@ export default function HeroSlider({ items }: Props) {
           setCurrent((prev) => (prev - 1 + items.length) % items.length);
         }}
         className="hidden md:flex items-center justify-center absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/20 backdrop-blur-sm text-white"
-        whileHover={{ scale: 1.1, backgroundColor: "rgba(0,0,0,0.3)" }}
-        whileTap={{ scale: 0.95 }}
       >
         <ChevronLeft className="w-6 h-6" />
       </motion.button>
@@ -248,8 +246,6 @@ export default function HeroSlider({ items }: Props) {
           setCurrent((prev) => (prev + 1) % items.length);
         }}
         className="hidden md:flex items-center justify-center absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/20 backdrop-blur-sm text-white"
-        whileHover={{ scale: 1.1, backgroundColor: "rgba(0,0,0,0.3)" }}
-        whileTap={{ scale: 0.95 }}
       >
         <ChevronRight className="w-6 h-6" />
       </motion.button>
