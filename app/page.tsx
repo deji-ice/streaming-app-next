@@ -1,11 +1,7 @@
-// import { Suspense } from "react";
 import HeroSlider from "@/components/media/HeroSlider";
 import MediaGridSkeleton from "@/components/media/MediaGridSkeleton";
 import { tmdb } from "@/lib/tmdb";
 import dynamic from "next/dynamic";
-
-// import BentoGrid from "@/components/media/BentoGrid";
-//
 
 const MediaTabs = dynamic(() => import("@/components/media/MediaTabs"), {
   loading: () => <MediaGridSkeleton count={10} />,
