@@ -1,9 +1,8 @@
-import { Suspense } from "react";
 import { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
-import SeriesClientPage from "./SeriesClientPage";
 import { Tv } from "lucide-react";
 import { SeriesPageProps, Series } from "@/types";
+import dynamic from "next/dynamic";
 
 export const metadata: Metadata = {
   title: "TV Series | StreamScape",
@@ -15,6 +14,10 @@ type SeriesData = {
   total_pages: number;
   total_results: number;
 };
+
+const SeriesClientPage = dynamic(() => import("./SeriesClientPage"), {
+  loading: () => <div>Loading series...</div>,
+});
 
 async function getSeriesData(
   sortBy: string = "popularity.desc",
@@ -51,9 +54,15 @@ async function getSeriesData(
     return data;
   } catch (error) {
     console.error("Error fetching series:", error);
-    return { results: [] as Series[], page: 1, total_pages: 0, total_results: 0 };
+    return {
+      results: [] as Series[],
+      page: 1,
+      total_pages: 0,
+      total_results: 0,
+    };
   }
 }
+export const revalidate = 60;
 
 export default async function SeriesPage({ searchParams }: SeriesPageProps) {
   const params = await searchParams;
@@ -117,16 +126,14 @@ export default async function SeriesPage({ searchParams }: SeriesPageProps) {
       </div>
 
       <div className="container mx-auto px-4 mt-8">
-        <Suspense fallback={<div>Loading series...</div>}>
-          <SeriesClientPage
-            initialSeries={series}
-            sortOptions={sortOptions}
-            currentSort={sortParam}
-            currentPage={currentPage}
-            totalPages={total_pages}
-            genres={genres}
-          />
-        </Suspense>
+        <SeriesClientPage
+          initialSeries={series}
+          sortOptions={sortOptions}
+          currentSort={sortParam}
+          currentPage={currentPage}
+          totalPages={total_pages}
+          genres={genres}
+        />
       </div>
     </div>
   );

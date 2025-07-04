@@ -1,28 +1,17 @@
-import { Suspense } from "react";
 import { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
-import MoviesClientPage from "./MoviesClientPage";
 import { Film } from "lucide-react";
+import { Movie as MovieType } from "@/types";
+import dynamic from "next/dynamic";
 
 export const metadata: Metadata = {
   title: "Movies | StreamScape",
   description: "Browse and watch the latest movies on StreamScape",
 };
 
-// interface SearchParams {
-//   sort?: Promise<{ string | string[]}>
-//   page?: Promise<{ string | string[] }>
-// }
-
 interface MoviePageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
-
-// interface MoviePageProps {
-//   searchParams: SearchParams;
-// }
-
-import { Movie as MovieType } from "@/types";
 
 interface Movie extends MovieType {
   title: string;
@@ -36,6 +25,10 @@ type MovieData = {
   total_pages: number;
   total_results: number;
 };
+
+const MoviesClientPage = dynamic(() => import("./MoviesClientPage"), {
+  loading: () => <div>Loading movies...</div>,
+});
 
 async function getMoviesData(
   sortBy: string = "popularity.desc",
@@ -76,9 +69,8 @@ async function getMoviesData(
   }
 }
 
-export default async function MoviesPage({
-  searchParams,
-}: MoviePageProps) {
+export const revalidate = 60; 
+export default async function MoviesPage({ searchParams }: MoviePageProps) {
   const sortParam = (await searchParams).sort?.toString() || "popularity.desc";
   const pageParam = (await searchParams).page?.toString() || "1";
   const currentPage = parseInt(pageParam, 10) || 1;
@@ -138,16 +130,14 @@ export default async function MoviesPage({
       </div>
 
       <div className="container mx-auto px-4 mt-8">
-        <Suspense fallback={<div>Loading movies...</div>}>
-          <MoviesClientPage
-            initialMovies={movies}
-            sortOptions={sortOptions}
-            currentSort={sortParam}
-            currentPage={currentPage}
-            totalPages={total_pages}
-            genres={genres}
-          />
-        </Suspense>
+        <MoviesClientPage
+          initialMovies={movies}
+          sortOptions={sortOptions}
+          currentSort={sortParam}
+          currentPage={currentPage}
+          totalPages={total_pages}
+          genres={genres}
+        />
       </div>
     </div>
   );

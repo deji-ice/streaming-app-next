@@ -1,8 +1,6 @@
-import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
-
 import SeasonSelector from "@/components/media/SeasonSelector";
 import { SeriesPageProps, SeriesDetails, Season } from "@/types";
 import dynamic from "next/dynamic";
@@ -12,6 +10,7 @@ const VideoPlayer = dynamic(() => import("@/components/media/VideoPlayer"), {
 });
 const MediaInfo = dynamic(() => import("@/components/media/MediaInfo"), {
   loading: () => <div>Loading movie details...</div>,
+  ssr: false,
 });
 const CastList = dynamic(() => import("@/components/media/CastList"), {
   loading: () => <div>Loading cast...</div>,
@@ -125,6 +124,7 @@ async function getSeriesDetails(
     return null;
   }
 }
+export const revalidate = 60;
 
 export default async function SeriesPage({
   params,

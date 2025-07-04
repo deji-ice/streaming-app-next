@@ -16,6 +16,7 @@ const RecommendedMedia = dynamic(
 );
 const MediaInfo = dynamic(() => import("@/components/media/MediaInfo"), {
   loading: () => <div>Loading movie details...</div>,
+  ssr: false
 });
 
 const VideoPlayer = dynamic(() => import("@/components/media/VideoPlayer"), {
@@ -90,7 +91,7 @@ export async function generateMetadata({
     },
   };
 }
-
+export const revalidate = 60;
 async function getMovieDetails(slug: string): Promise<MovieDetails | null> {
   const id = slug.split("-").pop();
   if (!id || isNaN(Number(id))) return null;
@@ -134,21 +135,19 @@ export default async function MoviePage({ params }: MoviePageProps) {
         </div>
 
         <div className="container mx-auto px-4 py-8">
-          <Suspense fallback={<div>Loading movie details...</div>}>
-            <MediaInfo
-              type={"movie"}
-              tmdbId={movie.id}
-              title={movie.title}
-              overview={movie.overview}
-              releaseDate={movie.release_date}
-              rating={movie.vote_average}
-              posterPath={movie.poster_path ?? ""}
-              genres={movie.genres?.map((g) => g.name) ?? []}
-              duration={movie.runtime ?? 0}
-              cast={movie.credits?.cast ?? []}
-              country={movie.production_countries[0]?.name ?? "United States"}
-            />
-          </Suspense>
+          <MediaInfo
+            type={"movie"}
+            tmdbId={movie.id}
+            title={movie.title}
+            overview={movie.overview}
+            releaseDate={movie.release_date}
+            rating={movie.vote_average}
+            posterPath={movie.poster_path ?? ""}
+            genres={movie.genres?.map((g) => g.name) ?? []}
+            duration={movie.runtime ?? 0}
+            cast={movie.credits?.cast ?? []}
+            country={movie.production_countries[0]?.name ?? "United States"}
+          />
 
           <div className="mt-12">
             <h2 className="text-2xl font-montserrat font-bold mb-6">Cast</h2>

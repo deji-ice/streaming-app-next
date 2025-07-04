@@ -200,7 +200,7 @@ export default function HeroSlider({ items }: Props) {
                 >
                   <Button
                     size="default"
-                    className="gap-2 md:size-lg hover:scale-105 transition-transform"
+                    className="gap-2 md:size-lg text-slate-900 bg-white hover:scale-105 transition-transform"
                   >
                     <Play className="w-4 h-4 md:w-5 md:h-5" />
                     Watch Now
