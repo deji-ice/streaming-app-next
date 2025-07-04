@@ -97,12 +97,15 @@ export const metadata: Metadata = {
     creator: "@StreamScapeX",
   },
   icons: {
-    icon: [{ url: "/favicon.ico" }, { url: "/icon.png", type: "image/png" }],
-    apple: [{ url: "/apple-icon.png", type: "image/png" }],
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: [{ url: "/apple-icon.svg", type: "image/svg+xml" }],
     other: [
       {
         rel: "apple-touch-icon-precomposed",
-        url: "/apple-touch-icon-precomposed.png",
+        url: "/apple-touch-icon-precomposed.svg",
       },
     ],
   },
@@ -139,11 +142,11 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://image.tmdb.org" />
 
         {/* Preload critical assets */}
-        <link rel="preload" as="image" href="/logo.png" />
+        <link rel="preload" as="image" href="/logo.svg" />
         <link rel="preload" as="image" href="/og-image.jpg" />
 
-        {/* Preload critical CSS */}
-        <link rel="preload" href="/globals.css" as="style" />
+        {/* Remove this line - globals.css is already imported */}
+        {/* <link rel="preload" href="/globals.css" as="style" /> */}
       </head>
       <body
         className={`${montserrat.variable} ${roboto.variable} antialiased bg-[#f8f9fa] dark:bg-gray-950 transition-colors duration-300`}
