@@ -10,7 +10,6 @@ const VideoPlayer = dynamic(() => import("@/components/media/VideoPlayer"), {
 });
 const MediaInfo = dynamic(() => import("@/components/media/MediaInfo"), {
   loading: () => <div>Loading movie details...</div>,
-  ssr: false,
 });
 const CastList = dynamic(() => import("@/components/media/CastList"), {
   loading: () => <div>Loading cast...</div>,

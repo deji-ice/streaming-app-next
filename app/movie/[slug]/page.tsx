@@ -15,8 +15,7 @@ const RecommendedMedia = dynamic(
   }
 );
 const MediaInfo = dynamic(() => import("@/components/media/MediaInfo"), {
-  loading: () => <div>Loading movie details...</div>,
-  ssr: false
+  loading: () => <div>Loading movie details...</div>
 });
 
 const VideoPlayer = dynamic(() => import("@/components/media/VideoPlayer"), {
