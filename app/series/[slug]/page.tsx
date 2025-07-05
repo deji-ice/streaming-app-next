@@ -2,8 +2,9 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
 import SeasonSelector from "@/components/media/SeasonSelector";
-import { SeriesPageProps, SeriesDetails, Season, Series } from "@/types";
+import { SeriesPageProps, Series } from "@/types";
 import dynamic from "next/dynamic";
+import { getSeriesDetails } from "@/lib/utils";
 
 export async function generateStaticParams() {
   const popularSeries = await tmdb.getPopularSeries();
@@ -42,15 +43,7 @@ const EpisodeGrid = dynamic(() => import("@/components/media/EpisodeGrid"), {
   ),
 });
 
-function isSeriesDetails(data: unknown): data is SeriesDetails {
-  return (
-    data !== null &&
-    typeof data === "object" &&
-    "id" in data &&
-    "name" in data &&
-    "seasons" in data
-  );
-}
+
 
 export async function generateMetadata({
   params,
@@ -104,37 +97,6 @@ export async function generateMetadata({
   };
 }
 
-async function getSeriesDetails(
-  slug: string,
-  currentSeason: number = 1
-): Promise<SeriesDetails | null> {
-  const id = slug.split("-").pop();
-  if (!id || isNaN(Number(id))) return null;
-
-  try {
-    const seriesData = await tmdb.getMediaDetails(id, "tv");
-    if (!isSeriesDetails(seriesData)) {
-      throw new Error("Invalid series data");
-    }
-
-    const seasonDetails = await tmdb.getSeasonDetails(
-      Number(id),
-      currentSeason
-    );
-
-    return {
-      ...seriesData,
-      seasons: seriesData.seasons.map((season: Season) => ({
-        ...season,
-        episodes:
-          season.season_number === currentSeason ? seasonDetails.episodes : [],
-      })),
-    };
-  } catch (error) {
-    console.error("Error fetching series details:", error);
-    return null;
-  }
-}
 
 export default async function SeriesPage({
   params,
@@ -158,7 +120,6 @@ export default async function SeriesPage({
     notFound();
   }
 
-  console.log(series);
   const recommendations = await tmdb
     .getRecommendations(series.id, "tv")
     .catch(() => []);
