@@ -5,25 +5,26 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Play, Star, Clock, Calendar, Bookmark } from "lucide-react";
-import { type Movie, type Series, type MediaType } from "@/types";
+import { type Movie, type MediaType, SeriesDetails } from "@/types";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-
 interface MediaCardProps {
-  item: Movie | Series;
+  item: Movie | SeriesDetails;
   type: MediaType;
 }
 
 export default function MediaCard({ item, type }: MediaCardProps) {
-  const router = useRouter()
+  const router = useRouter();
   const title = "title" in item ? item.title : item.name;
   const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${item.id}`;
   const imageUrl = item.poster_path
     ? `https://image.tmdb.org/t/p/w300${item.poster_path}`
     : "/placeholder-poster.jpg";
   const year = new Date(
-    "release_date" in item ? item.release_date : item.first_air_date
+    "release_date" in item
+      ? item.release_date
+      : item.last_episode_to_air?.air_date ?? item.first_air_date
   ).getFullYear();
 
   const handlePlay = (e: React.MouseEvent) => {
@@ -56,19 +57,17 @@ export default function MediaCard({ item, type }: MediaCardProps) {
                      group-hover:scale-105 md:group-hover:brightness-75"
           />
 
-     
           <div
             className="absolute inset-0 bg-gradient-to-t 
                         from-black/20 via-black/10 to-transparent"
           />
 
-        
           <Button
             size="icon"
             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
                  md:opacity-0 md:group-hover:opacity-100 
                  transition-opacity duration-500 bg-primary/90"
-                 onClick={handlePlay}
+            onClick={handlePlay}
           >
             <Play className="w-4 h-4" />
           </Button>
@@ -87,7 +86,7 @@ export default function MediaCard({ item, type }: MediaCardProps) {
           {/* Always visible info section on mobile, hover on desktop */}
           <div
             className="absolute bottom-0 left-0 right-0 p-4 
-                       bg-gradient-to-t from-black/90 to-transparent"
+                       bg-gradient-to-t from-black to-transparent"
           >
             <h3
               className="font-montserrat font-bold text-white 
@@ -100,9 +99,16 @@ export default function MediaCard({ item, type }: MediaCardProps) {
                 <Star className="w-4 h-4 text-yellow-500" />
                 <span>{item.vote_average.toFixed(1)}</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                <span>{year}</span>
+              <div className="flex gap-3">
+                {type === "series" && "last_episode_to_air" in item && (
+                  <p>
+                    EP {item.last_episode_to_air?.episode_number || 0}
+                  </p>
+                )}
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  <span>{year}</span>
+                </div>
               </div>
               {type === "movie" &&
                 "runtime" in item &&
