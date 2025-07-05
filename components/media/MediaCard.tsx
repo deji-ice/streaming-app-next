@@ -99,10 +99,10 @@ export default function MediaCard({ item, type }: MediaCardProps) {
                 <Star className="w-4 h-4 text-yellow-500" />
                 <span>{item.vote_average.toFixed(1)}</span>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 {type === "series" && "last_episode_to_air" in item && (
                   <p>
-                    EP {item.last_episode_to_air?.episode_number || 0}
+                   S{item.last_episode_to_air?.season_number || 1} EP{item.last_episode_to_air?.episode_number || 1}
                   </p>
                 )}
                 <div className="flex items-center gap-1">
