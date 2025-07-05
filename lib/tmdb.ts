@@ -37,10 +37,23 @@ export const tmdb = {
     return res.json();
   },
 
-  async getPopularSeries(): Promise<TMDBResponse<Series>> {
+  async getPopularSeries(): Promise<TMDBResponse<SeriesDetails>> {
     const res = await fetch(`${BASE_URL}/trending/tv/week`, options);
+
     if (!res.ok) throw new Error('Failed to fetch trending series');
-    return res.json();
+
+    const popularSeriesResponse: TMDBResponse<SeriesDetails> = await res.json()
+
+    const detailedSeries = await Promise.all(
+      popularSeriesResponse.results.map(series => this.getMediaDetails(String(series.id), "tv"))
+    )
+
+    return {
+      page: popularSeriesResponse.page,
+      total_pages: popularSeriesResponse.total_pages,
+      total_results: popularSeriesResponse.total_results,
+      results: detailedSeries as SeriesDetails[],
+    }
   },
 
   async getMediaDetails(id: string, type: MediaType): Promise<MovieDetails | SeriesDetails> {
@@ -87,7 +100,7 @@ export const tmdb = {
   async getRecommendations(
     id: number,
     type: MediaType
-  ): Promise<(Movie | Series)[]> {
+  ): Promise<(Movie | SeriesDetails)[]> {
     try {
       const res = await fetch(
         `${BASE_URL}/${type}/${id}/recommendations`,
@@ -137,7 +150,7 @@ export const tmdb = {
     }
   },
 
-  async getLatestSeries(sortBy: string = 'latest_air_date.desc'): Promise<TMDBResponse<Series>> {
+  async getLatestSeries(sortBy: string = 'latest_air_date.desc'): Promise<TMDBResponse<SeriesDetails>> {
     const today = new Date().toISOString().slice(0, 10);
     try {
       // Exclude news (genre ID 10763) and talk shows (genre ID 10767) from results
@@ -146,12 +159,25 @@ export const tmdb = {
         options
       );
       if (!res.ok) throw new Error('Failed to fetch latest series');
-      return res.json();
+      const latestSeriesResponse: TMDBResponse<Series> = await res.json()
+
+      const detailedSeries = await Promise.all(
+        latestSeriesResponse.results.map(series => this.getMediaDetails(String(series.id), "tv"))
+      )
+
+      return {
+        page: latestSeriesResponse.page,
+        total_pages: latestSeriesResponse.total_pages,
+        total_results: latestSeriesResponse.total_results,
+        results: detailedSeries as SeriesDetails[],
+      }
+
     } catch (error) {
       console.error('Error:', error);
       return { results: [], page: 1, total_pages: 0, total_results: 0 };
     }
   },
+
   async getTrailers(id: number, type: MediaType): Promise<string | null> {
     try {
       const res = await fetch(

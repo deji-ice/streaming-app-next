@@ -41,6 +41,7 @@ export interface Series extends BaseMediaItem {
   first_air_date: string;
   episode_run_time: number[];
   seasons: Season[];
+  
 }
 
 export interface Season {
@@ -51,6 +52,11 @@ export interface Season {
   air_date?: string;
   overview?: string;
   episodes: Episode[];
+  last_episode_to_air: {
+    episode_number: number,
+    air_date: string,
+    season_number:number
+  }
 }
 
 export interface Episode {
@@ -94,8 +100,11 @@ export interface SeriesDetails extends Series, MediaDetails {
   poster_path: string | null;
   backdrop_path: string | null;
   last_episode_to_air: {
-    runtime: number;
-  };
+    episode_number: number,
+    air_date: string,
+    season_number:number
+    runtime: number
+  }
   genres: Array<{ id: number; name: string }>;
   credits: {
     cast: Array<{
