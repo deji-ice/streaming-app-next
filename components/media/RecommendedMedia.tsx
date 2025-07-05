@@ -1,12 +1,12 @@
 
 "use client";
 
-import { type Movie, type Series } from "@/types";
+import { SeriesDetails, type Movie } from "@/types";
 import MediaCard from "./MediaCard";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface RecommendedMediaProps {
-  items: (Movie | Series)[];
+  items: (Movie | SeriesDetails)[];
   type: "movie" | "series";
   title?: string;
 }

@@ -1,8 +1,8 @@
-import { type Movie, type Series } from "@/types";
+import { SeriesDetails, type Movie } from "@/types";
 import MediaCard from "./MediaCard";
 
 interface MediaGridProps {
-  items: (Movie | Series)[];
+  items: (Movie | SeriesDetails)[];
   type: "movie" | "series";
   title: string;
 }

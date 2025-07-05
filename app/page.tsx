@@ -15,7 +15,7 @@ async function getData() {
     latestMovies,
     latestSeries,
     genres,
-] = await Promise.all([
+  ] = await Promise.all([
     tmdb.getTrending(),
     tmdb.getPopularMovies(),
     tmdb.getPopularSeries(),
@@ -34,7 +34,7 @@ async function getData() {
   };
 }
 
-export const revalidate = 60; 
+export const revalidate = 60;
 
 export default async function HomePage() {
   const {

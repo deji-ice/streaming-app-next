@@ -5,11 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MediaGrid from "./MediaGrid";
 import MediaGridSkeleton from "./MediaGridSkeleton";
 import GenreFilter from "./GenreFilter";
-import { type Movie, type Series } from "@/types";
+import { SeriesDetails, type Movie } from "@/types";
 
 interface MediaTabsProps {
   movies: Movie[];
-  series: Series[];
+  series: SeriesDetails[];
   genres: { id: number; name: string }[];
   defaultTab?: "movies" | "series";
 }
@@ -24,7 +24,7 @@ export default function MediaTabs({
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [isLoading, setIsLoading] = useState(false);
 
-  const filterByGenres = (items: (Movie | Series)[]) => {
+  const filterByGenres = (items: (Movie | SeriesDetails)[]) => {
     if (selectedGenres.length === 0) return items;
     return items.filter((item) =>
       item.genre_ids.some((genreId) => selectedGenres.includes(genreId))

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import MediaCard from "@/components/media/MediaCard";
-import { Series, Genre } from "@/types";
+import {Genre, SeriesDetails } from "@/types";
 import {
   Select,
   SelectContent,
@@ -27,7 +27,7 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SeriesClientPageProps {
-  initialSeries: Series[];
+  initialSeries: SeriesDetails[];
   sortOptions: { value: string; label: string }[];
   currentSort: string;
   currentPage: number;
@@ -43,7 +43,7 @@ export default function SeriesClientPage({
   totalPages,
   genres,
 }: SeriesClientPageProps) {
-  const [series, setSeries] = useState<Series[]>(initialSeries);
+  const [series, setSeries] = useState<SeriesDetails[]>(initialSeries);
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [localPage, setLocalPage] = useState(currentPage);

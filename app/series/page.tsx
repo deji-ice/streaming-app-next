@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
 import { Tv } from "lucide-react";
-import { SeriesPageProps, Series } from "@/types";
+import { SeriesPageProps, SeriesDetails } from "@/types";
 import dynamic from "next/dynamic";
 
 export const metadata: Metadata = {
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "Browse and watch the latest TV shows and series on StreamScape",
 };
 type SeriesData = {
-  results: Series[];
+  results: SeriesDetails[];
   page: number;
   total_pages: number;
   total_results: number;
@@ -55,7 +55,7 @@ async function getSeriesData(
   } catch (error) {
     console.error("Error fetching series:", error);
     return {
-      results: [] as Series[],
+      results: [] as SeriesDetails[],
       page: 1,
       total_pages: 0,
       total_results: 0,
