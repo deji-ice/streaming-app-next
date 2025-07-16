@@ -78,7 +78,6 @@ export default function MoviesClientPage({
       params.delete("genres");
     }
 
-    // Scroll to top when changing pages
     window.scrollTo({ top: 0, behavior: "smooth" });
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
@@ -99,13 +98,11 @@ export default function MoviesClientPage({
     updateUrl(localSort, 1, newSelectedGenres); // Reset to page 1 when changing genre filters
   };
 
-  // Clear all selected genres
   const clearGenres = () => {
     setSelectedGenres([]);
     updateUrl(localSort, 1, []);
   };
 
-  // Fetch new data when URL parameters change
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -145,12 +142,10 @@ export default function MoviesClientPage({
       }
     };
 
-    if (isLoading) {
-      fetchMovies();
-    }
-  }, [searchParams, isLoading]);
+    fetchMovies();
+  }, [searchParams]);
 
-  // Initialize selected genres from URL
+
   useEffect(() => {
     const genresParam = searchParams.get("genres");
     if (genresParam) {
@@ -161,13 +156,11 @@ export default function MoviesClientPage({
     }
   }, [searchParams]);
 
-  // Calculate pagination range to show
   const getPaginationRange = () => {
     const maxPages = 5; // Max number of page buttons to show
     let start = Math.max(1, localPage - Math.floor(maxPages / 2));
     const end = Math.min(totalPages, start + maxPages - 1);
 
-    // Adjust start if end is capped
     if (end - start + 1 < maxPages) {
       start = Math.max(1, end - maxPages + 1);
     }
@@ -281,18 +274,11 @@ export default function MoviesClientPage({
             </PaginationItem>
 
             {localPage > 3 && (
-              <>
-                <PaginationItem>
-                  <PaginationLink onClick={() => updateUrl(localSort, 1)}>
-                    1
-                  </PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <span className="flex h-9 w-9 items-center justify-center">
-                    ...
-                  </span>
-                </PaginationItem>
-              </>
+              <PaginationItem>
+                <PaginationLink onClick={() => updateUrl(localSort, 1)}>
+                  1
+                </PaginationLink>
+              </PaginationItem>
             )}
 
             {getPaginationRange().map((page) => (
@@ -313,34 +299,31 @@ export default function MoviesClientPage({
             {localPage < totalPages - 2 && (
               <>
                 <PaginationItem>
-                  <span className="flex h-9 w-9 items-center justify-center">
-                    ...
-                  </span>
+                  <PaginationLink
+                    onClick={() =>
+                      updateUrl(localSort, Math.min(totalPages, localPage + 1))
+                    }
+                    aria-disabled={localPage === totalPages}
+                    className={
+                      localPage === totalPages
+                        ? " cursor-pointer opacity-50"
+                        : " cursor-pointer"
+                    }
+                  >
+                    Next
+                  </PaginationLink>
                 </PaginationItem>
                 <PaginationItem>
                   <PaginationLink
                     onClick={() => updateUrl(localSort, totalPages)}
                     className=" cursor-pointer"
+                    title="last"
                   >
-                    {totalPages}
+                    {">>"}
                   </PaginationLink>
                 </PaginationItem>
               </>
             )}
-
-            <PaginationItem>
-              <PaginationNext
-                onClick={() =>
-                  updateUrl(localSort, Math.min(totalPages, localPage + 1))
-                }
-                aria-disabled={localPage === totalPages}
-                className={
-                  localPage === totalPages
-                    ? " cursor-pointer opacity-50"
-                    : " cursor-pointer"
-                }
-              />
-            </PaginationItem>
           </PaginationContent>
         </Pagination>
       )}

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import MediaCard from "@/components/media/MediaCard";
-import {Genre, SeriesDetails } from "@/types";
+import { Genre, SeriesDetails } from "@/types";
 import {
   Select,
   SelectContent,
@@ -144,13 +144,8 @@ export default function SeriesClientPage({
         setIsLoading(false);
       }
     };
+  }, [searchParams]);
 
-    if (isLoading) {
-      fetchSeries();
-    }
-  }, [searchParams, isLoading]);
-
-  // Initialize selected genres from URL
   useEffect(() => {
     const genresParam = searchParams.get("genres");
     if (genresParam) {
@@ -161,9 +156,8 @@ export default function SeriesClientPage({
     }
   }, [searchParams]);
 
-  // Calculate pagination range to show
   const getPaginationRange = () => {
-    const maxPages = 5; // Max number of page buttons to show
+    const maxPages = 5;
     let start = Math.max(1, localPage - Math.floor(maxPages / 2));
     const end = Math.min(totalPages, start + maxPages - 1);
 
@@ -273,24 +267,19 @@ export default function SeriesClientPage({
                 onClick={() => updateUrl(localSort, Math.max(1, localPage - 1))}
                 aria-disabled={localPage === 1}
                 className={
-                  localPage === 1 ? "pointer-events-none opacity-50" : ""
+                  localPage === 1
+                    ? "cursor-pointer opacity-50"
+                    : " cursor-pointer"
                 }
               />
             </PaginationItem>
 
             {localPage > 3 && (
-              <>
-                <PaginationItem>
-                  <PaginationLink onClick={() => updateUrl(localSort, 1)}>
-                    1
-                  </PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <span className="flex h-9 w-9 items-center justify-center">
-                    ...
-                  </span>
-                </PaginationItem>
-              </>
+              <PaginationItem>
+                <PaginationLink onClick={() => updateUrl(localSort, 1)}>
+                  1
+                </PaginationLink>
+              </PaginationItem>
             )}
 
             {getPaginationRange().map((page) => (
@@ -299,8 +288,8 @@ export default function SeriesClientPage({
                   onClick={() => updateUrl(localSort, page)}
                   className={
                     localPage === page
-                      ? "bg-primary text-primary-foreground"
-                      : ""
+                      ? "bg-primary cursor-pointer text-primary-foreground"
+                      : " cursor-pointer"
                   }
                 >
                   {page}
@@ -311,33 +300,31 @@ export default function SeriesClientPage({
             {localPage < totalPages - 2 && (
               <>
                 <PaginationItem>
-                  <span className="flex h-9 w-9 items-center justify-center">
-                    ...
-                  </span>
+                  <PaginationLink
+                    onClick={() =>
+                      updateUrl(localSort, Math.min(totalPages, localPage + 1))
+                    }
+                    aria-disabled={localPage === totalPages}
+                    className={
+                      localPage === totalPages
+                        ? " cursor-pointer opacity-50"
+                        : " cursor-pointer"
+                    }
+                  >
+                    Next
+                  </PaginationLink>
                 </PaginationItem>
                 <PaginationItem>
                   <PaginationLink
                     onClick={() => updateUrl(localSort, totalPages)}
+                    className=" cursor-pointer"
+                    title="last"
                   >
-                    {totalPages}
+                    {">>"}
                   </PaginationLink>
                 </PaginationItem>
               </>
             )}
-
-            <PaginationItem>
-              <PaginationNext
-                onClick={() =>
-                  updateUrl(localSort, Math.min(totalPages, localPage + 1))
-                }
-                aria-disabled={localPage === totalPages}
-                className={
-                  localPage === totalPages
-                    ? "pointer-events-none opacity-50"
-                    : ""
-                }
-              />
-            </PaginationItem>
           </PaginationContent>
         </Pagination>
       )}
