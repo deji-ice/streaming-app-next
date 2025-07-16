@@ -143,6 +143,7 @@ export default function SeriesClientPage({
         setIsLoading(false);
       }
     };
+    fetchSeries()
   }, [searchParams]);
 
   useEffect(() => {
