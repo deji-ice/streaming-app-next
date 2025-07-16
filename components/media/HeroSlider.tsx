@@ -15,7 +15,6 @@ function generateSlug(title: string, id: number): string {
     .replace(/\s+/g, "-")}-${id}`;
 }
 
-// Define sophisticated animation variants
 const slideVariants: Variants = {
   enter: (direction: number) => ({
     x: direction > 0 ? "100%" : "-100%",
@@ -92,7 +91,6 @@ export default function HeroSlider({ items }: Props) {
     setCurrent(newIndex);
   };
 
-  // Swipe handlers for mobile navigation
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
   };
@@ -146,31 +144,31 @@ export default function HeroSlider({ items }: Props) {
           exit="exit"
           className="absolute inset-0"
         >
-          {/* Backdrop image with subtle zoom effect */}
+
           <motion.div
             className="absolute inset-0"
             initial={{ scale: 1.1 }}
             animate={{ scale: 1 }}
-            transition={{ duration: 6, ease: "easeOut" }}
+            // transition={{ duration: 6, ease: "easeOut" }}
           >
             <Image
-              src={`https://image.tmdb.org/t/p/original${currentItem.backdrop_path}`}
+              src={`https://image.tmdb.org/t/p/w780${currentItem.backdrop_path}`}
               alt={isMovie ? currentItem.title : currentItem.name}
               fill
               sizes="100vw"
               className="object-cover object-center w-full h-full"
-              loading={"lazy"}
+              fetchPriority="high"
             />
           </motion.div>
 
-          {/* Enhanced gradient overlay with animation */}
+       
           <motion.div
-            className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent md:bg-gradient-to-r md:from-black/80 md:via-black/50 md:to-transparent"
+            className="absolute inset-0 "
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6 }}
           >
-            {/* Coordinated text content animation */}
+
             <motion.div
               className="absolute bottom-[15%] left-[5%] w-[90%] md:max-w-2xl"
               variants={contentVariants}
@@ -212,7 +210,6 @@ export default function HeroSlider({ items }: Props) {
         </motion.div>
       </AnimatePresence>
 
-      {/* Enhanced Navigation Dots */}
       <div className="absolute bottom-8 md:bottom-5 left-1/2 -translate-x-1/2 flex gap-2">
         {items.map((_, index) => (
           <motion.button
@@ -229,7 +226,6 @@ export default function HeroSlider({ items }: Props) {
         ))}
       </div>
 
-      {/* Animated Navigation Arrows */}
       <motion.button
         onClick={() => {
           setDirection(-1);
