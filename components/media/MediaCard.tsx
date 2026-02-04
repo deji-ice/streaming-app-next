@@ -1,6 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import { hoverLift, fadeIn } from "@/lib/gsap-config";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -16,6 +18,9 @@ interface MediaCardProps {
 
 export default function MediaCard({ item, type }: MediaCardProps) {
   const router = useRouter();
+  const cardRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
+
   const title = "title" in item ? item.title : item.name;
   const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${item.id}`;
   const imageUrl = item.poster_path
@@ -24,8 +29,27 @@ export default function MediaCard({ item, type }: MediaCardProps) {
   const year = new Date(
     "release_date" in item
       ? item.release_date
-      : item.last_episode_to_air?.air_date ?? item.first_air_date
+      : (item.last_episode_to_air?.air_date ?? item.first_air_date),
   ).getFullYear();
+
+  // GSAP animations
+  useGSAP(() => {
+    if (cardRef.current) {
+      // Fade in animation on mount
+      fadeIn(cardRef.current, { y: 20, duration: 0.4 });
+
+      // Setup hover lift effect
+      const { onEnter, onLeave } = hoverLift(cardRef.current);
+
+      cardRef.current.addEventListener("mouseenter", onEnter);
+      cardRef.current.addEventListener("mouseleave", onLeave);
+
+      return () => {
+        cardRef.current?.removeEventListener("mouseenter", onEnter);
+        cardRef.current?.removeEventListener("mouseleave", onLeave);
+      };
+    }
+  }, []);
 
   const handlePlay = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent default to avoid double navigation
@@ -41,19 +65,18 @@ export default function MediaCard({ item, type }: MediaCardProps) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
+      ref={cardRef}
       className="group relative bg-card rounded-xl overflow-hidden w-fit"
     >
       <Link href={`/${type}/${slug}`} className=" ">
-        <div className=" w-fit aspect-[2/3] relative">
+        <div className=" w-fit aspect-[2/3] relative" ref={imageRef}>
           <Image
             src={imageUrl}
             alt={title}
             height={300}
             width={200}
-            className="object-cover transition-all duration-500 
+            className="object-cover transition-transform duration-500 
                      group-hover:scale-105 md:group-hover:brightness-75"
           />
 
@@ -89,7 +112,7 @@ export default function MediaCard({ item, type }: MediaCardProps) {
                        bg-gradient-to-t from-black to-transparent"
           >
             <h3
-              className="font-montserrat font-bold text-white 
+              className="font-montserrat font-semibold text-white 
                         truncate mb-2"
             >
               {title}
@@ -102,7 +125,8 @@ export default function MediaCard({ item, type }: MediaCardProps) {
               <div className="flex gap-2">
                 {type === "series" && "last_episode_to_air" in item && (
                   <p>
-                   S{item.last_episode_to_air?.season_number || 1} EP{item.last_episode_to_air?.episode_number || 1}
+                    S{item.last_episode_to_air?.season_number || 1} EP
+                    {item.last_episode_to_air?.episode_number || 1}
                   </p>
                 )}
                 <div className="flex items-center gap-1">
@@ -124,6 +148,6 @@ export default function MediaCard({ item, type }: MediaCardProps) {
           </div>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }

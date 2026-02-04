@@ -13,10 +13,7 @@ export default function CastList({ cast }: CastListProps) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-5">
       {cast.slice(0, 12).map((person) => (
-        <div
-          key={person.id}
-          className="group relative"
-        >
+        <div key={person.id} className="group relative">
           <div className="aspect-[2/3] relative overflow-hidden rounded-xl bg-muted/30">
             <Image
               src={
@@ -46,7 +43,7 @@ export default function CastList({ cast }: CastListProps) {
             <h3 className="font-montserrat font-medium text-sm truncate">
               {person.name}
             </h3>
-            {/* <p className="text-xs text-muted-foreground font-roboto md:hidden truncate">
+            {/* <p className="text-xs text-muted-foreground font-montserrat md:hidden truncate">
               {person.character || "Unknown Role"}
             </p> */}
           </div>

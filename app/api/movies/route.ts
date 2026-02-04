@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
             {
                 headers: {
                     accept: "application/json",
-                    Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_API_KEY}`,
+                    Authorization: `Bearer ${process.env.TMDB_API_KEY || process.env.NEXT_PUBLIC_TMDB_API_KEY}`,
                 },
                 next: { revalidate: 3600 }, // Revalidate every hour
             }

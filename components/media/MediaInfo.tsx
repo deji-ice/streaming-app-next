@@ -45,7 +45,7 @@ export default function MediaInfo({
   const handleTrailer = async () => {
     setIsLoadingTrailer(true);
     try {
-      const trailerType = type == "series" ? "tv"  : "movie"
+      const trailerType = type == "series" ? "tv" : "movie";
       const trailerUrl = await tmdb.getTrailers(tmdbId, trailerType);
 
       if (!trailerUrl) {
@@ -73,7 +73,7 @@ export default function MediaInfo({
           </h1>
 
           <div className="flex items-center gap-2 mb-4">
-            <div className="flex items-center font-roboto gap-1 px-2 py-1 bg-muted rounded-lg">
+            <div className="flex items-center font-montserrat gap-1 px-2 py-1 bg-muted rounded-lg">
               <p className="text-yellow-600 font-medium text-sm">IMDB:</p>
               <span className="text-foreground text-sm">
                 {rating.toFixed(1)}
@@ -85,7 +85,7 @@ export default function MediaInfo({
               className={cn(
                 "bg-muted text-foreground text-sm px-2 py-1 rounded-lg",
                 "hover:bg-muted/80",
-                isLoadingTrailer && "opacity-50 cursor-not-allowed"
+                isLoadingTrailer && "opacity-50 cursor-not-allowed",
               )}
             >
               {isLoadingTrailer ? "Loading..." : "Watch Trailer"}
@@ -135,7 +135,7 @@ export default function MediaInfo({
                   <p className="text-xs text-muted-foreground font-medium">
                     {label}
                   </p>
-                  <p className="font-roboto text-xs text-foreground">
+                  <p className="font-montserrat text-xs text-foreground">
                     {text || "N/A"}
                   </p>
                 </div>
@@ -179,7 +179,7 @@ export default function MediaInfo({
               </h1>
 
               <div className="flex items-center gap-4 w-fit">
-                <div className="flex items-center font-roboto gap-1 px-3 py-1 bg-muted rounded-lg">
+                <div className="flex items-center font-montserrat gap-1 px-3 py-1 bg-muted rounded-lg">
                   <p className="text-yellow-600 font-medium text-base">IMDB:</p>
                   <span className="text-foreground text-base">
                     {rating.toFixed(1)}
@@ -191,7 +191,7 @@ export default function MediaInfo({
                   className={cn(
                     "bg-muted text-foreground text-base px-3 py-1 rounded-lg",
                     "transition-all duration-200 hover:bg-muted/80",
-                    isLoadingTrailer && "opacity-50 cursor-not-allowed"
+                    isLoadingTrailer && "opacity-50 cursor-not-allowed",
                   )}
                 >
                   {isLoadingTrailer ? "Loading..." : "Watch Trailer"}
@@ -231,7 +231,7 @@ export default function MediaInfo({
                         {label}
                       </p>
 
-                      <p className="font-roboto text-sm text-foreground">
+                      <p className="font-montserrat text-sm text-foreground">
                         {text || "N/A"}
                       </p>
                     </div>
@@ -244,7 +244,7 @@ export default function MediaInfo({
                 <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-2">
                   Overview
                 </h3>
-                <p className="text-base font-roboto leading-relaxed text-foreground/90">
+                <p className="text-base font-montserrat leading-relaxed text-foreground/90">
                   {overview}
                 </p>
               </div>

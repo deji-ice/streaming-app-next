@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import MediaCard from "@/components/media/MediaCard";
 import { Movie, Genre } from "@/types";
+import { queryKeys } from "@/lib/query-keys";
 import {
   Select,
   SelectContent,
@@ -42,9 +44,7 @@ export default function MoviesClientPage({
   totalPages,
   genres,
 }: MoviesClientPageProps) {
-  const [movies, setMovies] = useState<Movie[]>(initialMovies);
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [localPage, setLocalPage] = useState(currentPage);
   const [localSort, setLocalSort] = useState(currentSort);
 
@@ -52,11 +52,46 @@ export default function MoviesClientPage({
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
+  // Fetch movies with TanStack Query
+  const { data: moviesData, isLoading } = useQuery({
+    queryKey: queryKeys.movies.list({
+      sort: localSort,
+      page: localPage,
+    }),
+    queryFn: async () => {
+      let endpoint;
+      switch (localSort) {
+        case "release_date.desc":
+          endpoint = "movie/now_playing";
+          break;
+        case "vote_average.desc":
+          endpoint = "movie/top_rated";
+          break;
+        case "popularity.desc":
+        default:
+          endpoint = "movie/popular";
+          break;
+      }
+
+      const res = await fetch(
+        `/api/movies?endpoint=${endpoint}&page=${localPage}`,
+      );
+
+      if (!res.ok) throw new Error("Failed to fetch movies");
+
+      return res.json();
+    },
+    initialData: { results: initialMovies },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const movies: Movie[] = moviesData?.results || initialMovies;
+
   // Filter movies by selected genres
   const filteredMovies =
     selectedGenres.length > 0
-      ? movies.filter((movie) =>
-          movie.genre_ids.some((id) => selectedGenres.includes(id))
+      ? movies.filter((movie: Movie) =>
+          movie.genre_ids.some((id: number) => selectedGenres.includes(id)),
         )
       : movies;
 
@@ -64,9 +99,8 @@ export default function MoviesClientPage({
   const updateUrl = (
     sort: string,
     page: number,
-    genreIds: number[] = selectedGenres
+    genreIds: number[] = selectedGenres,
   ) => {
-    setIsLoading(true);
     const params = new URLSearchParams(searchParams.toString());
     params.set("sort", sort);
     params.set("page", page.toString());
@@ -103,47 +137,12 @@ export default function MoviesClientPage({
   };
 
   useEffect(() => {
-    const fetchMovies = async () => {
-      try {
-        const sort = searchParams.get("sort") || "popularity.desc";
-        const page = parseInt(searchParams.get("page") || "1", 10);
+    const sort = searchParams.get("sort") || "popularity.desc";
+    const page = parseInt(searchParams.get("page") || "1", 10);
 
-        setLocalSort(sort);
-        setLocalPage(page);
-
-        let endpoint;
-        switch (sort) {
-          case "release_date.desc":
-            endpoint = "movie/now_playing";
-            break;
-          case "vote_average.desc":
-            endpoint = "movie/top_rated";
-            break;
-          case "popularity.desc":
-          default:
-            endpoint = "movie/popular";
-            break;
-        }
-
-        const res = await fetch(
-          `/api/movies?endpoint=${endpoint}&page=${page}`,
-          { cache: "no-store" }
-        );
-
-        if (!res.ok) throw new Error("Failed to fetch movies");
-
-        const data = await res.json();
-        setMovies(data.results);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching movies:", error);
-        setIsLoading(false);
-      }
-    };
-
-    fetchMovies();
+    setLocalSort(sort);
+    setLocalPage(page);
   }, [searchParams]);
-
 
   useEffect(() => {
     const genresParam = searchParams.get("genres");
@@ -216,7 +215,7 @@ export default function MoviesClientPage({
                   "cursor-pointer",
                   selectedGenres.includes(genre.id)
                     ? "bg-primary text-primary-foreground"
-                    : "hover:bg-accent"
+                    : "hover:bg-accent",
                 )}
                 onClick={() => toggleGenre(genre.id)}
               >
@@ -234,7 +233,7 @@ export default function MoviesClientPage({
       <div
         className={cn(
           "transition-opacity duration-300",
-          isLoading ? "opacity-50" : ""
+          isLoading ? "opacity-50" : "",
         )}
       >
         {filteredMovies.length === 0 ? (

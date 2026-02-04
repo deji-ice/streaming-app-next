@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import MediaCard from "@/components/media/MediaCard";
 import { Genre, SeriesDetails } from "@/types";
+import { queryKeys } from "@/lib/query-keys";
 import {
   Select,
   SelectContent,
@@ -42,9 +44,7 @@ export default function SeriesClientPage({
   totalPages,
   genres,
 }: SeriesClientPageProps) {
-  const [series, setSeries] = useState<SeriesDetails[]>(initialSeries);
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [localPage, setLocalPage] = useState(currentPage);
   const [localSort, setLocalSort] = useState(currentSort);
 
@@ -52,11 +52,46 @@ export default function SeriesClientPage({
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
+  // Fetch series with TanStack Query
+  const { data: seriesData, isLoading } = useQuery({
+    queryKey: queryKeys.series.list({
+      sort: localSort,
+      page: localPage,
+    }),
+    queryFn: async () => {
+      let endpoint;
+      switch (localSort) {
+        case "first_air_date.desc":
+          endpoint = "on_the_air";
+          break;
+        case "vote_average.desc":
+          endpoint = "top_rated";
+          break;
+        case "popularity.desc":
+        default:
+          endpoint = "popular";
+          break;
+      }
+
+      const res = await fetch(
+        `/api/series?endpoint=${endpoint}&page=${localPage}`,
+      );
+
+      if (!res.ok) throw new Error("Failed to fetch series");
+
+      return res.json();
+    },
+    initialData: { results: initialSeries },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const series: SeriesDetails[] = seriesData?.results || initialSeries;
+
   // Filter series by selected genres
   const filteredSeries =
     selectedGenres.length > 0
-      ? series.filter((show) =>
-          show.genre_ids.some((id) => selectedGenres.includes(id))
+      ? series.filter((show: SeriesDetails) =>
+          show.genre_ids.some((id: number) => selectedGenres.includes(id)),
         )
       : series;
 
@@ -64,9 +99,8 @@ export default function SeriesClientPage({
   const updateUrl = (
     sort: string,
     page: number,
-    genreIds: number[] = selectedGenres
+    genreIds: number[] = selectedGenres,
   ) => {
-    setIsLoading(true);
     const params = new URLSearchParams(searchParams.toString());
     params.set("sort", sort);
     params.set("page", page.toString());
@@ -106,44 +140,11 @@ export default function SeriesClientPage({
 
   // Fetch new data when URL parameters change
   useEffect(() => {
-    const fetchSeries = async () => {
-      try {
-        const sort = searchParams.get("sort") || "popularity.desc";
-        const page = parseInt(searchParams.get("page") || "1", 10);
+    const sort = searchParams.get("sort") || "popularity.desc";
+    const page = parseInt(searchParams.get("page") || "1", 10);
 
-        setLocalSort(sort);
-        setLocalPage(page);
-
-        let endpoint;
-        switch (sort) {
-          case "first_air_date.desc":
-            endpoint = "on_the_air";
-            break;
-          case "vote_average.desc":
-            endpoint = "top_rated";
-            break;
-          case "popularity.desc":
-          default:
-            endpoint = "popular";
-            break;
-        }
-
-        const res = await fetch(
-          `/api/series?endpoint=${endpoint}&page=${page}`,
-          { cache: "no-store" }
-        );
-
-        if (!res.ok) throw new Error("Failed to fetch series");
-
-        const data = await res.json();
-        setSeries(data.results);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching series:", error);
-        setIsLoading(false);
-      }
-    };
-    fetchSeries()
+    setLocalSort(sort);
+    setLocalPage(page);
   }, [searchParams]);
 
   useEffect(() => {
@@ -218,7 +219,7 @@ export default function SeriesClientPage({
                   "cursor-pointer",
                   selectedGenres.includes(genre.id)
                     ? "bg-primary text-primary-foreground"
-                    : "hover:bg-accent"
+                    : "hover:bg-accent",
                 )}
                 onClick={() => toggleGenre(genre.id)}
               >
@@ -236,7 +237,7 @@ export default function SeriesClientPage({
       <div
         className={cn(
           "transition-opacity duration-300",
-          isLoading ? "opacity-50" : ""
+          isLoading ? "opacity-50" : "",
         )}
       >
         {filteredSeries.length === 0 ? (

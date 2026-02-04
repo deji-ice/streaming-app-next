@@ -1,4 +1,8 @@
-const TMDB_TOKEN = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+import type { Movie, Series, MovieDetails, SeriesDetails, Genre, Episode } from "@/types";
+import { cachedFetch, cacheKeys } from './tmdb-cache';
+
+// Use server-only token (no NEXT_PUBLIC_ prefix)
+const TMDB_TOKEN = process.env.TMDB_API_KEY || process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
 
 const options = {
@@ -8,8 +12,6 @@ const options = {
     Authorization: `Bearer ${TMDB_TOKEN}`
   }
 };
-
-import type { Movie, Series, MovieDetails, SeriesDetails, Genre, Episode } from "@/types";
 
 interface TMDBResponse<T> {
   results: T[];
@@ -26,56 +28,78 @@ type MediaType = 'movie' | 'tv';
 
 export const tmdb = {
   async getTrending(): Promise<TMDBResponse<Movie>> {
-    const res = await fetch(`${BASE_URL}/trending/movie/week`, options);
-    if (!res.ok) throw new Error('Failed to fetch trending');
-    return res.json();
+    return cachedFetch(
+      cacheKeys.trending(),
+      async () => {
+        const res = await fetch(`${BASE_URL}/trending/movie/week`, options);
+        if (!res.ok) throw new Error('Failed to fetch trending');
+        return res.json();
+      }
+    );
   },
 
   async getPopularMovies(): Promise<TMDBResponse<Movie>> {
-    const res = await fetch(`${BASE_URL}/movie/popular`, options);
-    if (!res.ok) throw new Error('Failed to fetch popular movies');
-    return res.json();
+    return cachedFetch(
+      cacheKeys.popularMovies(),
+      async () => {
+        const res = await fetch(`${BASE_URL}/movie/popular`, options);
+        if (!res.ok) throw new Error('Failed to fetch popular movies');
+        return res.json();
+      }
+    );
   },
 
   async getPopularSeries(): Promise<TMDBResponse<SeriesDetails>> {
-    const res = await fetch(`${BASE_URL}/trending/tv/week`, options);
+    return cachedFetch(
+      cacheKeys.popularSeries(),
+      async () => {
+        // Use append_to_response to get all data in one request (fixes N+1 query problem)
+        const res = await fetch(
+          `${BASE_URL}/trending/tv/week?append_to_response=credits`,
+          options
+        );
 
-    if (!res.ok) throw new Error('Failed to fetch trending series');
+        if (!res.ok) throw new Error('Failed to fetch trending series');
 
-    const popularSeriesResponse: TMDBResponse<SeriesDetails> = await res.json()
-
-    const detailedSeries = await Promise.all(
-      popularSeriesResponse.results.map(series => this.getMediaDetails(String(series.id), "tv"))
-    )
-
-    return {
-      page: popularSeriesResponse.page,
-      total_pages: popularSeriesResponse.total_pages,
-      total_results: popularSeriesResponse.total_results,
-      results: detailedSeries as SeriesDetails[],
-    }
+        const data: TMDBResponse<SeriesDetails> = await res.json();
+        return data;
+      }
+    );
   },
 
   async getMediaDetails(id: string, type: MediaType): Promise<MovieDetails | SeriesDetails> {
-    const res = await fetch(
-      `${BASE_URL}/${type}/${id}?append_to_response=credits`,
-      options
+    const cacheKey = type === 'movie' ? cacheKeys.movieDetails(id) : cacheKeys.seriesDetails(id);
+
+    return cachedFetch(
+      cacheKey,
+      async () => {
+        // Fetch all related data in one request (credits, videos, similar)
+        const res = await fetch(
+          `${BASE_URL}/${type}/${id}?append_to_response=credits,videos,similar`,
+          options
+        );
+        if (!res.ok) throw new Error(`Failed to fetch ${type} details`);
+        return res.json();
+      }
     );
-    if (!res.ok) throw new Error(`Failed to fetch ${type} details`);
-    return res.json();
   },
 
   async searchMulti(query: string): Promise<TMDBResponse<Movie | Series>> {
     try {
-      const res = await fetch(
-        `${BASE_URL}/search/multi?query=${encodeURIComponent(query)}`,
-        options
-      )
-      if (!res.ok) throw new Error("Failed to search")
-      return res.json()
+      return await cachedFetch(
+        cacheKeys.search(query),
+        async () => {
+          const res = await fetch(
+            `${BASE_URL}/search/multi?query=${encodeURIComponent(query)}`,
+            options
+          );
+          if (!res.ok) throw new Error("Failed to search");
+          return res.json();
+        }
+      );
     } catch (error) {
-      console.error("Error:", error)
-      return { results: [], page: 1, total_pages: 0, total_results: 0 }
+      console.error("Error:", error);
+      return { results: [], page: 1, total_pages: 0, total_results: 0 };
     }
   },
 
@@ -84,13 +108,17 @@ export const tmdb = {
     seasonNumber: number
   ): Promise<{ episodes: Episode[] }> {
     try {
-      const res = await fetch(
-        `${BASE_URL}/tv/${seriesId}/season/${seasonNumber}`,
-        options
+      return await cachedFetch(
+        cacheKeys.season(seriesId, seasonNumber),
+        async () => {
+          const res = await fetch(
+            `${BASE_URL}/tv/${seriesId}/season/${seasonNumber}`,
+            options
+          );
+          if (!res.ok) throw new Error('Failed to fetch season details');
+          return res.json();
+        }
       );
-      if (!res.ok) throw new Error('Failed to fetch season details');
-      const data = await res.json();
-      return data;
     } catch (error) {
       console.error('Error fetching season details:', error);
       return { episodes: [] };
@@ -102,13 +130,18 @@ export const tmdb = {
     type: MediaType
   ): Promise<(Movie | SeriesDetails)[]> {
     try {
-      const res = await fetch(
-        `${BASE_URL}/${type}/${id}/recommendations`,
-        options
+      return await cachedFetch(
+        cacheKeys.recommendations(id, type),
+        async () => {
+          const res = await fetch(
+            `${BASE_URL}/${type}/${id}/recommendations`,
+            options
+          );
+          if (!res.ok) throw new Error(`Failed to fetch ${type} recommendations`);
+          const data = await res.json();
+          return data.results.slice(0, 10); // Limit to 10 recommendations
+        }
       );
-      if (!res.ok) throw new Error(`Failed to fetch ${type} recommendations`);
-      const data = await res.json();
-      return data.results.slice(0, 10); // Limit to 10 recommendations
     } catch (error) {
       console.error(`Error fetching ${type} recommendations:`, error);
       return [];
@@ -117,19 +150,24 @@ export const tmdb = {
 
   async getGenres(): Promise<Genre[]> {
     try {
-      const [movieGenres, tvGenres] = await Promise.all([
-        fetch(`${BASE_URL}/genre/movie/list`, options),
-        fetch(`${BASE_URL}/genre/tv/list`, options)
-      ]);
+      return await cachedFetch(
+        cacheKeys.genres(),
+        async () => {
+          const [movieGenres, tvGenres] = await Promise.all([
+            fetch(`${BASE_URL}/genre/movie/list`, options),
+            fetch(`${BASE_URL}/genre/tv/list`, options)
+          ]);
 
-      const movieData = await movieGenres.json();
-      const tvData = await tvGenres.json();
+          const movieData = await movieGenres.json();
+          const tvData = await tvGenres.json();
 
-      // Combine and deduplicate genres
-      const allGenres = [...movieData.genres, ...tvData.genres];
-      const uniqueGenres = Array.from(new Map(allGenres.map(g => [g.id, g])).values());
+          // Combine and deduplicate genres
+          const allGenres = [...movieData.genres, ...tvData.genres];
+          const uniqueGenres = Array.from(new Map(allGenres.map(g => [g.id, g])).values());
 
-      return uniqueGenres;
+          return uniqueGenres;
+        }
+      );
     } catch (error) {
       console.error("Error fetching genres:", error);
       return [];
@@ -138,12 +176,17 @@ export const tmdb = {
 
   async getLatestMovies(sortBy: string = 'release_date.desc'): Promise<TMDBResponse<Movie>> {
     try {
-      const res = await fetch(
-        `${BASE_URL}/movie/now_playing?language=en-US&page=1&sort_by=${sortBy}`,
-        options
+      return await cachedFetch(
+        cacheKeys.latestMovies(sortBy),
+        async () => {
+          const res = await fetch(
+            `${BASE_URL}/movie/now_playing?language=en-US&page=1&sort_by=${sortBy}`,
+            options
+          );
+          if (!res.ok) throw new Error('Failed to fetch now playing movies');
+          return res.json();
+        }
       );
-      if (!res.ok) throw new Error('Failed to fetch now playing movies');
-      return res.json();
     } catch (error) {
       console.error('Error:', error);
       return { results: [], page: 1, total_pages: 0, total_results: 0 };
@@ -153,25 +196,20 @@ export const tmdb = {
   async getLatestSeries(sortBy: string = 'latest_air_date.desc'): Promise<TMDBResponse<SeriesDetails>> {
     const today = new Date().toISOString().slice(0, 10);
     try {
-      // Exclude news (genre ID 10763) and talk shows (genre ID 10767) from results
-      const res = await fetch(
-        `${BASE_URL}/discover/tv?language=en-US&page=1&sort_by=${sortBy}&without_genres=10763,10767,99,10764&first_air_date.lte=${today}`,
-        options
+      return await cachedFetch(
+        cacheKeys.latestSeries(sortBy),
+        async () => {
+          // Exclude news (genre ID 10763) and talk shows (genre ID 10767) from results
+          // Use append_to_response to get credits in one request (fixes N+1 query problem)
+          const res = await fetch(
+            `${BASE_URL}/discover/tv?language=en-US&page=1&sort_by=${sortBy}&without_genres=10763,10767,99,10764&first_air_date.lte=${today}&append_to_response=credits`,
+            options
+          );
+          if (!res.ok) throw new Error('Failed to fetch latest series');
+          const data: TMDBResponse<SeriesDetails> = await res.json();
+          return data;
+        }
       );
-      if (!res.ok) throw new Error('Failed to fetch latest series');
-      const latestSeriesResponse: TMDBResponse<Series> = await res.json()
-
-      const detailedSeries = await Promise.all(
-        latestSeriesResponse.results.map(series => this.getMediaDetails(String(series.id), "tv"))
-      )
-
-      return {
-        page: latestSeriesResponse.page,
-        total_pages: latestSeriesResponse.total_pages,
-        total_results: latestSeriesResponse.total_results,
-        results: detailedSeries as SeriesDetails[],
-      }
-
     } catch (error) {
       console.error('Error:', error);
       return { results: [], page: 1, total_pages: 0, total_results: 0 };
@@ -180,23 +218,28 @@ export const tmdb = {
 
   async getTrailers(id: number, type: MediaType): Promise<string | null> {
     try {
-      const res = await fetch(
-        `${BASE_URL}/${type}/${id}/videos`,
-        options
+      return await cachedFetch(
+        cacheKeys.trailers(id, type),
+        async () => {
+          const res = await fetch(
+            `${BASE_URL}/${type}/${id}/videos`,
+            options
+          );
+
+          if (!res.ok) throw new Error('Failed to fetch trailers');
+
+          const data = await res.json();
+          const trailer = data.results?.find((video: VideoResult) =>
+            video.type === "Trailer" && video.site === "YouTube"
+          );
+
+          if (!trailer) {
+            return null;
+          }
+
+          return `https://www.youtube.com/embed/${trailer.key}`;
+        }
       );
-
-      if (!res.ok) throw new Error('Failed to fetch trailers');
-
-      const data = await res.json();
-      const trailer = data.results?.find((video: VideoResult) =>
-        video.type === "Trailer" && video.site === "YouTube"
-      );
-
-      if (!trailer) {
-        return null;
-      }
-
-      return `https://www.youtube.com/embed/${trailer.key}`;
     } catch (error) {
       console.error('Error fetching trailers:', error);
       return null;

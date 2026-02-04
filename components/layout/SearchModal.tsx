@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import gsap from "gsap";
 import {
   Search,
   X,
@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Movie, Series } from "@/types";
-import { tmdb } from "@/lib/tmdb";
 import Image from "next/image";
 import Link from "next/link";
 import { sluggify, cn } from "@/lib/utils";
@@ -31,29 +30,9 @@ interface SearchModalProps {
 const RECENT_SEARCHES_KEY = "recent-searches";
 const MAX_RECENT_SEARCHES = 5;
 
-// Animation variants
-const backdropVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.2 } },
-  exit: { opacity: 0, transition: { duration: 0.2, delay: 0.1 } },
-};
-
-const modalVariants = {
-  hidden: { y: -20, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.3 } },
-  exit: { y: -20, opacity: 0, transition: { duration: 0.2 } },
-};
-
-const resultItemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.05, duration: 0.3 },
-  }),
-};
-
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<(Movie | Series)[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +40,43 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const debouncedQuery = useDebounce(query, 400);
+
+  // GSAP modal animations
+  useEffect(() => {
+    if (isOpen && backdropRef.current && modalRef.current) {
+      // Entrance animation
+      gsap.fromTo(
+        backdropRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.2, ease: "power2.out" },
+      );
+      gsap.fromTo(
+        modalRef.current,
+        { y: -20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" },
+      );
+    }
+  }, [isOpen]);
+
+  const handleClose = () => {
+    if (backdropRef.current && modalRef.current) {
+      // Exit animation
+      const tl = gsap.timeline({ onComplete: onClose });
+      tl.to(modalRef.current, {
+        y: -20,
+        opacity: 0,
+        duration: 0.2,
+        ease: "power2.in",
+      });
+      tl.to(
+        backdropRef.current,
+        { opacity: 0, duration: 0.2, ease: "power2.in" },
+        "-=0.1",
+      );
+    } else {
+      onClose();
+    }
+  };
 
   // Load recent searches on mount
   useEffect(() => {
@@ -103,19 +119,26 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   useEffect(() => {
     if (debouncedQuery.length > 2) {
       setIsLoading(true);
-      tmdb
-        .searchMulti(debouncedQuery)
+      // Use API route instead of direct TMDB client call
+      fetch(`/api/search?q=${encodeURIComponent(debouncedQuery)}`)
+        .then((res) => res.json())
         .then((data) => {
-          const filteredResults = data.results.filter((item) => {
-            const isMovie = "title" in item;
-            const isSeries = "name" in item;
+          const filteredResults = data.results.filter(
+            (item: Movie | Series) => {
+              const isMovie = "title" in item;
+              const isSeries = "name" in item;
 
-            if (tabIndex === 1) return isMovie;
-            if (tabIndex === 2) return isSeries;
-            return true; // All results for index 0
-          });
+              if (tabIndex === 1) return isMovie;
+              if (tabIndex === 2) return isSeries;
+              return true; // All results for index 0
+            },
+          );
 
           setResults(filteredResults);
+        })
+        .catch((error) => {
+          console.error("Search error:", error);
+          setResults([]);
         })
         .finally(() => setIsLoading(false));
     } else {
@@ -153,7 +176,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   // Close on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") handleClose();
     };
 
     if (isOpen && searchInputRef.current) {
@@ -163,6 +186,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onClose, isOpen]);
 
   const handleItemClick = () => {
@@ -171,24 +195,18 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   };
 
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
-        <motion.div
-          variants={backdropVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
+        <div
+          ref={backdropRef}
           className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
           onClick={(e) => {
-            if (e.target === e.currentTarget) onClose();
+            if (e.target === e.currentTarget) handleClose();
           }}
         >
           <div className="container mx-auto max-w-3xl px-2 sm:px-4">
-            <motion.div
-              variants={modalVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
+            <div
+              ref={modalRef}
               className="mt-12 sm:mt-16 md:mt-20 bg-card/90 backdrop-blur-md rounded-xl sm:rounded-2xl overflow-hidden border shadow-xl"
             >
               {/* Header section */}
@@ -199,7 +217,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       "w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 transition-all",
                       isLoading
                         ? "text-primary animate-pulse"
-                        : "text-muted-foreground"
+                        : "text-muted-foreground",
                     )}
                   />
                   <input
@@ -290,127 +308,129 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 {/* Results */}
                 {!isLoading && (
                   <div className="divide-y divide-border/30">
-                    <AnimatePresence mode="wait">
-                      {results.map((item, i) => {
-                        const title = "title" in item ? item.title : item.name;
-                        const type = "title" in item ? "movie" : "series";
-                        const releaseDate =
-                          "release_date" in item
-                            ? item.release_date
-                            : item.first_air_date;
-                        const year = releaseDate
-                          ? new Date(releaseDate).getFullYear()
-                          : null;
-                        const rating = item.vote_average
-                          ? Math.round(item.vote_average * 10) / 10
-                          : null;
-                        const slug = `${sluggify(title)}-${item.id}`;
-                        const posterPath =
-                          item.poster_path || "/placeholder-poster.jpg";
+                    {results.map((item, i) => {
+                      const title = "title" in item ? item.title : item.name;
+                      const type = "title" in item ? "movie" : "series";
+                      const releaseDate =
+                        "release_date" in item
+                          ? item.release_date
+                          : item.first_air_date;
+                      const year = releaseDate
+                        ? new Date(releaseDate).getFullYear()
+                        : null;
+                      const rating = item.vote_average
+                        ? Math.round(item.vote_average * 10) / 10
+                        : null;
+                      const slug = `${sluggify(title)}-${item.id}`;
+                      const posterPath =
+                        item.poster_path || "/placeholder-poster.jpg";
 
-                        return (
-                          <motion.div
-                            key={item.id}
-                            custom={i}
-                            variants={resultItemVariants}
-                            initial="hidden"
-                            animate="visible"
+                      return (
+                        <div
+                          key={item.id}
+                          ref={(el) => {
+                            if (el && i < 10) {
+                              gsap.fromTo(
+                                el,
+                                { opacity: 0, y: 10 },
+                                {
+                                  opacity: 1,
+                                  y: 0,
+                                  duration: 0.3,
+                                  delay: i * 0.05,
+                                  ease: "power2.out",
+                                },
+                              );
+                            }
+                          }}
+                        >
+                          <Link
+                            href={`/${type}/${slug}`}
+                            onClick={handleItemClick}
+                            className="flex items-center gap-3 sm:gap-4 p-2 sm:p-3 hover:bg-accent/30 transition-colors group"
                           >
-                            <Link
-                              href={`/${type}/${slug}`}
-                              onClick={handleItemClick}
-                              className="flex items-center gap-3 sm:gap-4 p-2 sm:p-3 hover:bg-accent/30 transition-colors group"
-                            >
-                              <div className="relative overflow-hidden rounded-md">
-                                <Image
-                                  src={`https://image.tmdb.org/t/p/w92${posterPath}`}
-                                  alt={title}
-                                  width={40}
-                                  height={60}
-                                  className="group-hover:scale-105 transition-transform duration-300 object-cover sm:w-[48px] sm:h-[72px]"
-                                />
-                                <div className="absolute top-0 right-0 bottom-0 left-0 bg-gradient-to-b from-transparent to-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-1">
-                                  <div className="text-white text-[10px] sm:text-xs font-medium">
-                                    View
-                                  </div>
+                            <div className="relative overflow-hidden rounded-md">
+                              <Image
+                                src={`https://image.tmdb.org/t/p/w92${posterPath}`}
+                                alt={title}
+                                width={40}
+                                height={60}
+                                className="group-hover:scale-105 transition-transform duration-300 object-cover sm:w-[48px] sm:h-[72px]"
+                              />
+                              <div className="absolute top-0 right-0 bottom-0 left-0 bg-gradient-to-b from-transparent to-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-1">
+                                <div className="text-white text-[10px] sm:text-xs font-medium">
+                                  View
                                 </div>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <h3 className="font-montserrat font-semibold group-hover:text-primary transition-colors truncate text-sm sm:text-base">
-                                  {title}
-                                </h3>
-                                <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
-                                  {type === "movie" ? (
-                                    <span className="flex items-center gap-0.5 sm:gap-1">
-                                      <Film className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{" "}
-                                      Movie
-                                    </span>
-                                  ) : (
-                                    <span className="flex items-center gap-0.5 sm:gap-1">
-                                      <Tv className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{" "}
-                                      Series
-                                    </span>
-                                  )}
-                                  {year && (
-                                    <>
-                                      <span className="text-muted-foreground/50">
-                                        •
-                                      </span>
-                                      <span className="flex items-center gap-0.5 sm:gap-1">
-                                        <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{" "}
-                                        {year}
-                                      </span>
-                                    </>
-                                  )}
-                                  {rating && (
-                                    <>
-                                      <span className="text-muted-foreground/50">
-                                        •
-                                      </span>
-                                      <span className="flex items-center gap-0.5 sm:gap-1">
-                                        <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500" />{" "}
-                                        {rating}
-                                      </span>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                              {item?.popularity > 50 && (
-                                <Badge
-                                  variant="outline"
-                                  className="bg-primary/10 text-primary text-[10px] sm:text-xs hidden xs:inline-flex"
-                                >
-                                  <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />{" "}
-                                  Trending
-                                </Badge>
-                              )}
-                            </Link>
-                          </motion.div>
-                        );
-                      })}
-
-                      {query.length > 2 &&
-                        results.length === 0 &&
-                        !isLoading && (
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="py-10 sm:py-16 text-center"
-                          >
-                            <div className="bg-muted/30 rounded-full w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                              <Search className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground/50" />
                             </div>
-                            <h3 className="text-base sm:text-lg font-montserrat font-medium mb-1">
-                              No results found
-                            </h3>
-                            <p className="text-xs sm:text-sm text-muted-foreground px-4">
-                              Try adjusting your search or filter to find what
-                              you&apos;re looking for
-                            </p>
-                          </motion.div>
-                        )}
-                    </AnimatePresence>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-montserrat font-semibold group-hover:text-primary transition-colors truncate text-sm sm:text-base">
+                                {title}
+                              </h3>
+                              <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
+                                {type === "movie" ? (
+                                  <span className="flex items-center gap-0.5 sm:gap-1">
+                                    <Film className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{" "}
+                                    Movie
+                                  </span>
+                                ) : (
+                                  <span className="flex items-center gap-0.5 sm:gap-1">
+                                    <Tv className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{" "}
+                                    Series
+                                  </span>
+                                )}
+                                {year && (
+                                  <>
+                                    <span className="text-muted-foreground/50">
+                                      •
+                                    </span>
+                                    <span className="flex items-center gap-0.5 sm:gap-1">
+                                      <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{" "}
+                                      {year}
+                                    </span>
+                                  </>
+                                )}
+                                {rating && (
+                                  <>
+                                    <span className="text-muted-foreground/50">
+                                      •
+                                    </span>
+                                    <span className="flex items-center gap-0.5 sm:gap-1">
+                                      <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500" />{" "}
+                                      {rating}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                            {item?.popularity > 50 && (
+                              <Badge
+                                variant="outline"
+                                className="bg-primary/10 text-primary text-[10px] sm:text-xs hidden xs:inline-flex"
+                              >
+                                <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />{" "}
+                                Trending
+                              </Badge>
+                            )}
+                          </Link>
+                        </div>
+                      );
+                    })}
+
+                    {query.length > 2 && results.length === 0 && !isLoading && (
+                      <div className="py-10 sm:py-16 text-center">
+                        <div className="bg-muted/30 rounded-full w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                          <Search className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground/50" />
+                        </div>
+                        <h3 className="text-base sm:text-lg font-montserrat font-medium mb-1">
+                          No results found
+                        </h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground px-4">
+                          Try adjusting your search or filter to find what
+                          you&apos;re looking for
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -423,16 +443,16 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={onClose}
+                  onClick={handleClose}
                   className="h-7 sm:h-8 text-xs sm:text-sm"
                 >
                   Close
                 </Button>
               </div>
-            </motion.div>
+            </div>
           </div>
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }

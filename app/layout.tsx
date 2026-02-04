@@ -168,7 +168,7 @@ export default function RootLayout({
           >
             <AdBlockBanner />
             <Navbar />
-            <main id="main-content" className="min-h-screen">
+            <main id="main-content" className="min-h-screen font-montserrat ">
               {children}
             </main>
             <Footer />
