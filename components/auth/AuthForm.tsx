@@ -41,6 +41,12 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         if (signUpError) throw signUpError;
 
         if (data.user) {
+          // Create profile immediately after signup
+          console.log(
+            "[AuthForm] Creating profile after signup for user:",
+            data.user.id,
+          );
+          await createProfileForUser(data.user.id, email, name);
           setError("Check your email to confirm your account!");
           setTimeout(() => {
             setMode("signin");
@@ -56,9 +62,21 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
 
         if (signInError) throw signInError;
 
+        // Get the session and create profile
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
+        if (session?.user) {
+          console.log(
+            "[AuthForm] Creating profile after signin for user:",
+            session.user.id,
+          );
+          await createProfileForUser(session.user.id, email, name);
+        }
+
         onSuccess?.();
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const message = err?.message || "An error occurred";
       if (message.includes("not configured")) {
@@ -70,6 +88,40 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createProfileForUser = async (
+    userId: string,
+    userEmail: string,
+    userName: string,
+  ) => {
+    try {
+      console.log("[AuthForm] Attempting to create profile...");
+      const { error } = await supabase
+        .from("profiles")
+        .insert([
+          {
+            id: userId,
+            email: userEmail,
+            full_name: userName || userEmail.split("@")[0],
+            avatar_url: null,
+          },
+        ])
+        .select();
+
+      if (error) {
+        // Ignore "duplicate key" errors - profile already exists
+        if (error.code === "23505") {
+          console.log("[AuthForm] Profile already exists");
+          return;
+        }
+        throw error;
+      }
+      console.log("[AuthForm] Profile created successfully");
+    } catch (err: any) {
+      console.error("[AuthForm] Error creating profile:", err?.message);
+      // Don't throw - profile creation is not critical for auth to work
     }
   };
 
@@ -86,6 +138,11 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       });
 
       if (error) throw error;
+      console.log(
+        "[AuthForm] OAuth redirect initiated for provider:",
+        provider,
+      );
+      // OAuth will redirect, profile creation happens in callback
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const message = err?.message || "An error occurred";
@@ -140,7 +197,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
           <Chrome className="w-4 h-4" />
           Continue with Google
         </Button>
-        <Button
+        {/* <Button
           type="button"
           variant="outline"
           className="w-full gap-2 bg-white/5 hover:bg-white/10 border-white/10 backdrop-blur-sm"
@@ -149,7 +206,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         >
           <Github className="w-4 h-4" />
           Continue with GitHub
-        </Button>
+        </Button> */}
       </div>
 
       {/* Divider */}

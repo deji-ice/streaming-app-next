@@ -21,6 +21,7 @@ import {
 import { useState } from "react";
 import { SearchModal } from "./SearchModal";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { UserProfileDropdown } from "./UserProfileDropdown";
 import { cn } from "@/lib/utils";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -161,16 +162,12 @@ export default function Navbar() {
                 <Search className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
-              <button
-                onClick={() => setAuthModalOpen(true)}
-                className={cn(
-                  "p-1.5 sm:p-2 hover:bg-white/10 md:block hidden rounded-full",
-                  scrolled ? "text-slate-900 dark:text-white" : "text-white",
-                )}
-                aria-label="Sign in"
-              >
-                <User className="h-4 w-4 sm:h-5 sm:w-5" />
-              </button>
+              <div className="md:block hidden">
+                <UserProfileDropdown
+                  scrolled={scrolled}
+                  onAuthModalOpen={() => setAuthModalOpen(true)}
+                />
+              </div>
 
               {/* Mobile menu button */}
               <button
@@ -282,6 +279,15 @@ export default function Navbar() {
               </nav>
 
               <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t">
+                <div className="mb-4">
+                  <UserProfileDropdown
+                    scrolled={true}
+                    onAuthModalOpen={() => {
+                      setMobileMenuOpen(false);
+                      setAuthModalOpen(true);
+                    }}
+                  />
+                </div>
                 <div className="flex justify-between items-center px-3 sm:px-4">
                   <span className="font-medium text-sm sm:text-base">
                     Theme

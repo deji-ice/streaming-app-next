@@ -30,7 +30,36 @@ export async function GET(request: Request) {
                 },
             }
         );
-        await supabase.auth.exchangeCodeForSession(code);
+        const { data } = await supabase.auth.exchangeCodeForSession(code);
+
+        // Create profile for OAuth user if it doesn't exist
+        if (data.user) {
+            console.log('[OAuth callback] Creating profile for user:', data.user.id);
+            const email = data.user.email!;
+            const fullName = data.user.user_metadata?.full_name || email.split('@')[0];
+            const avatarUrl = data.user.user_metadata?.avatar_url || null;
+
+            const { error } = await supabase
+                .from('profiles')
+                .insert([
+                    {
+                        id: data.user.id,
+                        email,
+                        full_name: fullName,
+                        avatar_url: avatarUrl,
+                    },
+                ])
+                .select();
+
+            if (error?.code === '23505') {
+                // Duplicate key - profile already exists
+                console.log('[OAuth callback] Profile already exists');
+            } else if (error) {
+                console.error('[OAuth callback] Error creating profile:', error.message);
+            } else {
+                console.log('[OAuth callback] Profile created successfully');
+            }
+        }
     }
 
     // URL to redirect to after sign in process completes
