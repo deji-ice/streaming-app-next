@@ -32,25 +32,20 @@ export function useAuthUser() {
             setStatus(session ? 'authenticated' : 'unauthenticated');
 
             if (session?.user?.id) {
-                console.log('[useAuthUser] Initializing profile for user:', session.user.id);
+              
                 // Ensure profile exists
                 try {
                     const response = await fetch('/api/user/init', {
                         method: 'POST',
                     });
                     const responseData = await response.json();
-                    console.log('[useAuthUser] /api/user/init response:', {
-                        status: response.status,
-                        message: responseData.message,
-                    });
                 } catch (error) {
                     console.error('[useAuthUser] Error initializing profile:', error);
                 }
                 // Then fetch user profile
-                console.log('[useAuthUser] Fetching user profile...');
                 fetchUser(session.user.id);
             } else if (!session) {
-                console.log('[useAuthUser] No session, logging out');
+                
                 logout();
             }
         };
@@ -59,35 +54,24 @@ export function useAuthUser() {
 
         const { data: authListener } = supabase.auth.onAuthStateChange(
             async (_event: AuthChangeEvent, newSession: Session | null) => {
-                console.log('[useAuthUser] Auth state changed:', {
-                    event: _event,
-                    isAuthenticated: !!newSession,
-                    userId: newSession?.user?.id,
-                });
-
                 setSession(newSession);
                 setStatus(newSession ? 'authenticated' : 'unauthenticated');
 
                 if (newSession?.user?.id) {
-                    console.log('[useAuthUser] Initializing profile after auth change:', newSession.user.id);
                     // Ensure profile exists
                     try {
                         const response = await fetch('/api/user/init', {
                             method: 'POST',
                         });
-                        const responseData = await response.json();
-                        console.log('[useAuthUser] /api/user/init response:', {
-                            status: response.status,
-                            message: responseData.message,
-                        });
+                        if (!response.ok) {
+                            console.warn('Failed to initialize profile');
+                        }
                     } catch (error) {
-                        console.error('[useAuthUser] Error initializing profile:', error);
+                        console.error('Error initializing profile:', error);
                     }
                     // Then fetch user profile
-                    console.log('[useAuthUser] Fetching user profile...');
                     fetchUser(newSession.user.id);
                 } else if (!newSession) {
-                    console.log('[useAuthUser] User logged out');
                     logout();
                 }
             }

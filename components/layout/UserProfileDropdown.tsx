@@ -20,7 +20,6 @@ export function UserProfileDropdown({
 }: UserProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAuthenticated, isLoading } = useUser();
-  console.log("user", user);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

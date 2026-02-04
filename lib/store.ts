@@ -38,7 +38,7 @@ export const useUserStore = create<UserStore>((set) => ({
     fetchUser: async (userId: string) => {
         set({ isLoading: true, error: null });
         try {
-            console.log('[fetchUser] Fetching profile for user:', userId);
+            
             const { data, error } = await supabase
                 .from('profiles')
                 .select('id, email, full_name, avatar_url, created_at, updated_at')
@@ -50,11 +50,6 @@ export const useUserStore = create<UserStore>((set) => ({
                 throw error;
             }
 
-            console.log('[fetchUser] Profile fetched successfully:', {
-                id: data.id,
-                email: data.email,
-                name: data.full_name,
-            });
 
             // Map Supabase columns to app interface
             const profile: UserProfile = {

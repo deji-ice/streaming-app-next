@@ -41,11 +41,6 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         if (signUpError) throw signUpError;
 
         if (data.user) {
-          // Create profile immediately after signup
-          console.log(
-            "[AuthForm] Creating profile after signup for user:",
-            data.user.id,
-          );
           await createProfileForUser(data.user.id, email, name);
           setError("Check your email to confirm your account!");
           setTimeout(() => {
@@ -68,10 +63,6 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
           error: sessionError,
         } = await supabase.auth.getSession();
         if (session?.user) {
-          console.log(
-            "[AuthForm] Creating profile after signin for user:",
-            session.user.id,
-          );
           await createProfileForUser(session.user.id, email, name);
         }
 
@@ -97,7 +88,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
     userName: string,
   ) => {
     try {
-      console.log("[AuthForm] Attempting to create profile...");
+    
       const { error } = await supabase
         .from("profiles")
         .insert([
@@ -113,12 +104,10 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       if (error) {
         // Ignore "duplicate key" errors - profile already exists
         if (error.code === "23505") {
-          console.log("[AuthForm] Profile already exists");
           return;
         }
         throw error;
-      }
-      console.log("[AuthForm] Profile created successfully");
+      } 
     } catch (err: any) {
       console.error("[AuthForm] Error creating profile:", err?.message);
       // Don't throw - profile creation is not critical for auth to work

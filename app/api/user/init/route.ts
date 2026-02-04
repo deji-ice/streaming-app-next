@@ -38,14 +38,14 @@ export async function POST() {
         }
 
         if (!session?.user) {
-            console.log('[/api/user/init] No session - profiles created client-side');
+        
             return NextResponse.json(
                 { message: "No session - profile creation handled on client" },
                 { status: 200 }
             );
         }
 
-        console.log('[/api/user/init] Session found, verifying profile for user:', session.user.id);
+
 
         // Verify profile exists (created by client-side code)
         const { data: profile, error: profileError } = await supabase
@@ -55,8 +55,7 @@ export async function POST() {
             .maybeSingle();
 
         if (profile) {
-            console.log('[/api/user/init] Profile verified');
-            return NextResponse.json({ message: "Profile exists" }, { status: 200 });
+        return NextResponse.json({ message: "Profile exists" }, { status: 200 });
         }
 
         if (profileError) {

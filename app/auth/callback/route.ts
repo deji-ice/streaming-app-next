@@ -34,7 +34,6 @@ export async function GET(request: Request) {
 
         // Create profile for OAuth user if it doesn't exist
         if (data.user) {
-            console.log('[OAuth callback] Creating profile for user:', data.user.id);
             const email = data.user.email!;
             const fullName = data.user.user_metadata?.full_name || email.split('@')[0];
             const avatarUrl = data.user.user_metadata?.avatar_url || null;
@@ -56,8 +55,6 @@ export async function GET(request: Request) {
                 console.log('[OAuth callback] Profile already exists');
             } else if (error) {
                 console.error('[OAuth callback] Error creating profile:', error.message);
-            } else {
-                console.log('[OAuth callback] Profile created successfully');
             }
         }
     }
