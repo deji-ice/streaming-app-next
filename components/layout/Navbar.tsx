@@ -45,7 +45,7 @@ export default function Navbar() {
 
     if (mobileMenuOpen) {
       // Animate in
-      gsap.set(mobileMenuRef.current, { display: "fixed" });
+      gsap.set(mobileMenuRef.current, { display: "block" });
       gsap.to(mobileMenuRef.current, {
         opacity: 1,
         duration: 0.3,
@@ -79,9 +79,11 @@ export default function Navbar() {
   }, [mobileMenuOpen]);
 
   // Close mobile menu when screen size becomes desktop
-  if (isDesktop && mobileMenuOpen) {
-    setMobileMenuOpen(false);
-  }
+  useEffect(() => {
+    if (isDesktop && mobileMenuOpen) {
+      setMobileMenuOpen(false);
+    }
+  }, [isDesktop, mobileMenuOpen]);
 
   return (
     <>
