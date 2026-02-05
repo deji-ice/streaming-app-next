@@ -14,15 +14,19 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-          "max-w-sm border-white/10",
+          "max-w-sm p-0 overflow-hidden border-0",
           // Glassmorphism effect
-          "bg-gradient-to-br from-background/15 via-background/10 to-background/25",
-          "backdrop-blur-xl",
-          "shadow-2xl shadow-primary/5",
-          // Subtle border glow
-          "before:absolute before:inset-0 before:rounded-lg before:p-[1px]",
-          "before:bg-gradient-to-br before:from-white/20 before:via-white/5 before:to-white/20",
-          "before:-z-10 before:blur-sm",
+          "bg-white/70 dark:bg-gray-900/70",
+          "backdrop-blur-2xl backdrop-saturate-150",
+          // Border with gradient
+          "ring-1 ring-white/20 dark:ring-white/10",
+          // Shadows for depth
+          "shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
+          // Inner glow
+          "before:absolute before:inset-0 before:rounded-lg before:bg-gradient-to-br",
+          "before:from-white/40 before:via-transparent before:to-transparent",
+          "before:dark:from-white/10 before:dark:via-transparent before:dark:to-transparent",
+          "before:pointer-events-none",
           // Animation
           "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
           "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
@@ -31,7 +35,11 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         <DialogHeader className="sr-only">
           <span>Authentication</span>
         </DialogHeader>
-        <AuthForm onSuccess={onClose} />
+
+        {/* Content wrapper with padding */}
+        <div className="relative z-10 p-6">
+          <AuthForm onSuccess={onClose} />
+        </div>
       </DialogContent>
     </Dialog>
   );
