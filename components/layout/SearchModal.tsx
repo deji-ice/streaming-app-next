@@ -11,6 +11,7 @@ import {
   Clock,
   TrendingUp,
   History,
+  Command,
 } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Movie, Series } from "@/types";
@@ -20,7 +21,6 @@ import { sluggify, cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -30,13 +30,15 @@ interface SearchModalProps {
 const RECENT_SEARCHES_KEY = "recent-searches";
 const MAX_RECENT_SEARCHES = 5;
 
+type FilterTab = "all" | "movies" | "series";
+
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const backdropRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<(Movie | Series)[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [tabIndex, setTabIndex] = useState(0); // 0: All, 1: Movies, 2: Series
+  const [activeTab, setActiveTab] = useState<FilterTab>("all");
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const debouncedQuery = useDebounce(query, 400);
@@ -52,8 +54,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       );
       gsap.fromTo(
         modalRef.current,
-        { y: -20, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" },
+        { scale: 0.95, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.2, ease: "power2.out" },
       );
     }
   }, [isOpen]);
@@ -63,14 +65,14 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       // Exit animation
       const tl = gsap.timeline({ onComplete: onClose });
       tl.to(modalRef.current, {
-        y: -20,
+        scale: 0.95,
         opacity: 0,
-        duration: 0.2,
+        duration: 0.15,
         ease: "power2.in",
       });
       tl.to(
         backdropRef.current,
-        { opacity: 0, duration: 0.2, ease: "power2.in" },
+        { opacity: 0, duration: 0.15, ease: "power2.in" },
         "-=0.1",
       );
     } else {
@@ -128,9 +130,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               const isMovie = "title" in item;
               const isSeries = "name" in item;
 
-              if (tabIndex === 1) return isMovie;
-              if (tabIndex === 2) return isSeries;
-              return true; // All results for index 0
+              if (activeTab === "movies") return isMovie;
+              if (activeTab === "series") return isSeries;
+              return true; // All results
             },
           );
 
@@ -144,7 +146,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     } else {
       setResults([]);
     }
-  }, [debouncedQuery, tabIndex]);
+  }, [debouncedQuery, activeTab]);
 
   // Prevent body scrolling when modal is open
   useEffect(() => {
@@ -194,90 +196,84 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     onClose();
   };
 
+  // Get filtered counts
+  const movieCount = results.filter((item) => "title" in item).length;
+  const seriesCount = results.filter((item) => "name" in item).length;
+
   return (
     <>
       {isOpen && (
         <div
           ref={backdropRef}
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
+          className="fixed inset-0 bg-background/80 font-montserrat backdrop-blur-sm z-50"
           onClick={(e) => {
             if (e.target === e.currentTarget) handleClose();
           }}
         >
-          <div className="container mx-auto max-w-3xl px-2 sm:px-4">
+          <div className="container mx-auto max-w-2xl px-4 pt-20">
             <div
               ref={modalRef}
-              className="mt-12 sm:mt-16 md:mt-20 bg-card/90 backdrop-blur-md rounded-xl sm:rounded-2xl overflow-hidden border shadow-xl"
+              className="bg-card rounded-2xl shadow-2xl overflow-hidden"
             >
-              {/* Header section */}
-              <div className="p-3 sm:p-4 md:p-6 pb-2 sm:pb-3 md:pb-4 border-b">
-                <div className="relative flex items-center gap-2 sm:gap-3 rounded-full bg-muted/50 px-3 sm:px-4 py-1.5 sm:py-2 ring-1 ring-border">
-                  <Search
-                    className={cn(
-                      "w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 transition-all",
-                      isLoading
-                        ? "text-primary animate-pulse"
-                        : "text-muted-foreground",
-                    )}
-                  />
-                  <input
-                    ref={searchInputRef}
-                    type="search"
-                    placeholder="Search for movies, TV shows, and more..."
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    className="w-full bg-transparent border-none outline-none text-sm sm:text-base md:text-lg"
-                  />
-                  {query && (
-                    <button
-                      onClick={() => setQuery("")}
-                      className="p-1 hover:bg-accent rounded-full"
-                      aria-label="Clear search"
-                    >
-                      <X className="w-3 h-3 sm:w-4 sm:h-4" />
-                    </button>
+              {/* Search Input */}
+              <div className="flex items-center gap-3 px-5 py-2 border-b">
+                <Search
+                  className={cn(
+                    "w-5 h-5 flex-shrink-0 transition-all",
+                    isLoading
+                      ? "text-primary animate-pulse"
+                      : "text-muted-foreground",
                   )}
-                </div>
-
-                {/* Tabs */}
-                <Tabs
-                  value={String(tabIndex)}
-                  onValueChange={(value) => setTabIndex(Number(value))}
-                  className="mt-3 sm:mt-4"
-                >
-                  <TabsList className="h-8 sm:h-9 text-xs sm:text-sm">
-                    <TabsTrigger value="0">All</TabsTrigger>
-                    <TabsTrigger value="1">Movies</TabsTrigger>
-                    <TabsTrigger value="2">Series</TabsTrigger>
-                  </TabsList>
-                </Tabs>
+                />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="What do you want to watch today?"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="w-full bg-transparent border-none  focus:ring-0  placeholder:border-none focus:outline-none text-base placeholder:text-muted-foreground"
+                  autoComplete="off"
+                />
+                {query ? (
+                  <button
+                    onClick={() => setQuery("")}
+                    className="p-1.5 hover:bg-accent rounded-full transition-colors"
+                    aria-label="Clear search"
+                  >
+                    <X className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                ) : (
+                  <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground bg-muted rounded border">
+                    <Command className="w-3 h-3" />K
+                  </kbd>
+                )}
               </div>
 
-              {/* Results section */}
-              <div className="p-2 max-h-[50vh] sm:max-h-[55vh] md:max-h-[60vh] overflow-y-auto">
-                {/* Recent searches section */}
-                {query.length === 0 && recentSearches.length > 0 && (
-                  <div className="mb-3 sm:mb-4 p-2 sm:p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground flex items-center gap-1.5 sm:gap-2">
-                        <History className="w-3 h-3 sm:w-4 sm:h-4" /> Recent
-                        Searches
+              {/* Content Area */}
+              <div className="max-h-[60vh] overflow-y-auto">
+                {/* Recent Searches - Show when no query */}
+                {!query && recentSearches.length > 0 && (
+                  <div className="p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                        <History className="w-4 h-4" />
+                        Recent Searches
                       </h3>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={clearRecentSearches}
-                        className="text-xs h-7 sm:h-8"
+                        className="text-xs h-7"
                       >
                         Clear All
                       </Button>
                     </div>
-                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {recentSearches.map((term) => (
                         <Badge
                           key={term}
                           variant="outline"
-                          className="cursor-pointer hover:bg-accent transition-colors text-xs"
+                          className="cursor-pointer hover:bg-accent transition-colors"
                           onClick={() => applySearchTerm(term)}
                         >
                           {term}
@@ -287,18 +283,54 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   </div>
                 )}
 
-                {/* Loading state */}
-                {isLoading && (
-                  <div className="space-y-2 sm:space-y-3 p-2">
+                {/* Filter Tabs - Show when there's a query */}
+                {query && (
+                  <div className="px-5 pt-4 pb-3 flex gap-2 border-b">
+                    <button
+                      onClick={() => setActiveTab("all")}
+                      className={cn(
+                        "px-3 py-0.5 rounded-full text-sm font-medium transition-colors",
+                        activeTab === "all"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted/50 text-muted-foreground hover:bg-muted",
+                      )}
+                    >
+                      All
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("movies")}
+                      className={cn(
+                        "px-3 py-0.5 rounded-full text-sm font-medium transition-colors",
+                        activeTab === "movies"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted/50 text-muted-foreground hover:bg-muted",
+                      )}
+                    >
+                      Movies {movieCount > 0 && `(${movieCount})`}
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("series")}
+                      className={cn(
+                        "px-3 py-0.5 rounded-full text-sm font-medium transition-colors",
+                        activeTab === "series"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted/50 text-muted-foreground hover:bg-muted",
+                      )}
+                    >
+                      Series {seriesCount > 0 && `(${seriesCount})`}
+                    </button>
+                  </div>
+                )}
+
+                {/* Loading State */}
+                {isLoading && query && (
+                  <div className="px-5 py-3 space-y-3">
                     {[...Array(5)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3 sm:gap-4 p-2 sm:p-3"
-                      >
-                        <Skeleton className="w-10 h-14 sm:w-12 sm:h-16 rounded" />
-                        <div className="space-y-1.5 sm:space-y-2">
-                          <Skeleton className="h-3 sm:h-4 w-28 sm:w-40" />
-                          <Skeleton className="h-2 sm:h-3 w-16 sm:w-20" />
+                      <div key={i} className="flex items-center gap-3">
+                        <Skeleton className="w-12 h-16 rounded" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-40" />
+                          <Skeleton className="h-3 w-24" />
                         </div>
                       </div>
                     ))}
@@ -306,148 +338,96 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 )}
 
                 {/* Results */}
-                {!isLoading && (
-                  <div className="divide-y divide-border/30">
-                    {results.map((item, i) => {
-                      const title = "title" in item ? item.title : item.name;
-                      const type = "title" in item ? "movie" : "series";
-                      const releaseDate =
-                        "release_date" in item
-                          ? item.release_date
-                          : item.first_air_date;
-                      const year = releaseDate
-                        ? new Date(releaseDate).getFullYear()
-                        : null;
-                      const rating = item.vote_average
-                        ? Math.round(item.vote_average * 10) / 10
-                        : null;
-                      const slug = `${sluggify(title)}-${item.id}`;
-                      const posterPath =
-                        item.poster_path || "/placeholder-poster.jpg";
+                {!isLoading && query && (
+                  <>
+                    {results.length > 0 ? (
+                      <div className="pb-3">
+                        {results.map((item) => {
+                          const isMovie = "title" in item;
+                          const title = isMovie
+                            ? item.title
+                            : (item as Series).name;
+                          const releaseDate = isMovie
+                            ? (item as Movie).release_date
+                            : (item as Series).first_air_date;
+                          const year = releaseDate
+                            ? new Date(releaseDate).getFullYear()
+                            : null;
+                          const rating = item.vote_average
+                            ? Math.round(item.vote_average * 10) / 10
+                            : null;
+                          const slug = `${sluggify(title)}-${item.id}`;
+                          const posterPath =
+                            item.poster_path || "/placeholder-poster.jpg";
+                          const href = isMovie
+                            ? `/movie/${slug}`
+                            : `/series/${slug}`;
 
-                      return (
-                        <div
-                          key={item.id}
-                          ref={(el) => {
-                            if (el && i < 10) {
-                              gsap.fromTo(
-                                el,
-                                { opacity: 0, y: 10 },
-                                {
-                                  opacity: 1,
-                                  y: 0,
-                                  duration: 0.3,
-                                  delay: i * 0.05,
-                                  ease: "power2.out",
-                                },
-                              );
-                            }
-                          }}
-                        >
-                          <Link
-                            href={`/${type}/${slug}`}
-                            onClick={handleItemClick}
-                            className="flex items-center gap-3 sm:gap-4 p-2 sm:p-3 hover:bg-accent/30 transition-colors group"
-                          >
-                            <div className="relative overflow-hidden rounded-md">
-                              <Image
-                                src={`https://image.tmdb.org/t/p/w92${posterPath}`}
-                                alt={title}
-                                width={40}
-                                height={60}
-                                className="group-hover:scale-105 transition-transform duration-300 object-cover sm:w-[48px] sm:h-[72px]"
-                              />
-                              <div className="absolute top-0 right-0 bottom-0 left-0 bg-gradient-to-b from-transparent to-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-1">
-                                <div className="text-white text-[10px] sm:text-xs font-medium">
-                                  View
+                          return (
+                            <Link
+                              key={item.id}
+                              href={href}
+                              onClick={handleItemClick}
+                              className="flex items-center gap-3 px-5 py-3 hover:bg-accent/50 transition-colors group"
+                            >
+                              <div className="relative overflow-hidden rounded-md flex-shrink-0">
+                                <Image
+                                  src={`https://image.tmdb.org/t/p/w92${posterPath}`}
+                                  alt={title}
+                                  width={48}
+                                  height={72}
+                                  className="object-cover"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold group-hover:text-primary transition-colors truncate">
+                                  {title}
+                                </h3>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                                  <span className="flex items-center gap-1">
+                                    {isMovie ? (
+                                      <Film className="w-3 h-3" />
+                                    ) : (
+                                      <Tv className="w-3 h-3" />
+                                    )}
+                                    {isMovie ? "Movie" : "Series"}
+                                  </span>
+                                  {year && (
+                                    <>
+                                      <span>•</span>
+                                      <span>{year}</span>
+                                    </>
+                                  )}
+                                  {rating && (
+                                    <>
+                                      <span>•</span>
+                                      <span className="flex items-center gap-1">
+                                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                                        {rating}
+                                      </span>
+                                    </>
+                                  )}
                                 </div>
                               </div>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-montserrat font-semibold group-hover:text-primary transition-colors truncate text-sm sm:text-base">
-                                {title}
-                              </h3>
-                              <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
-                                {type === "movie" ? (
-                                  <span className="flex items-center gap-0.5 sm:gap-1">
-                                    <Film className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{" "}
-                                    Movie
-                                  </span>
-                                ) : (
-                                  <span className="flex items-center gap-0.5 sm:gap-1">
-                                    <Tv className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{" "}
-                                    Series
-                                  </span>
-                                )}
-                                {year && (
-                                  <>
-                                    <span className="text-muted-foreground/50">
-                                      •
-                                    </span>
-                                    <span className="flex items-center gap-0.5 sm:gap-1">
-                                      <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{" "}
-                                      {year}
-                                    </span>
-                                  </>
-                                )}
-                                {rating && (
-                                  <>
-                                    <span className="text-muted-foreground/50">
-                                      •
-                                    </span>
-                                    <span className="flex items-center gap-0.5 sm:gap-1">
-                                      <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500" />{" "}
-                                      {rating}
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                            {item?.popularity > 50 && (
-                              <Badge
-                                variant="outline"
-                                className="bg-primary/10 text-primary text-[10px] sm:text-xs hidden xs:inline-flex"
-                              >
-                                <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1" />{" "}
-                                Trending
-                              </Badge>
-                            )}
-                          </Link>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="py-12 text-center px-5">
+                        <div className="bg-muted/30 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                          <Search className="w-8 h-8 text-muted-foreground/50" />
                         </div>
-                      );
-                    })}
-
-                    {query.length > 2 && results.length === 0 && !isLoading && (
-                      <div className="py-10 sm:py-16 text-center">
-                        <div className="bg-muted/30 rounded-full w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                          <Search className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground/50" />
-                        </div>
-                        <h3 className="text-base sm:text-lg font-montserrat font-medium mb-1">
+                        <h3 className="text-base font-medium mb-1">
                           No results found
                         </h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground px-4">
-                          Try adjusting your search or filter to find what
-                          you&apos;re looking for
+                        <p className="text-sm text-muted-foreground">
+                          Try different keywords or filters
                         </p>
                       </div>
                     )}
-                  </div>
+                  </>
                 )}
-              </div>
-
-              {/* Footer */}
-              <div className="border-t p-2 sm:p-3 md:p-4 flex justify-between items-center">
-                <p className="text-[10px] sm:text-xs text-muted-foreground">
-                  Search powered by TMDB
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleClose}
-                  className="h-7 sm:h-8 text-xs sm:text-sm"
-                >
-                  Close
-                </Button>
               </div>
             </div>
           </div>

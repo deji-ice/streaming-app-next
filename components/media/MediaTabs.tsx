@@ -41,12 +41,12 @@ export default function MediaTabs({
   }, [activeTab, selectedGenres]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Tabs
         defaultValue={defaultTab}
         onValueChange={(value) => setActiveTab(value as "movies" | "series")}
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between">
           <TabsList className="grid w-[200px] grid-cols-2">
             <TabsTrigger value="movies">Movies</TabsTrigger>
             <TabsTrigger value="series">Series</TabsTrigger>
