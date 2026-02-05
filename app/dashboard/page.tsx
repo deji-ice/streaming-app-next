@@ -1,8 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
-import { Activity, Bookmark, Heart, TrendingUp, Clock, Film } from "lucide-react";
+import {
+  Activity,
+  Bookmark,
+  Heart,
+  TrendingUp,
+  Clock,
+  Film,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { useWatchHistory } from "@/hooks/useWatchHistory";
@@ -19,7 +25,8 @@ export default function DashboardPage() {
   const { items: favorites, isLoading: favoritesLoading } = useFavorites();
   const { profile, stats, isLoading: profileLoading } = useUserProfile();
 
-  const isLoading = watchlistLoading || historyLoading || favoritesLoading || profileLoading;
+  const isLoading =
+    watchlistLoading || historyLoading || favoritesLoading || profileLoading;
 
   if (isLoading) {
     return (
@@ -37,8 +44,12 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl md:text-4xl font-montserrat font-bold">Dashboard</h1>
-          <p className="text-muted-foreground mt-2">Welcome back, {profile?.full_name || "User"}</p>
+          <h1 className="text-3xl md:text-4xl font-montserrat font-bold">
+            Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Welcome back, {profile?.full_name || "User"}
+          </p>
         </div>
         <Button asChild variant="outline">
           <Link href="/profile">View Profile</Link>
@@ -50,8 +61,12 @@ export default function DashboardPage() {
         <div className="bg-card border border-border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground font-medium">Movies Watched</p>
-              <p className="text-3xl font-bold mt-2">{stats?.totalMoviesWatched || 0}</p>
+              <p className="text-xs text-muted-foreground font-medium">
+                Movies Watched
+              </p>
+              <p className="text-3xl font-bold mt-2">
+                {stats?.totalMoviesWatched || 0}
+              </p>
             </div>
             <Film className="w-8 h-8 text-primary/30" />
           </div>
@@ -60,7 +75,9 @@ export default function DashboardPage() {
         <div className="bg-card border border-border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground font-medium">Watchlist</p>
+              <p className="text-xs text-muted-foreground font-medium">
+                Watchlist
+              </p>
               <p className="text-3xl font-bold mt-2">{watchlist.length}</p>
             </div>
             <Bookmark className="w-8 h-8 text-primary/30" />
@@ -70,7 +87,9 @@ export default function DashboardPage() {
         <div className="bg-card border border-border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground font-medium">Favorites</p>
+              <p className="text-xs text-muted-foreground font-medium">
+                Favorites
+              </p>
               <p className="text-3xl font-bold mt-2">{favorites.length}</p>
             </div>
             <Heart className="w-8 h-8 text-primary/30" />
@@ -80,8 +99,12 @@ export default function DashboardPage() {
         <div className="bg-card border border-border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground font-medium">Hours Watched</p>
-              <p className="text-3xl font-bold mt-2">{stats?.totalHours || 0}h</p>
+              <p className="text-xs text-muted-foreground font-medium">
+                Hours Watched
+              </p>
+              <p className="text-3xl font-bold mt-2">
+                {stats?.totalHours || 0}h
+              </p>
             </div>
             <Clock className="w-8 h-8 text-primary/30" />
           </div>
@@ -100,14 +123,18 @@ export default function DashboardPage() {
                   <Clock className="w-5 h-5 text-primary" />
                   Continue Watching
                 </h2>
-                <Link href="/history" className="text-sm text-primary hover:underline">
+                <Link
+                  href="/history"
+                  className="text-sm text-primary hover:underline"
+                >
                   View all
                 </Link>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {recentHistory.map((item) => {
-                  const mediaType = item.media_type === "tv" ? "series" : "movie";
+                  const mediaType =
+                    item.media_type === "tv" ? "series" : "movie";
                   const slug = toSlug(item.title, item.tmdb_id);
 
                   return (
@@ -135,14 +162,18 @@ export default function DashboardPage() {
                   <Heart className="w-5 h-5 text-primary" />
                   Top Favorites
                 </h2>
-                <Link href="/favorites" className="text-sm text-primary hover:underline">
+                <Link
+                  href="/favorites"
+                  className="text-sm text-primary hover:underline"
+                >
                   View all
                 </Link>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {topFavorites.map((item) => {
-                  const mediaType = item.media_type === "tv" ? "series" : "movie";
+                  const mediaType =
+                    item.media_type === "tv" ? "series" : "movie";
                   const slug = toSlug(item.title, item.tmdb_id);
 
                   return (
@@ -150,11 +181,6 @@ export default function DashboardPage() {
                       key={item.id}
                       title={item.title}
                       posterPath={item.poster_path}
-                      year={
-                        item.release_date
-                          ? new Date(item.release_date).getFullYear()
-                          : undefined
-                      }
                       href={`/${mediaType}/${slug}`}
                     />
                   );
@@ -168,9 +194,15 @@ export default function DashboardPage() {
         <div className="space-y-4">
           {/* Quick Links */}
           <div className="bg-card border border-border rounded-lg p-4">
-            <h3 className="font-semibold mb-4 text-sm text-muted-foreground">Quick Links</h3>
+            <h3 className="font-semibold mb-4 text-sm text-muted-foreground">
+              Quick Links
+            </h3>
             <div className="space-y-2">
-              <Button asChild variant="ghost" className="w-full justify-start gap-2">
+              <Button
+                asChild
+                variant="ghost"
+                className="w-full justify-start gap-2"
+              >
                 <Link href="/watchlist">
                   <Bookmark className="w-4 h-4" />
                   My Watchlist
@@ -179,7 +211,11 @@ export default function DashboardPage() {
                   </span>
                 </Link>
               </Button>
-              <Button asChild variant="ghost" className="w-full justify-start gap-2">
+              <Button
+                asChild
+                variant="ghost"
+                className="w-full justify-start gap-2"
+              >
                 <Link href="/favorites">
                   <Heart className="w-4 h-4" />
                   My Favorites
@@ -188,7 +224,11 @@ export default function DashboardPage() {
                   </span>
                 </Link>
               </Button>
-              <Button asChild variant="ghost" className="w-full justify-start gap-2">
+              <Button
+                asChild
+                variant="ghost"
+                className="w-full justify-start gap-2"
+              >
                 <Link href="/history">
                   <Activity className="w-4 h-4" />
                   Watch History
@@ -209,7 +249,9 @@ export default function DashboardPage() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">This Month</span>
-                <span className="font-semibold">{recentHistory.length} watched</span>
+                <span className="font-semibold">
+                  {recentHistory.length} watched
+                </span>
               </div>
               <div className="w-full bg-background rounded-full h-2 mt-1">
                 <div

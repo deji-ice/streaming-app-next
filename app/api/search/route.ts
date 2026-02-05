@@ -3,6 +3,12 @@ import { tmdb } from '@/lib/tmdb';
 
 export const runtime = 'edge';
 
+type SearchResultItem = {
+    release_date?: string;
+    first_air_date?: string;
+    vote_average?: number;
+};
+
 export async function GET(request: NextRequest) {
     try {
         const searchParams = request.nextUrl.searchParams;
@@ -26,19 +32,19 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        let results;
-
-        if (type === 'movie') {
-            results = await tmdb.searchMovies(query, parseInt(page));
-        } else if (type === 'tv') {
-            results = await tmdb.searchTv(query, parseInt(page));
-        } else {
-            results = await tmdb.searchMulti(query, parseInt(page));
-        }
+        const results = await tmdb.searchMulti(query);
 
         // Apply additional filters on results
         if (results.results) {
-            results.results = results.results.filter((item: any) => {
+            results.results = results.results.filter((item: SearchResultItem & { media_type?: string }) => {
+                if (type === 'movie' && item.media_type !== 'movie') {
+                    return false;
+                }
+
+                if (type === 'tv' && item.media_type !== 'tv') {
+                    return false;
+                }
+
                 // Filter by year if provided
                 if (year) {
                     const itemYear = item.release_date

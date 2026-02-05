@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { Search, Filter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ interface SearchResponse {
   total_results: number;
 }
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
 
@@ -44,33 +44,36 @@ export default function SearchPage() {
   const [totalResults, setTotalResults] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
 
-  const performSearch = async (q: string) => {
-    if (!q.trim()) {
-      setResults([]);
-      setTotalResults(0);
-      return;
-    }
+  const performSearch = useCallback(
+    async (q: string) => {
+      if (!q.trim()) {
+        setResults([]);
+        setTotalResults(0);
+        return;
+      }
 
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.append("q", q);
-      if (type) params.append("type", type);
-      if (year) params.append("year", year);
-      if (minRating) params.append("minRating", minRating);
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams();
+        params.append("q", q);
+        if (type) params.append("type", type);
+        if (year) params.append("year", year);
+        if (minRating) params.append("minRating", minRating);
 
-      const response = await fetch(`/api/search?${params}`);
-      const data: SearchResponse = await response.json();
+        const response = await fetch(`/api/search?${params}`);
+        const data: SearchResponse = await response.json();
 
-      setResults(data.results || []);
-      setTotalResults(data.total_results || 0);
-    } catch (error) {
-      toast.error("Failed to search");
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        setResults(data.results || []);
+        setTotalResults(data.total_results || 0);
+      } catch (error) {
+        toast.error("Failed to search");
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [type, year, minRating],
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -80,7 +83,7 @@ export default function SearchPage() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query, type, year, minRating]);
+  }, [query, performSearch]);
 
   const handleClearFilters = () => {
     setType("");
@@ -231,5 +234,21 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen pt-20 md:pt-24 pb-10">
+          <div className="container mx-auto px-4">
+            <p className="text-muted-foreground">Loading search...</p>
+          </div>
+        </div>
+      }
+    >
+      <SearchPageContent />
+    </Suspense>
   );
 }

@@ -38,7 +38,7 @@ export async function POST() {
         }
 
         if (!session?.user) {
-        
+
             return NextResponse.json(
                 { message: "No session - profile creation handled on client" },
                 { status: 200 }
@@ -55,7 +55,7 @@ export async function POST() {
             .maybeSingle();
 
         if (profile) {
-        return NextResponse.json({ message: "Profile exists" }, { status: 200 });
+            return NextResponse.json({ message: "Profile exists" }, { status: 200 });
         }
 
         if (profileError) {
@@ -65,10 +65,11 @@ export async function POST() {
         }
 
         return NextResponse.json({ message: "OK" }, { status: 200 });
-    } catch (error: any) {
-        console.error('[/api/user/init] Server error:', error?.message);
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Server error";
+        console.error('[/api/user/init] Server error:', message);
         return NextResponse.json(
-            { error: error?.message || "Server error" },
+            { error: message },
             { status: 500 }
         );
     }

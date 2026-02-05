@@ -7,7 +7,6 @@ import {
   Sun,
   Moon,
   Search,
-  User,
   Menu,
   X,
   Film,

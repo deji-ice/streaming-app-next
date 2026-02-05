@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import {
   Mail,
   Edit2,
@@ -49,7 +48,7 @@ export default function ProfilePage() {
       } else {
         toast.error("Failed to update profile");
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred");
     } finally {
       setIsSaving(false);
