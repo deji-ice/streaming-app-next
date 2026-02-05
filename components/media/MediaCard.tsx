@@ -6,10 +6,20 @@ import { hoverLift, fadeIn } from "@/lib/gsap-config";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Play, Star, Clock, Calendar, Bookmark } from "lucide-react";
+import {
+  Play,
+  Star,
+  Clock,
+  Calendar,
+  Bookmark,
+  BookmarkCheck,
+  Heart,
+} from "lucide-react";
 import { type Movie, type MediaType, SeriesDetails } from "@/types";
-import { Button } from "@/components/ui/button";
+
 import { toast } from "sonner";
+import { useWatchlist } from "@/hooks/useWatchlist";
+import { useFavorites } from "@/hooks/useFavorites";
 
 interface MediaCardProps {
   item: Movie | SeriesDetails;
@@ -20,6 +30,8 @@ export default function MediaCard({ item, type }: MediaCardProps) {
   const router = useRouter();
   const cardRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
+  const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlist();
+  const { addToFavorites, removeFromFavorites, isInFavorites } = useFavorites();
 
   const title = "title" in item ? item.title : item.name;
   const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${item.id}`;
@@ -31,6 +43,16 @@ export default function MediaCard({ item, type }: MediaCardProps) {
       ? item.release_date
       : (item.last_episode_to_air?.air_date ?? item.first_air_date),
   ).getFullYear();
+
+  const releaseDate =
+    "release_date" in item
+      ? item.release_date
+      : (item.last_episode_to_air?.air_date ?? item.first_air_date);
+
+  const isBookmarked = isInWatchlist(item.id, type);
+  const mediaTypeForFavorite =
+    type === "series" ? ("series" as const) : ("movie" as const);
+  const isFavorited = isInFavorites(item.id, mediaTypeForFavorite);
 
   // GSAP animations
   useGSAP(() => {
@@ -56,12 +78,60 @@ export default function MediaCard({ item, type }: MediaCardProps) {
     router.push(`/${type}/${slug}`);
   };
 
-  const handleBookmark = (e: React.MouseEvent) => {
+  const handleBookmark = async (e: React.MouseEvent) => {
     e.preventDefault();
-    toast.success("Added to Watchlist", {
-      description: `${title} has been added to your watchlist`,
-      duration: 3000,
-    });
+    try {
+      if (isBookmarked) {
+        await removeFromWatchlist(item.id, type);
+        toast.success("Removed from Watchlist", {
+          description: `${title} has been removed from your watchlist`,
+          duration: 2500,
+        });
+      } else {
+        await addToWatchlist({
+          tmdbId: item.id,
+          mediaType: type,
+          title,
+          posterPath: item.poster_path,
+          backdropPath: item.backdrop_path,
+          voteAverage: item.vote_average ?? null,
+          releaseDate: releaseDate ?? null,
+        });
+        toast.success("Added to Watchlist", {
+          description: `${title} has been added to your watchlist`,
+          duration: 2500,
+        });
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to update watchlist";
+      toast.error(message);
+    }
+  };
+
+  const handleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      const favType =
+        type === "series" ? ("series" as const) : ("movie" as const);
+      if (isFavorited) {
+        await removeFromFavorites(item.id, favType);
+        toast.success("Removed from Favorites", {
+          description: `${title} has been removed from your favorites`,
+          duration: 2500,
+        });
+      } else {
+        await addToFavorites(item.id, favType, title, item.poster_path);
+        toast.success("Added to Favorites", {
+          description: `${title} has been added to your favorites`,
+          duration: 2500,
+        });
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to update favorites";
+      toast.error(message);
+    }
   };
 
   return (
@@ -85,26 +155,44 @@ export default function MediaCard({ item, type }: MediaCardProps) {
                         from-black/20 via-black/10 to-transparent"
           />
 
-          <Button
-            size="icon"
+          <button
+          
             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
                  md:opacity-0 md:group-hover:opacity-100 
-                 transition-opacity duration-500 bg-primary/90"
+                 transition-opacity duration-500 "
             onClick={handlePlay}
           >
             <Play className="w-4 h-4" />
-          </Button>
+          </button>
 
           {/* Bookmark button */}
-          <Button
-            size="icon"
-            variant="ghost"
-            className="absolute z-30 top-2 left-2 text-white hover:text-primary 
-                     transition-colors duration-300"
+          <button
+          
+            className={`absolute z-30 top-2 left-2 text-white hover:text-primary 
+                     transition-colors duration-300 ${
+                       isBookmarked ? "text-primary" : ""
+                     }`}
             onClick={handleBookmark}
           >
-            <Bookmark className="w-4 h-4" />
-          </Button>
+            {isBookmarked ? (
+              <BookmarkCheck className="w-4 h-4" />
+            ) : (
+              <Bookmark className="w-4 h-4" />
+            )}
+          </button>
+
+          {/* Favorite button */}
+          <button
+          
+            
+            className={`absolute z-30 top-2 right-2 text-white hover:text-red-500 
+                     transition-colors duration-300 ${
+                       isFavorited ? "text-red-500" : ""
+                     }`}
+            onClick={handleFavorite}
+          >
+            <Heart className={`w-4 h-4 ${isFavorited ? "fill-red-500" : ""}`} />
+          </button>
 
           {/* Always visible info section on mobile, hover on desktop */}
           <div

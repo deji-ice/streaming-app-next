@@ -7,6 +7,13 @@ const MediaTabs = dynamic(() => import("@/components/media/MediaTabs"), {
   loading: () => <MediaGridSkeleton count={10} />,
 });
 
+const ContinueWatching = dynamic(
+  () => import("@/components/media/ContinueWatching"),
+  {
+    loading: () => null,
+  },
+);
+
 async function getData() {
   const [
     trending,
@@ -49,6 +56,8 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen pb-8">
       <HeroSlider items={trending} />
+
+      <ContinueWatching />
 
       <div className="container mx-auto px-4 mt-16">
         <h2 className="text-2xl font-montserrat font-bold mb-6 ">Popular</h2>

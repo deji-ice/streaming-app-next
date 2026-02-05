@@ -7,6 +7,7 @@ import { VideoPlayerProps } from "@/types";
 import { trackEvent } from "@/lib/analytics";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useWatchHistory } from "@/hooks/useWatchHistory";
 
 export default function VideoPlayer({
   tmdbId,
@@ -18,8 +19,8 @@ export default function VideoPlayer({
 }: VideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [streamUrl, setStreamUrl] = useState("");
+  const { logWatchStart } = useWatchHistory();
 
- 
   const handlePlay = async () => {
     try {
       // Base params for all types
@@ -40,6 +41,22 @@ export default function VideoPlayer({
       if (data.url) {
         setStreamUrl(data.url);
         setIsPlaying(true);
+        const numericTmdbId = Number(tmdbId);
+        if (!Number.isNaN(numericTmdbId)) {
+          try {
+            await logWatchStart({
+              tmdbId: numericTmdbId,
+              mediaType: type,
+              title,
+              posterPath: posterPath ?? null,
+              backdropPath: posterPath ?? null,
+              seasonNumber: episode?.season,
+              episodeNumber: episode?.number,
+            });
+          } catch (error) {
+            console.error("Failed to log watch history:", error);
+          }
+        }
         // Track play event
         trackEvent("video_play", {
           content_type: type,
@@ -86,11 +103,14 @@ export default function VideoPlayer({
         <Button
           variant="outline"
           onClick={() => navigateEpisode("next")}
-          disabled={!episode || (seasonLength !== undefined && episode.number >= seasonLength)}
+          disabled={
+            !episode ||
+            (seasonLength !== undefined && episode.number >= seasonLength)
+          }
         >
           Next Episode <ChevronRight className="ml-2 h-4 w-4" />
         </Button>
-     </div>
+      </div>
     ) : null;
   };
 

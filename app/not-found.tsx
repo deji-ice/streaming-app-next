@@ -18,14 +18,14 @@ export default function NotFound() {
       </div>
 
       {/* Content container */}
-      <div className="max-w-xl w-full text-center relative z-10">
+      <div className="max-w-xl w-full text-center relative h-full max-h-[80vh] z-10">
         {/* Main content */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.6 }}
         >
-          <h1 className="text-6xl md:text-7xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-indigo-500">
+          <h1 className="text-6xl md:text-7xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-indigo-200">
             404
           </h1>
 
@@ -33,7 +33,7 @@ export default function NotFound() {
             Content Not Found
           </h2>
 
-          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+          <p className="text-muted-foreground text-sm mb-5 max-w-md mx-auto">
             The content you&apos;re looking for may have been moved, deleted, or
             never existed. Let&apos;s get you back to watching something
             amazing.

@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import CookieConsent from "@/components/layout/CookieConsent";
 import "./globals.css";
 import { Providers } from "./providers";
+import { UserInitializer } from "./user-initializer";
 import { Analytics } from "@vercel/analytics/react";
 import { GoogleTagManager } from "@next/third-parties/google";
 
@@ -160,20 +161,22 @@ export default function RootLayout({
         </a>
 
         <Providers>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <AdBlockBanner />
-            <Navbar />
-            <main id="main-content" className="min-h-screen font-montserrat ">
-              {children}
-            </main>
-            <Footer />
-            <CookieConsent />
-          </ThemeProvider>
+          <UserInitializer>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <AdBlockBanner />
+              <Navbar />
+              <main id="main-content" className="min-h-screen font-montserrat ">
+                {children}
+              </main>
+              <Footer />
+              <CookieConsent />
+            </ThemeProvider>
+          </UserInitializer>
         </Providers>
 
         <Analytics />

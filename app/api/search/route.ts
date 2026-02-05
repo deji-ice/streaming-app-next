@@ -7,6 +7,10 @@ export async function GET(request: NextRequest) {
     try {
         const searchParams = request.nextUrl.searchParams;
         const query = searchParams.get('q');
+        const type = searchParams.get('type'); // 'movie', 'tv', or null for multi
+        const year = searchParams.get('year');
+        const minRating = searchParams.get('minRating');
+        const page = searchParams.get('page') || '1';
 
         if (!query) {
             return NextResponse.json(
@@ -22,12 +26,48 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        const results = await tmdb.searchMulti(query);
+        let results;
+
+        if (type === 'movie') {
+            results = await tmdb.searchMovies(query, parseInt(page));
+        } else if (type === 'tv') {
+            results = await tmdb.searchTv(query, parseInt(page));
+        } else {
+            results = await tmdb.searchMulti(query, parseInt(page));
+        }
+
+        // Apply additional filters on results
+        if (results.results) {
+            results.results = results.results.filter((item: any) => {
+                // Filter by year if provided
+                if (year) {
+                    const itemYear = item.release_date
+                        ? new Date(item.release_date).getFullYear()
+                        : item.first_air_date
+                            ? new Date(item.first_air_date).getFullYear()
+                            : null;
+
+                    if (itemYear !== parseInt(year)) {
+                        return false;
+                    }
+                }
+
+                // Filter by minimum rating if provided
+                if (minRating) {
+                    const rating = item.vote_average || 0;
+                    if (rating < parseFloat(minRating)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+        }
 
         return NextResponse.json(results, {
             status: 200,
             headers: {
-                'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600',
+                'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1800',
             },
         });
     } catch (error) {

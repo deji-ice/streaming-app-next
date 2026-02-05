@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { User, LogOut, Settings, Heart, Clock } from "lucide-react";
+import {
+  User,
+  LogOut,
+  Settings,
+  Heart,
+  Clock,
+  LayoutDashboard,
+} from "lucide-react";
 import { useUser } from "@/hooks/useUser";
 import { supabase } from "@/lib/supabase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -120,6 +127,15 @@ export function UserProfileDropdown({
 
               {/* Menu Items */}
               <div className="py-2">
+                <Link
+                  href="/dashboard"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <LayoutDashboard className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Dashboard</span>
+                </Link>
+
                 <Link
                   href="/profile"
                   onClick={() => setIsOpen(false)}
