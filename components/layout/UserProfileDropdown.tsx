@@ -2,15 +2,9 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  User,
-  LogOut,
-  Settings,
-  Heart,
-  Clock,
-  LayoutDashboard,
-} from "lucide-react";
+import { User, LogOut, Heart, Clock, LayoutDashboard } from "lucide-react";
 import { useUser } from "@/hooks/useUser";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { supabase } from "@/lib/supabase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -18,15 +12,12 @@ import Link from "next/link";
 
 interface UserProfileDropdownProps {
   scrolled: boolean;
-  onAuthModalOpen: () => void;
 }
 
-export function UserProfileDropdown({
-  scrolled,
-  onAuthModalOpen,
-}: UserProfileDropdownProps) {
+export function UserProfileDropdown({ scrolled }: UserProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAuthenticated, isLoading } = useUser();
+  const { openAuthModal } = useAuthModal();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -44,7 +35,7 @@ export function UserProfileDropdown({
   if (!isAuthenticated) {
     return (
       <button
-        onClick={onAuthModalOpen}
+        onClick={openAuthModal}
         className={cn(
           "p-1.5 sm:p-2 hover:bg-white/10 rounded-full transition-colors",
           scrolled ? "text-slate-900 dark:text-white" : "text-white",
@@ -161,15 +152,6 @@ export function UserProfileDropdown({
                 >
                   <Clock className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Watch History</span>
-                </Link>
-
-                <Link
-                  href="/settings"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <Settings className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Settings</span>
                 </Link>
               </div>
 

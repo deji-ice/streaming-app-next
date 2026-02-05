@@ -4,12 +4,27 @@ import { Trash2 } from "lucide-react";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { toast } from "sonner";
 import { MediaListCard } from "@/components/media/MediaListCard";
+import { useEffect } from "react";
+import { useUser } from "@/hooks/useUser";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 const toSlug = (title: string, id: number) =>
   `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${id}`;
 
 export default function WatchlistPage() {
+  const { isAuthenticated, isLoading: authLoading } = useUser();
+  const { openAuthModal } = useAuthModal();
   const { items, isLoading, removeFromWatchlist } = useWatchlist();
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      openAuthModal();
+    }
+  }, [authLoading, isAuthenticated, openAuthModal]);
+
+  if (authLoading || !isAuthenticated) {
+    return null;
+  }
 
   const handleRemove = async (
     tmdbId: number,

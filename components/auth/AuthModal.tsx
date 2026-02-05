@@ -14,7 +14,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-          "max-w-md border-white/10",
+          "max-w-sm border-white/10",
           // Glassmorphism effect
           "bg-gradient-to-br from-background/15 via-background/10 to-background/25",
           "backdrop-blur-xl",

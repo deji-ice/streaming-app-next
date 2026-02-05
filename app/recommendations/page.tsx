@@ -5,9 +5,24 @@ import { Button } from "@/components/ui/button";
 import { useRecommendations } from "@/hooks/useRecommendations";
 import MediaCard from "@/components/media/MediaCard";
 import Link from "next/link";
+import { useEffect } from "react";
+import { useUser } from "@/hooks/useUser";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 export default function RecommendationsPage() {
+  const { isAuthenticated, isLoading: authLoading } = useUser();
+  const { openAuthModal } = useAuthModal();
   const { recommendations, isLoading } = useRecommendations();
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      openAuthModal();
+    }
+  }, [authLoading, isAuthenticated, openAuthModal]);
+
+  if (authLoading || !isAuthenticated) {
+    return null;
+  }
 
   if (isLoading) {
     return (

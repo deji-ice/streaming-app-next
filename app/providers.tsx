@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "sonner";
 import { useState } from "react";
+import { AuthModalProvider } from "@/components/auth/AuthModalProvider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Create QueryClient inside the component to ensure it's unique per request
@@ -27,9 +28,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
-      <Toaster />
-      <ReactQueryDevtools initialIsOpen={false} />
+      <AuthModalProvider>
+        {children}
+        <Toaster />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </AuthModalProvider>
     </QueryClientProvider>
   );
 }

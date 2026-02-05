@@ -12,27 +12,25 @@ import {
   Film,
   Tv,
   Home,
-  TrendingUp,
   Clock,
   Heart,
-  Info,
 } from "lucide-react";
 import { useState } from "react";
 import { SearchModal } from "./SearchModal";
-import { AuthModal } from "@/components/auth/AuthModal";
 import { UserProfileDropdown } from "./UserProfileDropdown";
 import { cn } from "@/lib/utils";
 import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useBodyLock } from "@/hooks/useBodyLock";
+import { useUser } from "@/hooks/useUser";
 
 export default function Navbar() {
   const { theme, setTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuContentRef = useRef<HTMLDivElement>(null);
+  const { isAuthenticated } = useUser();
 
   // Use custom hooks instead of separate useEffects
   const scrolled = useScrollPosition(20);
@@ -164,10 +162,7 @@ export default function Navbar() {
               </button>
 
               <div className="md:block hidden">
-                <UserProfileDropdown
-                  scrolled={scrolled}
-                  onAuthModalOpen={() => setAuthModalOpen(true)}
-                />
+                <UserProfileDropdown scrolled={scrolled} />
               </div>
 
               {/* Mobile menu button */}
@@ -242,52 +237,32 @@ export default function Navbar() {
                   <span className="font-medium">Series</span>
                 </Link>
 
-                <Link
-                  href="/trending"
-                  className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg hover:bg-accent/50 transition-colors text-sm sm:text-base"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="font-medium">Trending</span>
-                </Link>
+                {isAuthenticated && (
+                  <>
+                    <Link
+                      href="/watchlist"
+                      className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg hover:bg-accent/50 transition-colors text-sm sm:text-base"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="font-medium">Watchlist</span>
+                    </Link>
 
-                <Link
-                  href="/watchlist"
-                  className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg hover:bg-accent/50 transition-colors text-sm sm:text-base"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="font-medium">Watchlist</span>
-                </Link>
-
-                <Link
-                  href="/recent"
-                  className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg hover:bg-accent/50 transition-colors text-sm sm:text-base"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="font-medium">Recently Watched</span>
-                </Link>
-
-                <Link
-                  href="/about"
-                  className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg hover:bg-accent/50 transition-colors text-sm sm:text-base"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Info className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="font-medium">About</span>
-                </Link>
+                    <Link
+                      href="/history"
+                      className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg hover:bg-accent/50 transition-colors text-sm sm:text-base"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="font-medium">Watch History</span>
+                    </Link>
+                  </>
+                )}
               </nav>
 
               <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t">
                 <div className="mb-4">
-                  <UserProfileDropdown
-                    scrolled={true}
-                    onAuthModalOpen={() => {
-                      setMobileMenuOpen(false);
-                      setAuthModalOpen(true);
-                    }}
-                  />
+                  <UserProfileDropdown scrolled={true} />
                 </div>
                 <div className="flex justify-between items-center px-3 sm:px-4">
                   <span className="font-medium text-sm sm:text-base">
@@ -313,10 +288,6 @@ export default function Navbar() {
         </div>
       </nav>
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-      <AuthModal
-        isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-      />
     </>
   );
 }

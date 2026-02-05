@@ -15,11 +15,16 @@ import { useWatchHistory } from "@/hooks/useWatchHistory";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { MediaListCard } from "@/components/media/MediaListCard";
+import { useEffect } from "react";
+import { useUser } from "@/hooks/useUser";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 const toSlug = (title: string, id: number) =>
   `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${id}`;
 
 export default function DashboardPage() {
+  const { isAuthenticated, isLoading: authLoading } = useUser();
+  const { openAuthModal } = useAuthModal();
   const { items: watchlist, isLoading: watchlistLoading } = useWatchlist();
   const { items: history, isLoading: historyLoading } = useWatchHistory();
   const { items: favorites, isLoading: favoritesLoading } = useFavorites();
@@ -27,6 +32,16 @@ export default function DashboardPage() {
 
   const isLoading =
     watchlistLoading || historyLoading || favoritesLoading || profileLoading;
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      openAuthModal();
+    }
+  }, [authLoading, isAuthenticated, openAuthModal]);
+
+  if (authLoading || !isAuthenticated) {
+    return null;
+  }
 
   if (isLoading) {
     return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Mail,
   Edit2,
@@ -18,8 +18,12 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useUserStore } from "@/lib/store";
+import { useUser } from "@/hooks/useUser";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 export default function ProfilePage() {
+  const { isAuthenticated, isLoading: authLoading } = useUser();
+  const { openAuthModal } = useAuthModal();
   const { profile, stats, isLoading, updateProfile } = useUserProfile();
   const user = useUserStore((state) => state.user);
   const [isEditing, setIsEditing] = useState(false);
@@ -64,6 +68,16 @@ export default function ProfilePage() {
     setIsEditing(false);
   };
 
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      openAuthModal();
+    }
+  }, [authLoading, isAuthenticated, openAuthModal]);
+
+  if (authLoading || !isAuthenticated) {
+    return null;
+  }
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-20 pt-24">
@@ -73,13 +87,7 @@ export default function ProfilePage() {
   }
 
   if (!user || !profile) {
-    return (
-      <div className="container mx-auto px-4 py-20 pt-24">
-        <p className="text-muted-foreground">
-          Please sign in to view your profile.
-        </p>
-      </div>
-    );
+    return null;
   }
 
   const memberSince = new Date(profile.created_at).toLocaleDateString("en-US", {

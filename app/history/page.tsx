@@ -6,13 +6,28 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useUserStore } from "@/lib/store";
 import { MediaListCard } from "@/components/media/MediaListCard";
+import { useEffect } from "react";
+import { useUser } from "@/hooks/useUser";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 const toSlug = (title: string, id: number) =>
   `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${id}`;
 
 export default function HistoryPage() {
+  const { isAuthenticated, isLoading: authLoading } = useUser();
+  const { openAuthModal } = useAuthModal();
   const { items, isLoading, refresh } = useWatchHistory();
   const userId = useUserStore((state) => state.user?.id ?? null);
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      openAuthModal();
+    }
+  }, [authLoading, isAuthenticated, openAuthModal]);
+
+  if (authLoading || !isAuthenticated) {
+    return null;
+  }
 
   const handleRemove = async (
     tmdbId: number,

@@ -20,6 +20,8 @@ import { type Movie, type MediaType, SeriesDetails } from "@/types";
 import { toast } from "sonner";
 import { useWatchlist } from "@/hooks/useWatchlist";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useUser } from "@/hooks/useUser";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 interface MediaCardProps {
   item: Movie | SeriesDetails;
@@ -32,6 +34,8 @@ export default function MediaCard({ item, type }: MediaCardProps) {
   const imageRef = useRef<HTMLDivElement>(null);
   const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlist();
   const { addToFavorites, removeFromFavorites, isInFavorites } = useFavorites();
+  const { isAuthenticated } = useUser();
+  const { openAuthModal } = useAuthModal();
 
   const title = "title" in item ? item.title : item.name;
   const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${item.id}`;
@@ -80,6 +84,11 @@ export default function MediaCard({ item, type }: MediaCardProps) {
 
   const handleBookmark = async (e: React.MouseEvent) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      openAuthModal();
+      toast.error("Sign in to save to your watchlist.");
+      return;
+    }
     try {
       if (isBookmarked) {
         await removeFromWatchlist(item.id, type);
@@ -111,6 +120,11 @@ export default function MediaCard({ item, type }: MediaCardProps) {
 
   const handleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      openAuthModal();
+      toast.error("Sign in to save favorites.");
+      return;
+    }
     try {
       const favType =
         type === "series" ? ("series" as const) : ("movie" as const);
@@ -156,7 +170,6 @@ export default function MediaCard({ item, type }: MediaCardProps) {
           />
 
           <button
-          
             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
                  md:opacity-0 md:group-hover:opacity-100 
                  transition-opacity duration-500 "
@@ -167,7 +180,6 @@ export default function MediaCard({ item, type }: MediaCardProps) {
 
           {/* Bookmark button */}
           <button
-          
             className={`absolute z-30 top-2 left-2 text-white hover:text-primary 
                      transition-colors duration-300 ${
                        isBookmarked ? "text-primary" : ""
@@ -183,8 +195,6 @@ export default function MediaCard({ item, type }: MediaCardProps) {
 
           {/* Favorite button */}
           <button
-          
-            
             className={`absolute z-30 top-2 right-2 text-white hover:text-red-500 
                      transition-colors duration-300 ${
                        isFavorited ? "text-red-500" : ""

@@ -8,7 +8,7 @@ export default function Footer() {
     <footer className="bg-[#f8f9fa] dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 pt-6 sm:pt-8 lg:pt-12 pb-4 sm:pb-6">
       <div className="container mx-auto px-3 sm:px-4">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6 lg:gap-8 mb-6 sm:mb-8 lg:mb-12">
+        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 mb-6 sm:mb-8 lg:mb-12">
           {/* Column 1: Logo & About */}
           <div className="space-y-3 sm:space-y-4">
             <div className="flex items-center">
@@ -74,8 +74,7 @@ export default function Footer() {
                 { title: "Home", href: "/" },
                 { title: "Movies", href: "/movie" },
                 { title: "TV Shows", href: "/series" },
-                { title: "New Releases", href: "/new-releases" },
-                { title: "Popular", href: "/popular" },
+                { title: "Search", href: "/search" },
               ];
               return (
                 <ul className="space-y-1 sm:space-y-2">
@@ -94,32 +93,7 @@ export default function Footer() {
             })()}
           </div>
 
-          {/* Column 3: Help & Support */}
-          <div className="space-y-3 sm:space-y-4">
-            <h3 className="font-montserrat font-bold text-sm sm:text-base text-gray-900 dark:text-white">
-              Support
-            </h3>
-            <ul className="space-y-1 sm:space-y-2">
-              {[
-                ["About Us", "/about"],
-                ["Contact", "/contact"],
-                ["FAQ", "/faq"],
-                ["Terms of Service", "/terms"],
-                ["Privacy Policy", "/privacy"],
-              ].map(([label, href]) => (
-                <li key={label}>
-                  <Link
-                    href={href}
-                    className="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors text-xs sm:text-sm"
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Column 4: Newsletter */}
+          {/* Column 3: Newsletter */}
           <div className="space-y-3 sm:space-y-4">
             <h3 className="font-montserrat font-bold text-sm sm:text-base text-gray-900 dark:text-white">
               Newsletter
@@ -150,26 +124,6 @@ export default function Footer() {
           <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
             © {new Date().getFullYear()} StreamScapeX. All rights reserved.
           </p>
-          <div className="flex gap-4 sm:gap-6 mt-3 xs:mt-0">
-            <Link
-              href="/cookie-policy"
-              className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-            >
-              Cookie Policy
-            </Link>
-            <Link
-              href="/dmca"
-              className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-            >
-              DMCA
-            </Link>
-            <Link
-              href="/sitemap"
-              className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-            >
-              Sitemap
-            </Link>
-          </div>
         </div>
         <div className="mt-5 sm:mt-6 lg:mt-8 border-t pt-3 sm:pt-4">
           <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 text-center sm:text-left">

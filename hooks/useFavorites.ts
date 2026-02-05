@@ -56,7 +56,9 @@ export function useFavorites() {
             title: string,
             posterPath?: string | null
         ) => {
-            if (!user?.id) return;
+            if (!user?.id) {
+                throw new Error("You must be signed in to add favorites.");
+            }
 
             try {
                 const type = mediaType === "series" ? "tv" : "movie";
@@ -95,7 +97,9 @@ export function useFavorites() {
     // Remove from favorites
     const removeFromFavorites = useCallback(
         async (tmdbId: number, mediaType: "movie" | "series") => {
-            if (!user?.id) return;
+            if (!user?.id) {
+                throw new Error("You must be signed in to remove favorites.");
+            }
 
             try {
                 const type = mediaType === "series" ? "tv" : "movie";
