@@ -8,7 +8,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { UserInitializer } from "./user-initializer";
 import { Analytics } from "@vercel/analytics/react";
-import { GoogleTagManager } from "@next/third-parties/google";
+import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 
 import AdBlockBanner from "@/components/layout/AdBlockBanner";
 import Script from "next/script";
@@ -149,6 +149,9 @@ export default function RootLayout({
         {/* Remove this line - globals.css is already imported */}
         {/* <link rel="preload" href="/globals.css" as="style" /> */}
       </head>
+      {process.env.NEXT_PUBLIC_GA_ID && (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+      )}
       <body
         className={`${montserrat.variable} ${roboto.variable} antialiased bg-[#f8f9fa] dark:bg-gray-950 transition-colors duration-300`}
       >
