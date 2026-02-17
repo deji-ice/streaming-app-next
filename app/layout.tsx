@@ -3,7 +3,6 @@ import { Montserrat, Roboto } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import CookieConsent from "@/components/layout/CookieConsent";
 import "./globals.css";
 import { Providers } from "./providers";
 import { UserInitializer } from "./user-initializer";
@@ -177,7 +176,6 @@ export default function RootLayout({
                 {children}
               </main>
               <Footer />
-              <CookieConsent />
             </ThemeProvider>
           </UserInitializer>
         </Providers>
