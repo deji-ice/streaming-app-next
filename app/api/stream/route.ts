@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
   //   : `${VIDSRC_BASE}/embed/tv/${tmdbId}/${season || 1}/${episode || 1}`;
 
   const streamUrl = type === "movie"
-    ? `${VIDSRC_BASE}/movie/${tmdbId}/?primaryColor=d31d09&secondaryColor=a2a2a2&iconColor=f7f7f8&player=default&title=true&poster=true&autoplay=false&nextbutton=false`
-    : `${VIDSRC_BASE}/tv/${tmdbId}/${season || 1}/${episode || 1}/?primaryColor=d31d09&secondaryColor=a2a2a2&iconColor=f7f7f8&player=default&title=true&poster=true&autoplay=false&nextbutton=false`;
-  
+    ? `${VIDSRC_BASE}/movie/${tmdbId}/?primaryColor=d31d09&secondaryColor=a2a2a2&iconColor=f7f7f8&player=jw&title=true&poster=true&autoplay=false&nextbutton=false`
+    : `${VIDSRC_BASE}/tv/${tmdbId}/${season || 1}/${episode || 1}/?primaryColor=d31d09&secondaryColor=a2a2a2&iconColor=f7f7f8&player=jw&title=true&poster=true&autoplay=false&nextbutton=false`;
+
   return NextResponse.json({ url: streamUrl });
 }
