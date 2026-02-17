@@ -265,7 +265,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               className="bg-card rounded-2xl shadow-2xl overflow-hidden"
             >
               {/* Search Input */}
-              <div className="flex items-center gap-3 px-5 py-2 border-b">
+              <div className="flex items-center gap-1.5 lg:gap-3 px-5 py-2 border-b">
                 <Search
                   className={cn(
                     "w-5 h-5 flex-shrink-0 transition-all",
@@ -280,7 +280,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   placeholder="What do you want to watch today?"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full bg-transparent border-none  focus:ring-0  placeholder:border-none focus:outline-none text-base placeholder:text-muted-foreground"
+                  className="w-full bg-transparent border-none  focus:ring-0  placeholder:border-none focus:outline-none text-sm lg:text-base placeholder:text-muted-foreground"
                   autoComplete="off"
                 />
                 {query ? (
