@@ -28,53 +28,164 @@ export default function Navbar() {
   const { theme, setTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [bannerVisible, setBannerVisible] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuContentRef = useRef<HTMLDivElement>(null);
+  const navLinksRef = useRef<HTMLElement>(null);
   const { isAuthenticated } = useUser();
 
   // Use custom hooks instead of separate useEffects
   const scrolled = useScrollPosition(20);
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const prefersReducedMotion = useMediaQuery(
+    "(prefers-reduced-motion: reduce)",
+  );
   useBodyLock(mobileMenuOpen);
 
-  // GSAP animation for mobile menu
+  // Listen for adblock banner visibility updates (event-driven, no polling)
+  useEffect(() => {
+    const handleBannerVisibility = (event: Event) => {
+      const customEvent = event as CustomEvent<{ visible: boolean }>;
+      setBannerVisible(Boolean(customEvent.detail?.visible));
+    };
+
+    setBannerVisible(Boolean(document.getElementById("adblock-banner")));
+
+    window.addEventListener(
+      "adblock-banner-visibility",
+      handleBannerVisibility as EventListener,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "adblock-banner-visibility",
+        handleBannerVisibility as EventListener,
+      );
+    };
+  }, []);
+
+  // Kill all GSAP tweens on unmount to prevent orphaned animations
+  useEffect(() => {
+    const overlay = mobileMenuRef.current;
+    const panel = mobileMenuContentRef.current;
+    return () => {
+      if (overlay) gsap.killTweensOf(overlay);
+      if (panel) gsap.killTweensOf(panel);
+    };
+  }, []);
+
+  // GSAP animation for mobile menu — compositor-only (opacity + translateX)
   useEffect(() => {
     if (!mobileMenuRef.current || !mobileMenuContentRef.current) return;
 
+    // Reduced motion: instant state swap, no animation
+    if (prefersReducedMotion) {
+      gsap.set(mobileMenuRef.current, {
+        display: mobileMenuOpen ? "block" : "none",
+        opacity: mobileMenuOpen ? 1 : 0,
+      });
+      gsap.set(mobileMenuContentRef.current, {
+        x: mobileMenuOpen ? 0 : "100%",
+      });
+      // Instantly show/hide nav links too
+      if (navLinksRef.current) {
+        gsap.set(navLinksRef.current.children, {
+          opacity: mobileMenuOpen ? 1 : 0,
+          x: 0,
+        });
+      }
+      return;
+    }
+
+    // Kill any in-flight tweens before starting new ones
+    gsap.killTweensOf(mobileMenuRef.current);
+    gsap.killTweensOf(mobileMenuContentRef.current);
+    if (navLinksRef.current) {
+      gsap.killTweensOf(navLinksRef.current.children);
+    }
+
     if (mobileMenuOpen) {
-      // Animate in
-      gsap.set(mobileMenuRef.current, { display: "block" });
+      // --- Animate in ---
+      // Promote layers before animation starts
+      gsap.set(mobileMenuRef.current, {
+        display: "block",
+        willChange: "opacity",
+      });
+      gsap.set(mobileMenuContentRef.current, { willChange: "transform" });
+
+      // Backdrop overlay fade
       gsap.to(mobileMenuRef.current, {
         opacity: 1,
-        duration: 0.3,
+        duration: 0.25,
         ease: "power2.out",
+        clearProps: "willChange",
       });
+
+      // Panel slide in
       gsap.fromTo(
         mobileMenuContentRef.current,
         { x: "100%" },
         {
           x: 0,
-          duration: 0.4,
+          duration: 0.35,
           ease: "power3.out",
+          clearProps: "willChange",
         },
       );
+
+      // Staggered nav link reveal (compositor-only: opacity + translateX)
+      if (navLinksRef.current) {
+        gsap.fromTo(
+          navLinksRef.current.children,
+          { opacity: 0, x: 20 },
+          {
+            opacity: 1,
+            x: 0,
+            duration: 0.3,
+            stagger: 0.05,
+            ease: "power2.out",
+            delay: 0.1,
+          },
+        );
+      }
     } else {
-      // Animate out
+      // --- Animate out ---
+      gsap.set(mobileMenuRef.current, { willChange: "opacity" });
+      gsap.set(mobileMenuContentRef.current, { willChange: "transform" });
+
+      // Fade nav links out quickly
+      if (navLinksRef.current) {
+        gsap.to(navLinksRef.current.children, {
+          opacity: 0,
+          duration: 0.15,
+          ease: "power2.in",
+        });
+      }
+
+      // Panel slide out
+      gsap.to(mobileMenuContentRef.current, {
+        x: "100%",
+        duration: 0.25,
+        ease: "power2.in",
+        onComplete: () => {
+          gsap.set(mobileMenuContentRef.current, { willChange: "auto" });
+        },
+      });
+
+      // Backdrop overlay fade out
       gsap.to(mobileMenuRef.current, {
         opacity: 0,
         duration: 0.2,
         ease: "power2.in",
         onComplete: () => {
-          gsap.set(mobileMenuRef.current, { display: "none" });
+          gsap.set(mobileMenuRef.current, {
+            display: "none",
+            willChange: "auto",
+          });
         },
       });
-      gsap.to(mobileMenuContentRef.current, {
-        x: "100%",
-        duration: 0.3,
-        ease: "power2.in",
-      });
     }
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, prefersReducedMotion]);
 
   // Close mobile menu when screen size becomes desktop
   useEffect(() => {
@@ -87,7 +198,11 @@ export default function Navbar() {
     <>
       <nav
         className={cn(
-          "fixed top-0 left-0 right-0 font-montserrat z-50 transition-all duration-300",
+          "fixed top-0 left-0 right-0 font-montserrat z-50",
+          // Only transition compositor-safe + paint-safe properties; margin/backdrop-filter snap instantly
+          "transition-[background-color,border-color,box-shadow,opacity] duration-300 motion-reduce:transition-none",
+          // Banner offset via transform (compositor-only) instead of top-* (layout)
+          bannerVisible && "translate-y-6 sm:translate-y-8 lg:translate-y-10",
           scrolled
             ? "mt-2 sm:mt-3 md:mt-4 mx-2 sm:mx-4 md:mx-8 rounded-xl sm:rounded-2xl backdrop-blur-sm bg-background/50 border shadow-lg"
             : "bg-gradient-to-b from-black/80 to-transparent",
@@ -188,7 +303,7 @@ export default function Navbar() {
         {/* Mobile menu with GSAP animations */}
         <div
           ref={mobileMenuRef}
-          className="fixed inset-0 z-40 rounded-xl sm:rounded-2xl md:hidden"
+          className="fixed inset-0 z-40 md:hidden bg-black/40"
           style={{ display: "none", opacity: 0 }}
           onClick={() => setMobileMenuOpen(false)}
         >
@@ -209,7 +324,7 @@ export default function Navbar() {
                 </button>
               </div>
 
-              <nav className="space-y-0.5 sm:space-y-1">
+              <nav ref={navLinksRef} className="space-y-0.5 sm:space-y-1">
                 <Link
                   href="/"
                   className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg hover:bg-accent/50 transition-colors text-sm sm:text-base"
