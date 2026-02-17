@@ -2,7 +2,8 @@
 
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
-import { hoverLift, fadeIn } from "@/lib/gsap-config";
+import { fadeIn } from "@/lib/gsap-config";
+import { gsap } from "gsap";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -58,23 +59,18 @@ export default function MediaCard({ item, type }: MediaCardProps) {
     type === "series" ? ("series" as const) : ("movie" as const);
   const isFavorited = isInFavorites(item.id, mediaTypeForFavorite);
 
-  // GSAP animations
+  // GSAP fade-in animation on mount (compositor-only: opacity + translateY)
   useGSAP(() => {
     if (cardRef.current) {
-      // Fade in animation on mount
       fadeIn(cardRef.current, { y: 20, duration: 0.4 });
-
-      // Setup hover lift effect
-      const { onEnter, onLeave } = hoverLift(cardRef.current);
-
-      cardRef.current.addEventListener("mouseenter", onEnter);
-      cardRef.current.addEventListener("mouseleave", onLeave);
-
-      return () => {
-        cardRef.current?.removeEventListener("mouseenter", onEnter);
-        cardRef.current?.removeEventListener("mouseleave", onLeave);
-      };
     }
+
+    // Cleanup: kill all tweens targeting this card on unmount
+    return () => {
+      if (cardRef.current) {
+        gsap.killTweensOf(cardRef.current);
+      }
+    };
   }, []);
 
   const handlePlay = (e: React.MouseEvent) => {
@@ -151,7 +147,7 @@ export default function MediaCard({ item, type }: MediaCardProps) {
   return (
     <div
       ref={cardRef}
-      className="group relative bg-card rounded-xl overflow-hidden w-fit"
+      className="group relative bg-card rounded-xl overflow-hidden w-fit transition-transform duration-300 hover:-translate-y-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
     >
       <Link href={`/${type}/${slug}`} className=" ">
         <div className=" w-fit aspect-[2/3] relative" ref={imageRef}>
@@ -160,8 +156,7 @@ export default function MediaCard({ item, type }: MediaCardProps) {
             alt={title}
             height={300}
             width={200}
-            className="object-cover transition-transform duration-500 
-                     group-hover:scale-105 md:group-hover:brightness-75"
+            className="object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
 
           <div

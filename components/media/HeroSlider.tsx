@@ -8,6 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { type Movie, type Series } from "@/types";
 import { Button } from "@/components/ui/button";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 function generateSlug(title: string, id: number): string {
   return `${title
@@ -32,6 +33,9 @@ export default function HeroSlider({ items }: Props) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const descRef = useRef<HTMLParagraphElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useMediaQuery(
+    "(prefers-reduced-motion: reduce)",
+  );
 
   useEffect(() => {
     if (isHovered) return;
@@ -50,28 +54,58 @@ export default function HeroSlider({ items }: Props) {
     setCurrent(newIndex);
   };
 
-  // GSAP slide animation
+  // GSAP cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (slideRef.current) gsap.killTweensOf(slideRef.current);
+      if (imageRef.current) gsap.killTweensOf(imageRef.current);
+      if (contentRef.current) gsap.killTweensOf(contentRef.current);
+      if (titleRef.current) gsap.killTweensOf(titleRef.current);
+      if (descRef.current) gsap.killTweensOf(descRef.current);
+      if (buttonRef.current) gsap.killTweensOf(buttonRef.current);
+    };
+  }, []);
+
+  // GSAP slide animation — compositor-only (transform + opacity)
   useGSAP(() => {
     if (!slideRef.current || !imageRef.current || !contentRef.current) return;
+
+    // Reduced motion: instant state swap
+    if (prefersReducedMotion) {
+      gsap.set(slideRef.current, { x: 0, opacity: 1, scale: 1 });
+      gsap.set(imageRef.current, { scale: 1 });
+      gsap.set([titleRef.current, descRef.current, buttonRef.current], {
+        opacity: 1,
+        y: 0,
+      });
+      return;
+    }
 
     const tl = gsap.timeline();
     const enterX = direction > 0 ? "100%" : "-100%";
 
-    // Slide entrance animation
+    // Slide entrance animation (compositor: transform + opacity)
     tl.fromTo(
       slideRef.current,
       { x: enterX, opacity: 0.5, scale: 1.05 },
-      { x: 0, opacity: 1, scale: 1, duration: 0.7, ease: "power2.out" },
+      {
+        x: 0,
+        opacity: 1,
+        scale: 1,
+        duration: 0.7,
+        ease: "power2.out",
+        clearProps: "transform,opacity",
+      },
     );
 
-    // Image zoom animation
+    // Image zoom animation (compositor: transform)
     gsap.fromTo(
       imageRef.current,
       { scale: 1.1 },
-      { scale: 1, duration: 0.7, ease: "power2.out" },
+      { scale: 1, duration: 0.7, ease: "power2.out", clearProps: "transform" },
     );
 
-    // Content stagger animation
+    // Content stagger animation (compositor: opacity + translateY)
     gsap.fromTo(
       [titleRef.current, descRef.current, buttonRef.current],
       { opacity: 0, y: 20 },
@@ -82,9 +116,10 @@ export default function HeroSlider({ items }: Props) {
         stagger: 0.15,
         ease: "power2.out",
         delay: 0.2,
+        clearProps: "transform,opacity",
       },
     );
-  }, [current]);
+  }, [current, direction, prefersReducedMotion]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
@@ -141,6 +176,9 @@ export default function HeroSlider({ items }: Props) {
           />
         </div>
 
+        {/* Dark gradient overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#040712]/80 via-[#040712]/60 to-transparent" />
+
         <div className="absolute inset-0">
           <div
             ref={contentRef}
@@ -148,14 +186,14 @@ export default function HeroSlider({ items }: Props) {
           >
             <h2
               ref={titleRef}
-              className="text-3xl md:text-4xl lg:text-6xl font-bold font-montserrat mb-2 md:mb-4 text-white drop-shadow-md"
+              className="text-3xl md:text-4xl lg:text-6xl font-bold font-montserrat mb-2 md:mb-4 text-white drop-shadow-lg"
             >
               {isMovie ? currentItem.title : currentItem.name}
             </h2>
 
             <p
               ref={descRef}
-              className="text-white/90 mb-4 md:mb-6 line-clamp-2 text-base md:text-lg drop-shadow"
+              className="text-white/90 mb-4 md:mb-6 line-clamp-2 text-base md:text-lg drop-shadow-md"
             >
               {currentItem.overview}
             </p>
@@ -185,16 +223,10 @@ export default function HeroSlider({ items }: Props) {
           <button
             key={index}
             onClick={() => navigateSlide(index)}
-            onMouseEnter={(e) =>
-              gsap.to(e.currentTarget, { scale: 1.2, duration: 0.3 })
-            }
-            onMouseLeave={(e) =>
-              gsap.to(e.currentTarget, { scale: 1, duration: 0.3 })
-            }
-            className={`h-2 rounded-full transition-all duration-300 ${
+            className={`h-2 rounded-full transition-all duration-300 motion-reduce:transition-none ${
               current === index
                 ? "bg-primary w-6 md:w-8"
-                : "bg-white/50 hover:bg-white/80 w-2"
+                : "bg-white/50 hover:bg-white/80 hover:scale-110 w-2 motion-reduce:hover:scale-100"
             }`}
           />
         ))}
@@ -205,13 +237,7 @@ export default function HeroSlider({ items }: Props) {
           setDirection(-1);
           setCurrent((prev) => (prev - 1 + items.length) % items.length);
         }}
-        onMouseEnter={(e) =>
-          gsap.to(e.currentTarget, { scale: 1.1, duration: 0.2 })
-        }
-        onMouseLeave={(e) =>
-          gsap.to(e.currentTarget, { scale: 1, duration: 0.2 })
-        }
-        className="hidden md:flex items-center justify-center absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/20 backdrop-blur-sm text-white"
+        className="hidden md:flex items-center justify-center absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/20 backdrop-blur-sm text-white transition-transform duration-200 hover:scale-110 motion-reduce:transition-none motion-reduce:hover:scale-100"
       >
         <ChevronLeft className="w-6 h-6" />
       </button>
@@ -221,13 +247,7 @@ export default function HeroSlider({ items }: Props) {
           setDirection(1);
           setCurrent((prev) => (prev + 1) % items.length);
         }}
-        onMouseEnter={(e) =>
-          gsap.to(e.currentTarget, { scale: 1.1, duration: 0.2 })
-        }
-        onMouseLeave={(e) =>
-          gsap.to(e.currentTarget, { scale: 1, duration: 0.2 })
-        }
-        className="hidden md:flex items-center justify-center absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/20 backdrop-blur-sm text-white"
+        className="hidden md:flex items-center justify-center absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/20 backdrop-blur-sm text-white transition-transform duration-200 hover:scale-110 motion-reduce:transition-none motion-reduce:hover:scale-100"
       >
         <ChevronRight className="w-6 h-6" />
       </button>

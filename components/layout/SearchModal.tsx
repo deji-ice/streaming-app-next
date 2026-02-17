@@ -14,6 +14,7 @@ import {
   Command,
 } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { Movie, Series } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
@@ -42,28 +43,76 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const debouncedQuery = useDebounce(query, 400);
+  const prefersReducedMotion = useMediaQuery(
+    "(prefers-reduced-motion: reduce)",
+  );
 
-  // GSAP modal animations
+  // GSAP cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (backdropRef.current) gsap.killTweensOf(backdropRef.current);
+      if (modalRef.current) gsap.killTweensOf(modalRef.current);
+    };
+  }, []);
+
+  // GSAP modal animations — compositor-only (opacity + scale)
   useEffect(() => {
     if (isOpen && backdropRef.current && modalRef.current) {
-      // Entrance animation
+      // Reduced motion: instant state
+      if (prefersReducedMotion) {
+        gsap.set(backdropRef.current, { opacity: 1 });
+        gsap.set(modalRef.current, { scale: 1, opacity: 1 });
+        return;
+      }
+
+      // Entrance animation with will-change
+      gsap.set(backdropRef.current, { willChange: "opacity" });
+      gsap.set(modalRef.current, { willChange: "transform, opacity" });
+
       gsap.fromTo(
         backdropRef.current,
         { opacity: 0 },
-        { opacity: 1, duration: 0.2, ease: "power2.out" },
+        {
+          opacity: 1,
+          duration: 0.2,
+          ease: "power2.out",
+          clearProps: "willChange",
+        },
       );
       gsap.fromTo(
         modalRef.current,
         { scale: 0.95, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.2, ease: "power2.out" },
+        {
+          scale: 1,
+          opacity: 1,
+          duration: 0.2,
+          ease: "power2.out",
+          clearProps: "willChange",
+        },
       );
     }
-  }, [isOpen]);
+  }, [isOpen, prefersReducedMotion]);
 
   const handleClose = () => {
     if (backdropRef.current && modalRef.current) {
-      // Exit animation
-      const tl = gsap.timeline({ onComplete: onClose });
+      // Reduced motion: instant close
+      if (prefersReducedMotion) {
+        onClose();
+        return;
+      }
+
+      // Exit animation with will-change
+      gsap.set(backdropRef.current, { willChange: "opacity" });
+      gsap.set(modalRef.current, { willChange: "transform, opacity" });
+
+      const tl = gsap.timeline({
+        onComplete: () => {
+          gsap.set([backdropRef.current, modalRef.current], {
+            willChange: "auto",
+          });
+          onClose();
+        },
+      });
       tl.to(modalRef.current, {
         scale: 0.95,
         opacity: 0,
