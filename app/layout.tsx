@@ -181,7 +181,13 @@ export default function RootLayout({
         </Providers>
 
         <Analytics />
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2647861840383370"
+          crossOrigin="anonymous"
+        ></script>
         <GoogleTagManager gtmId="GTM-PSDLSB6V" />
+
         {/* Google Analytics 4 */}
         <Script
           strategy="afterInteractive"
