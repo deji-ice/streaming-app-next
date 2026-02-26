@@ -31,7 +31,7 @@ const RecommendedMedia = dynamic(
   () => import("@/components/media/RecommendedMedia"),
   {
     loading: () => <div>Loading recommendations...</div>,
-  }
+  },
 );
 const EpisodeGrid = dynamic(() => import("@/components/media/EpisodeGrid"), {
   loading: () => (
@@ -42,8 +42,6 @@ const EpisodeGrid = dynamic(() => import("@/components/media/EpisodeGrid"), {
     </div>
   ),
 });
-
-
 
 export async function generateMetadata({
   params,
@@ -97,7 +95,6 @@ export async function generateMetadata({
   };
 }
 
-
 export default async function SeriesPage({
   params,
   searchParams,
@@ -112,7 +109,7 @@ export default async function SeriesPage({
 
   const series = await getSeriesDetails(slug, currentSeason);
   const seasonData = series?.seasons.find(
-    (s) => s.season_number === currentSeason
+    (s) => s.season_number === currentSeason,
   );
   const seasonEpisodesLength = seasonData?.episodes.length || 0;
 
@@ -155,6 +152,8 @@ export default async function SeriesPage({
           duration={series.last_episode_to_air.runtime ?? 0}
           cast={series.credits.cast}
           country={series.production_countries[0]?.name ?? "United States"}
+          season={currentSeason}
+          episode={currentEpisode}
         />
 
         <div className="mt-12 space-y-6">

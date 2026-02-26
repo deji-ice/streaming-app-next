@@ -19,6 +19,8 @@ interface MediaInfoProps {
   duration: number; // in minutes
   cast: Array<{ id: number; name: string }>;
   country: string;
+  season?: number;
+  episode?: number;
 }
 
 export default function MediaInfo({
@@ -33,7 +35,11 @@ export default function MediaInfo({
   duration,
   cast,
   country,
+  season,
+  episode,
 }: MediaInfoProps) {
+  const showEpisodeBadge =
+    type === "series" && season != null && episode != null;
   const [isLoadingTrailer, setIsLoadingTrailer] = useState<boolean>(false);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
   const [showTrailer, setShowTrailer] = useState(false);
@@ -68,9 +74,16 @@ export default function MediaInfo({
       {/* Mobile-optimized layout */}
       <div className="relative bg-background/80 rounded-2xl p-4 md:p-6 border border-border">
         <div className="md:hidden">
-          <h1 className="text-xl  sm:text-2xl font-montserrat font-bold text-foreground mb-3 ">
-            {title}
-          </h1>
+          <div className="mb-3">
+            <h1 className="text-xl sm:text-2xl font-montserrat font-bold text-foreground">
+              {title}
+            </h1>
+            {showEpisodeBadge && (
+              <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-sm bg-primary/15 text-primary border border-primary/25">
+                S{season} · E{episode}
+              </span>
+            )}
+          </div>
 
           <div className="flex items-center gap-2 mb-4">
             <div className="flex items-center font-montserrat gap-1 px-2 py-1 bg-muted rounded-lg">
@@ -174,12 +187,19 @@ export default function MediaInfo({
           <div className="flex-1 relative">
             {/* Title and Rating */}
             <div className="space-y-4">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-montserrat font-bold text-foreground">
-                {title}
-              </h1>
+              <div>
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-montserrat font-bold text-foreground">
+                  {title}
+                </h1>
+                {showEpisodeBadge && (
+                  <span className="inline-flex items-center gap-1.5 mt-2 text-sm font-semibold px-3 py-1 rounded-full bg-primary/15 dark:bg-slate-950 text-primary border border-primary/25">
+                    Season {season} · Episode {episode}
+                  </span>
+                )}
+              </div>
 
               <div className="flex items-center gap-4 w-fit">
-                <div className="flex items-center font-montserrat gap-1 px-3 py-1 bg-muted rounded-lg">
+                <div className="flex items-center font-montserrat gap-1 px-3 py-1 bg-muted dark:bg-slate-950 border border-border dark:border-slate-800 rounded-lg">
                   <p className="text-yellow-600 font-medium text-base">IMDB:</p>
                   <span className="text-foreground text-base">
                     {rating.toFixed(1)}
@@ -189,7 +209,7 @@ export default function MediaInfo({
                   onClick={handleTrailer}
                   disabled={isLoadingTrailer}
                   className={cn(
-                    "bg-muted text-foreground text-base px-3 py-1 rounded-lg",
+                    "bg-muted text-foreground dark:bg-slate-950 border border-border dark:border-slate-800 text-base px-3 py-1 rounded-lg",
                     "transition-all duration-200 hover:bg-muted/80",
                     isLoadingTrailer && "opacity-50 cursor-not-allowed",
                   )}
