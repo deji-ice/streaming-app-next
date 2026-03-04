@@ -6,7 +6,6 @@ import Footer from "@/components/layout/Footer";
 import "./globals.css";
 import { Providers } from "./providers";
 import { UserInitializer } from "./user-initializer";
-import { Analytics } from "@vercel/analytics/react";
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 
 import AdBlockBanner from "@/components/layout/AdBlockBanner";
@@ -180,7 +179,6 @@ export default function RootLayout({
           </UserInitializer>
         </Providers>
 
-        <Analytics />
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2647861840383370"

@@ -1,6 +1,8 @@
 import { MediaType } from "@/types";
 import { NextResponse, NextRequest } from "next/server";
 
+export const runtime = 'edge';
+
 const VIDSRC_BASE = process.env.NEXT_STREAM_BASE_URL; // Add to .env.local
 
 export async function GET(request: NextRequest) {

@@ -32,7 +32,7 @@ const MoviesClientPage = dynamic(() => import("./MoviesClientPage"), {
 
 async function getMoviesData(
   sortBy: string = "popularity.desc",
-  page: number = 1
+  page: number = 1,
 ): Promise<MovieData | null> {
   try {
     let endpoint;
@@ -56,7 +56,7 @@ async function getMoviesData(
           accept: "application/json",
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_API_KEY}`,
         },
-      }
+      },
     );
 
     if (!res.ok) throw new Error(`Failed to fetch movies: ${res.status}`);
@@ -69,7 +69,7 @@ async function getMoviesData(
   }
 }
 
-export const revalidate = 60; 
+export const dynamic = "force-dynamic";
 export default async function MoviesPage({ searchParams }: MoviePageProps) {
   const sortParam = (await searchParams).sort?.toString() || "popularity.desc";
   const pageParam = (await searchParams).page?.toString() || "1";

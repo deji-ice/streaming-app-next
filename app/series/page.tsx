@@ -21,7 +21,7 @@ const SeriesClientPage = dynamic(() => import("./SeriesClientPage"), {
 
 async function getSeriesData(
   sortBy: string = "popularity.desc",
-  page: number = 1
+  page: number = 1,
 ): Promise<SeriesData | null> {
   try {
     let endpoint;
@@ -45,7 +45,7 @@ async function getSeriesData(
           accept: "application/json",
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_API_KEY}`,
         },
-      }
+      },
     );
 
     if (!res.ok) throw new Error(`Failed to fetch series: ${res.status}`);
@@ -62,7 +62,7 @@ async function getSeriesData(
     };
   }
 }
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function SeriesPage({ searchParams }: SeriesPageProps) {
   const params = await searchParams;

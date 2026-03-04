@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = 'edge';
+
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const endpoint = searchParams.get("endpoint") || "popular";
@@ -13,7 +15,6 @@ export async function GET(request: NextRequest) {
                     accept: "application/json",
                     Authorization: `Bearer ${process.env.NEXT_PUBLIC_TMDB_API_KEY}`,
                 },
-                next: { revalidate: 3600 }, // Revalidate every hour
             }
         );
 

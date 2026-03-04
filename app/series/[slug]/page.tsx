@@ -16,7 +16,7 @@ export async function generateStaticParams() {
   }));
 }
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 const VideoPlayer = dynamic(() => import("@/components/media/VideoPlayer"), {
   loading: () => <div>Loading player...</div>,

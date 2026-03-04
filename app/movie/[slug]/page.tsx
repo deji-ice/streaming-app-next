@@ -14,7 +14,7 @@ export async function generateStaticParams() {
   }));
 }
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 const CastList = dynamic(() => import("@/components/media/CastList"), {
   loading: () => <div>Loading cast...</div>,
@@ -23,7 +23,7 @@ const RecommendedMedia = dynamic(
   () => import("@/components/media/RecommendedMedia"),
   {
     loading: () => <div>Loading recommendations...</div>,
-  }
+  },
 );
 const MediaInfo = dynamic(() => import("@/components/media/MediaInfo"), {
   loading: () => <div>Loading movie details...</div>,

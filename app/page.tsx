@@ -1,13 +1,13 @@
 import HeroSlider from "@/components/media/HeroSlider";
 import MediaGridSkeleton from "@/components/media/MediaGridSkeleton";
 import { tmdb } from "@/lib/tmdb";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 
-const MediaTabs = dynamic(() => import("@/components/media/MediaTabs"), {
+const MediaTabs = nextDynamic(() => import("@/components/media/MediaTabs"), {
   loading: () => <MediaGridSkeleton count={10} />,
 });
 
-const ContinueWatching = dynamic(
+const ContinueWatching = nextDynamic(
   () => import("@/components/media/ContinueWatching"),
   {
     loading: () => null,
@@ -41,7 +41,7 @@ async function getData() {
   };
 }
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const {
