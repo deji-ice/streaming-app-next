@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
 import { Film } from "lucide-react";
 import { Movie as MovieType } from "@/types";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 
 export const metadata: Metadata = {
   title: "Movies | StreamScape",
@@ -26,7 +26,7 @@ type MovieData = {
   total_results: number;
 };
 
-const MoviesClientPage = dynamic(() => import("./MoviesClientPage"), {
+const MoviesClientPage = nextDynamic(() => import("./MoviesClientPage"), {
   loading: () => <div>Loading movies...</div>,
 });
 

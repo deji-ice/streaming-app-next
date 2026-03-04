@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
 import SeasonSelector from "@/components/media/SeasonSelector";
 import { SeriesPageProps, Series } from "@/types";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { getSeriesDetails } from "@/lib/utils";
 
 export async function generateStaticParams() {
@@ -18,16 +18,19 @@ export async function generateStaticParams() {
 
 export const dynamic = "force-dynamic";
 
-const VideoPlayer = dynamic(() => import("@/components/media/VideoPlayer"), {
-  loading: () => <div>Loading player...</div>,
-});
-const MediaInfo = dynamic(() => import("@/components/media/MediaInfo"), {
+const VideoPlayer = nextDynamic(
+  () => import("@/components/media/VideoPlayer"),
+  {
+    loading: () => <div>Loading player...</div>,
+  },
+);
+const MediaInfo = nextDynamic(() => import("@/components/media/MediaInfo"), {
   loading: () => <div>Loading movie details...</div>,
 });
-const CastList = dynamic(() => import("@/components/media/CastList"), {
+const CastList = nextDynamic(() => import("@/components/media/CastList"), {
   loading: () => <div>Loading cast...</div>,
 });
-const RecommendedMedia = dynamic(
+const RecommendedMedia = nextDynamic(
   () => import("@/components/media/RecommendedMedia"),
   {
     loading: () => <div>Loading recommendations...</div>,

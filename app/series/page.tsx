@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
 import { Tv } from "lucide-react";
 import { SeriesPageProps, SeriesDetails } from "@/types";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 
 export const metadata: Metadata = {
   title: "TV Series | StreamScape",
@@ -15,7 +15,7 @@ type SeriesData = {
   total_results: number;
 };
 
-const SeriesClientPage = dynamic(() => import("./SeriesClientPage"), {
+const SeriesClientPage = nextDynamic(() => import("./SeriesClientPage"), {
   loading: () => <div>Loading series...</div>,
 });
 

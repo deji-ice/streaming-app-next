@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { tmdb } from "@/lib/tmdb";
 import { Movie, MovieDetails, MoviePageProps } from "@/types";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 
 export async function generateStaticParams() {
   const popularMovies = await tmdb.getPopularMovies();
@@ -16,22 +16,25 @@ export async function generateStaticParams() {
 
 export const dynamic = "force-dynamic";
 
-const CastList = dynamic(() => import("@/components/media/CastList"), {
+const CastList = nextDynamic(() => import("@/components/media/CastList"), {
   loading: () => <div>Loading cast...</div>,
 });
-const RecommendedMedia = dynamic(
+const RecommendedMedia = nextDynamic(
   () => import("@/components/media/RecommendedMedia"),
   {
     loading: () => <div>Loading recommendations...</div>,
   },
 );
-const MediaInfo = dynamic(() => import("@/components/media/MediaInfo"), {
+const MediaInfo = nextDynamic(() => import("@/components/media/MediaInfo"), {
   loading: () => <div>Loading movie details...</div>,
 });
 
-const VideoPlayer = dynamic(() => import("@/components/media/VideoPlayer"), {
-  loading: () => <div>Loading player...</div>,
-});
+const VideoPlayer = nextDynamic(
+  () => import("@/components/media/VideoPlayer"),
+  {
+    loading: () => <div>Loading player...</div>,
+  },
+);
 
 // Type guard for MovieDetails
 function isMovieDetails(movie: unknown): movie is MovieDetails {
