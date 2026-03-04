@@ -36,15 +36,18 @@ const RecommendedMedia = nextDynamic(
     loading: () => <div>Loading recommendations...</div>,
   },
 );
-const EpisodeGrid = dynamic(() => import("@/components/media/EpisodeGrid"), {
-  loading: () => (
-    <div className="grid gap-4">
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className="h-32 bg-white animate-pulse rounded-lg" />
-      ))}
-    </div>
-  ),
-});
+const EpisodeGrid = nextDynamic(
+  () => import("@/components/media/EpisodeGrid"),
+  {
+    loading: () => (
+      <div className="grid gap-4">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="h-32 bg-white animate-pulse rounded-lg" />
+        ))}
+      </div>
+    ),
+  },
+);
 
 export async function generateMetadata({
   params,
