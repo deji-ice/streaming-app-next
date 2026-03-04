@@ -69,7 +69,7 @@ async function getMoviesData(
   }
 }
 
-export const runtime = 'edge';
+export const runtime = "edge";
 export const dynamic = "force-dynamic";
 export default async function MoviesPage({ searchParams }: MoviePageProps) {
   const sortParam = (await searchParams).sort?.toString() || "popularity.desc";

@@ -4,17 +4,7 @@ import { tmdb } from "@/lib/tmdb";
 import { Movie, MovieDetails, MoviePageProps } from "@/types";
 import nextDynamic from "next/dynamic";
 
-export async function generateStaticParams() {
-  const popularMovies = await tmdb.getPopularMovies();
-  return popularMovies.results.slice(0, 10).map((m: Movie) => ({
-    slug: `${m.title
-      .toLowerCase()
-      .replace(/['":]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")}-${m.id}`,
-  }));
-}
-
-export const runtime = 'edge';
+export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 const CastList = nextDynamic(() => import("@/components/media/CastList"), {

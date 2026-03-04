@@ -6,17 +6,7 @@ import { SeriesPageProps, Series } from "@/types";
 import nextDynamic from "next/dynamic";
 import { getSeriesDetails } from "@/lib/utils";
 
-export async function generateStaticParams() {
-  const popularSeries = await tmdb.getPopularSeries();
-  return popularSeries.results.slice(0, 10).map((s: Series) => ({
-    slug: `${s.name
-      .toLowerCase()
-      .replace(/['":]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")}-${s.id}`,
-  }));
-}
-
-export const runtime = 'edge';
+export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 const VideoPlayer = nextDynamic(
