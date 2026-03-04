@@ -6,7 +6,6 @@ import { SeriesPageProps, Series } from "@/types";
 import nextDynamic from "next/dynamic";
 import { getSeriesDetails } from "@/lib/utils";
 
-export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 const VideoPlayer = nextDynamic(

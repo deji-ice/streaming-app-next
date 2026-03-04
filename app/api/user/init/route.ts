@@ -2,8 +2,6 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-export const runtime = 'edge';
-
 /**
  * This endpoint is now optional - profiles are created client-side
  * It exists for verification and fallback purposes only

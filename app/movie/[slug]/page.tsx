@@ -4,7 +4,6 @@ import { tmdb } from "@/lib/tmdb";
 import { Movie, MovieDetails, MoviePageProps } from "@/types";
 import nextDynamic from "next/dynamic";
 
-export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 const CastList = nextDynamic(() => import("@/components/media/CastList"), {

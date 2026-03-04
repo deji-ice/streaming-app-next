@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { tmdb } from '@/lib/tmdb';
 
-export const runtime = 'edge';
-
 type SearchResultItem = {
     release_date?: string;
     first_air_date?: string;
