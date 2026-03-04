@@ -16,6 +16,7 @@ export async function generateStaticParams() {
   }));
 }
 
+export const runtime = 'edge';
 export const dynamic = "force-dynamic";
 
 const VideoPlayer = nextDynamic(

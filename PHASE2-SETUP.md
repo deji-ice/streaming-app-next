@@ -13,6 +13,7 @@
 
 ## Step 1: Environment Variables
 
+j
 Copy `.env.example` to `.env.local` and fill in the values:
 
 ```bash
@@ -21,11 +22,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 
-# NextAuth - Generate secret with: openssl rand -base64 32
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-generated-secret-here
 
-# Optional: Google OAuth
+# Optional: Google OAuth (Supabase)
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
@@ -155,4 +153,4 @@ After authentication is working:
 For issues or questions:
 
 - Check Supabase docs: [supabase.com/docs](https://supabase.com/docs)
-- NextAuth docs: [next-auth.js.org](https://next-auth.js.org)
+- Supabase Auth docs: [supabase.com/docs/guides/auth](https://supabase.com/docs/guides/auth)
