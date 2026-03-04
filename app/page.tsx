@@ -28,7 +28,7 @@ async function getData() {
     tmdb.getPopularSeries(),
     tmdb.getLatestMovies(),
     tmdb.getLatestSeries(),
-    tmdb.getGenres(),
+    tmdb.getGenres(), 
   ]);
 
   return {
