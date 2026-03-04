@@ -20,6 +20,10 @@ skills-lock.json
 /.next/
 /out/
 
+# cloudflare
+.open-next
+.dev.vars
+
 # production
 /build
 
