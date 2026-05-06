@@ -8,3 +8,14 @@ compatibility_flags = [ "nodejs_compat" ]
 [assets]
 directory = ".open-next/assets"
 binding = "ASSETS"
+
+# Non-sensitive runtime vars (safe to commit)
+[vars]
+NEXT_PUBLIC_APP_URL = "https://stream.scapex.workers.dev"
+
+# Sensitive vars — set these via CLI, never commit values here:
+#   wrangler secret put NEXT_PUBLIC_SUPABASE_URL
+#   wrangler secret put NEXT_PUBLIC_SUPABASE_ANON_KEY
+#   wrangler secret put NEXT_PUBLIC_TMDB_API_KEY
+#   wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+#   wrangler secret put NEXT_STREAM_BASE_URL

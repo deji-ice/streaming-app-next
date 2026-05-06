@@ -16,9 +16,14 @@ export const supabase = supabaseUrl && supabaseAnonKey
     })
     : ({
         auth: {
-            signUp: async () => ({ data: null, error: new Error('Supabase not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local') }),
-            signInWithPassword: async () => ({ data: null, error: new Error('Supabase not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local') }),
-            signInWithOAuth: async () => ({ data: null, error: new Error('Supabase not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local') }),
+            signUp: async () => ({ data: null, error: new Error('Supabase not configured') }),
+            signInWithPassword: async () => ({ data: null, error: new Error('Supabase not configured') }),
+            signInWithOAuth: async () => ({ data: null, error: new Error('Supabase not configured') }),
+            signOut: async () => ({ error: null }),
+            getSession: async () => ({ data: { session: null }, error: null }),
+            onAuthStateChange: () => ({
+                data: { subscription: { unsubscribe: () => {} } },
+            }),
         },
     } as any);
 
