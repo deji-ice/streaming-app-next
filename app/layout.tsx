@@ -9,6 +9,7 @@ import { UserInitializer } from "./user-initializer";
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 
 import AdBlockBanner from "@/components/layout/AdBlockBanner";
+import InstallPrompt from "@/components/pwa/InstallPrompt";
 import Script from "next/script";
 
 const montserrat = Montserrat({
@@ -98,15 +99,16 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico" },
-      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
     ],
-    apple: [{ url: "/apple-icon.svg", type: "image/svg+xml" }],
-    other: [
-      {
-        rel: "apple-touch-icon-precomposed",
-        url: "/apple-touch-icon-precomposed.svg",
-      },
+    apple: [
+      { url: "/icons/apple-touch-icon-180.png", sizes: "180x180", type: "image/png" },
     ],
+  },
+  appleWebApp: {
+    capable: true,
+    title: "StreamScapeX",
+    statusBarStyle: "black-translucent",
   },
   verification: {
     google: "googleca5e3c6b4470fb54", // Using the file name from your public directory
@@ -138,7 +140,6 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://image.tmdb.org" />
 
         {/* Preload critical assets */}
-        <link rel="preload" as="image" href="/logo.svg" />
         <link rel="preload" as="image" href="/og-image.jpg" />
 
         {/* Remove this line - globals.css is already imported */}
@@ -166,6 +167,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <AdBlockBanner />
+              <InstallPrompt />
               <Navbar />
               <main id="main-content" className="min-h-screen font-roboto">
                 {children}
