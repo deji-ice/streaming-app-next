@@ -15,7 +15,7 @@ export default {
 		extend: {
 			fontFamily: {
 				montserrat: ['var(--font-montserrat)', ...fontFamily.sans],
-				roboto: ['var(--font-montserrat)', ...fontFamily.sans],
+				roboto: ['var(--font-roboto)', ...fontFamily.sans],
 			},
 			colors: {
 				background: 'hsl(var(--background))',

@@ -115,7 +115,7 @@ export default function ProfilePage() {
             {/* Avatar and Basic Info */}
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-2xl font-bold">
                   {profile.full_name?.[0]?.toUpperCase() ||
                     profile.username?.[0]?.toUpperCase() ||
                     user.email?.[0]?.toUpperCase() ||

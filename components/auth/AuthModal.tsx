@@ -22,11 +22,6 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           "ring-1 ring-white/20 dark:ring-white/10",
           // Shadows for depth
           "shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
-          // Inner glow
-          "before:absolute before:inset-0 before:rounded-lg before:bg-gradient-to-br",
-          "before:from-white/40 before:via-transparent before:to-transparent",
-          "before:dark:from-white/10 before:dark:via-transparent before:dark:to-transparent",
-          "before:pointer-events-none",
           // Animation
           "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
           "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",

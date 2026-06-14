@@ -22,7 +22,9 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com",
               "style-src 'self' 'unsafe-inline'",
-              "frame-src * 'self' https://*.vidsrc.xyz https://*.vidsrc.me https://*.vidsrc.to",
+              // Intentional allowlist of the streaming sources in lib/stream-providers.ts
+              // plus YouTube (trailers). Add a provider's domain here when you add it to the registry.
+              "frame-src 'self' https://vidsrc.to https://*.vidsrc.to https://multiembed.mov https://*.multiembed.mov https://vidlink.pro https://*.vidlink.pro https://www.youtube.com https://www.youtube-nocookie.com",
               "frame-ancestors 'self'",
               "img-src 'self' https: data: blob:",
               "media-src 'self' https: data: blob:",

@@ -147,73 +147,73 @@ export default function MediaCard({ item, type }: MediaCardProps) {
   return (
     <div
       ref={cardRef}
-      className="group relative bg-card rounded-xl overflow-hidden w-fit transition-transform duration-300 hover:-translate-y-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+      className="group relative w-full bg-card rounded-xl overflow-hidden transition-transform duration-300 hover:-translate-y-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
     >
-      <Link href={`/${type}/${slug}`} className=" ">
-        <div className=" w-fit aspect-[2/3] relative" ref={imageRef}>
+      <Link href={`/${type}/${slug}`}>
+        <div className="relative w-full aspect-[2/3]" ref={imageRef}>
           <Image
             src={imageUrl}
             alt={title}
-            height={300}
-            width={200}
+            fill
+            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
 
-          <div
-            className="absolute inset-0 bg-gradient-to-t 
-                        from-black/20 via-black/10 to-transparent"
-          />
-
+          {/* Play affordance — always on mobile, hover-reveal on desktop */}
           <button
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
-                 md:opacity-0 md:group-hover:opacity-100 
-                 transition-opacity duration-500 "
+            type="button"
+            aria-label={`Play ${title}`}
             onClick={handlePlay}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-opacity duration-300 md:opacity-0 md:group-hover:opacity-100"
           >
-            <Play className="w-4 h-4" />
+            <Play className="h-5 w-5 fill-current" />
           </button>
 
-          {/* Bookmark button */}
+          {/* Bookmark — ~40px tap target */}
           <button
-            className={`absolute z-30 top-2 left-2 text-white hover:text-primary 
-                     transition-colors duration-300 ${
-                       isBookmarked ? "text-primary" : ""
-                     }`}
+            type="button"
+            aria-label={
+              isBookmarked
+                ? `Remove ${title} from watchlist`
+                : `Add ${title} to watchlist`
+            }
+            aria-pressed={isBookmarked}
             onClick={handleBookmark}
+            className="absolute z-30 top-2 left-2 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white transition-colors hover:text-primary"
           >
             {isBookmarked ? (
-              <BookmarkCheck className="w-4 h-4" />
+              <BookmarkCheck className="h-5 w-5 text-primary" />
             ) : (
-              <Bookmark className="w-4 h-4" />
+              <Bookmark className="h-5 w-5" />
             )}
           </button>
 
-          {/* Favorite button */}
+          {/* Favorite — ~40px tap target */}
           <button
-            className={`absolute z-30 top-2 right-2 text-white hover:text-red-500 
-                     transition-colors duration-300 ${
-                       isFavorited ? "text-red-500" : ""
-                     }`}
+            type="button"
+            aria-label={
+              isFavorited
+                ? `Remove ${title} from favorites`
+                : `Add ${title} to favorites`
+            }
+            aria-pressed={isFavorited}
             onClick={handleFavorite}
+            className="absolute z-30 top-2 right-2 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white transition-colors hover:text-red-500"
           >
-            <Heart className={`w-4 h-4 ${isFavorited ? "fill-red-500" : ""}`} />
+            <Heart
+              className={`h-5 w-5 ${isFavorited ? "fill-red-500 text-red-500" : ""}`}
+            />
           </button>
 
-          {/* Always visible info section on mobile, hover on desktop */}
-          <div
-            className="absolute bottom-0 left-0 right-0 p-4 
-                       bg-gradient-to-t from-black to-transparent"
-          >
-            <h3
-              className="font-montserrat font-semibold text-white 
-                        truncate mb-2"
-            >
+          {/* Info band (flat overlay, no gradient) */}
+          <div className="absolute bottom-0 left-0 right-0 p-3 bg-black/70">
+            <h3 className="font-montserrat font-semibold text-white truncate mb-1.5">
               {title}
             </h3>
             <div className="flex items-center justify-between gap-3 text-sm text-white/80">
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 text-yellow-500" />
-                <span>{item.vote_average.toFixed(1)}</span>
+                <span>{item.vote_average?.toFixed(1) ?? "N/A"}</span>
               </div>
               <div className="flex gap-2">
                 {type === "series" && "last_episode_to_air" in item && (

@@ -1,11 +1,8 @@
 "use client";
 import Link from "next/link";
-import { useTheme } from "next-themes";
 import { useRef, useEffect } from "react";
 import { gsap } from "@/lib/gsap-config";
 import {
-  Sun,
-  Moon,
   Search,
   Menu,
   X,
@@ -25,7 +22,6 @@ import { useBodyLock } from "@/hooks/useBodyLock";
 import { useUser } from "@/hooks/useUser";
 
 export default function Navbar() {
-  const { theme, setTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [bannerVisible, setBannerVisible] = useState(false);
@@ -205,7 +201,7 @@ export default function Navbar() {
           bannerVisible && "translate-y-6 sm:translate-y-8 lg:translate-y-10",
           scrolled
             ? "mt-2 sm:mt-3 md:mt-4 mx-2 sm:mx-4 md:mx-8 rounded-xl sm:rounded-2xl backdrop-blur-sm bg-background/50 border shadow-lg"
-            : "bg-gradient-to-b from-black/80 to-transparent",
+            : "bg-black/40",
         )}
       >
         <div className="container mx-auto px-2 sm:px-4">
@@ -250,21 +246,6 @@ export default function Navbar() {
 
             {/* Actions */}
             <div className="flex items-center gap-1 sm:gap-2">
-              <button
-                className={cn(
-                  "p-1.5 sm:p-2 hover:bg-white/10 md:block hidden rounded-full",
-                  scrolled ? "text-slate-900 dark:text-white" : "text-white",
-                )}
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                aria-label="Toggle theme"
-              >
-                {theme === "dark" ? (
-                  <Moon className="h-4 w-4 sm:h-5 sm:w-5" />
-                ) : (
-                  <Sun className="h-4 w-4 sm:h-5 sm:w-5" />
-                )}
-              </button>
-
               <button
                 onClick={() => setSearchOpen(true)}
                 className={cn(
@@ -376,27 +357,7 @@ export default function Navbar() {
               </nav>
 
               <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t">
-                <div className="mb-4">
-                  <UserProfileDropdown scrolled={true} />
-                </div>
-                <div className="flex justify-between items-center px-3 sm:px-4">
-                  <span className="font-medium text-sm sm:text-base">
-                    Theme
-                  </span>
-                  <button
-                    onClick={() =>
-                      setTheme(theme === "dark" ? "light" : "dark")
-                    }
-                    className="p-1.5 sm:p-2 rounded-full hover:bg-accent/50"
-                    aria-label="Toggle theme"
-                  >
-                    {theme === "dark" ? (
-                      <Moon className="h-4 w-4 sm:h-5 sm:w-5" />
-                    ) : (
-                      <Sun className="h-4 w-4 sm:h-5 sm:w-5" />
-                    )}
-                  </button>
-                </div>
+                <UserProfileDropdown scrolled={true} />
               </div>
             </div>
           </div>

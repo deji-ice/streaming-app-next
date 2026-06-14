@@ -11,11 +11,7 @@ export default function MediaGrid({ items, type, title }: MediaGridProps) {
   return (
     <section className="py-8">
       <div className="container mx-auto px-4">
-        <h2
-          className="text-2xl font-montserrat font-bold mb-8 
-                     bg-gradient-to-r from-primary to-primary/50 
-                     bg-clip-text text-transparent"
-        >
+        <h2 className="text-2xl font-montserrat font-bold mb-8 text-foreground">
           {title}
         </h2>
 

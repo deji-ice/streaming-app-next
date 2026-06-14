@@ -10,7 +10,7 @@ export default function NotFound() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-b from-background to-background/95 px-4 relative overflow-hidden">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background px-4 relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-1/4 left-1/3 w-72 h-72 bg-primary/20 rounded-full filter blur-3xl opacity-30"></div>
@@ -25,7 +25,7 @@ export default function NotFound() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.6 }}
         >
-          <h1 className="text-6xl md:text-7xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-indigo-200">
+          <h1 className="text-6xl md:text-7xl font-bold mb-4 text-foreground">
             404
           </h1>
 

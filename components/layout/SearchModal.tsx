@@ -280,7 +280,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   placeholder="What do you want to watch today?"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full bg-transparent border-none  focus:ring-0  placeholder:border-none focus:outline-none text-sm lg:text-base placeholder:text-muted-foreground"
+                  className="w-full bg-transparent border-none  focus:ring-0  placeholder:border-none focus:outline-none text-base placeholder:text-muted-foreground"
                   autoComplete="off"
                 />
                 {query ? (

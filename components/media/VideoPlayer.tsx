@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Play, ChevronLeft, ChevronRight } from "lucide-react";
 import { VideoPlayerProps } from "@/types";
@@ -8,6 +8,9 @@ import { trackEvent } from "@/lib/analytics";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useWatchHistory } from "@/hooks/useWatchHistory";
+import { useStreamSource } from "@/hooks/useStreamSource";
+import { getProvider } from "@/lib/stream-providers";
+import SourceSelector from "@/components/media/SourceSelector";
 
 export default function VideoPlayer({
   tmdbId,
@@ -20,55 +23,54 @@ export default function VideoPlayer({
   const [isPlaying, setIsPlaying] = useState(false);
   const [streamUrl, setStreamUrl] = useState("");
   const { logWatchStart } = useWatchHistory();
+  const { providerId, setProviderId } = useStreamSource();
 
-  const handlePlay = async () => {
-    try {
-      // Base params for all types
-      const params = new URLSearchParams({
+  // Build the embed URL synchronously from the registry — no fetch, no await —
+  // so the whole play action stays inside the user-gesture call stack (friendlier
+  // to iOS autoplay/gesture rules than awaiting an API round-trip first).
+  const buildUrl = useCallback(
+    (id: string) =>
+      getProvider(id).buildUrl({
         type,
-        id: tmdbId.toString(),
-      });
+        tmdbId,
+        season: episode?.season,
+        episode: episode?.number,
+      }),
+    [type, tmdbId, episode?.season, episode?.number]
+  );
 
-      // season and episode params only for series
-      if (type === "series" && episode) {
-        params.append("season", episode.season.toString());
-        params.append("episode", episode.number.toString());
-      }
+  const handlePlay = () => {
+    setStreamUrl(buildUrl(providerId));
+    setIsPlaying(true);
 
-      const res = await fetch(`/api/stream?${params}`);
-      const data = await res.json();
-
-      if (data.url) {
-        setStreamUrl(data.url);
-        setIsPlaying(true);
-        const numericTmdbId = Number(tmdbId);
-        if (!Number.isNaN(numericTmdbId)) {
-          try {
-            await logWatchStart({
-              tmdbId: numericTmdbId,
-              mediaType: type,
-              title,
-              posterPath: posterPath ?? null,
-              backdropPath: posterPath ?? null,
-              seasonNumber: episode?.season,
-              episodeNumber: episode?.number,
-            });
-          } catch (error) {
-            console.error("Failed to log watch history:", error);
-          }
-        }
-        // Track play event
-        trackEvent("video_play", {
-          content_type: type,
-          content_id: tmdbId,
-          title: title,
-          ...(episode && { season: episode.season, episode: episode.number }),
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching stream URL:", error);
+    // Watch history + analytics are fire-and-forget; never gate playback on them.
+    const numericTmdbId = Number(tmdbId);
+    if (!Number.isNaN(numericTmdbId)) {
+      logWatchStart({
+        tmdbId: numericTmdbId,
+        mediaType: type,
+        title,
+        posterPath: posterPath ?? null,
+        backdropPath: posterPath ?? null,
+        seasonNumber: episode?.season,
+        episodeNumber: episode?.number,
+      }).catch((error) =>
+        console.error("Failed to log watch history:", error)
+      );
     }
+
+    trackEvent("video_play", {
+      content_type: type,
+      content_id: tmdbId,
+      title: title,
+      ...(episode && { season: episode.season, episode: episode.number }),
+    });
   };
+
+  // Switching source (or navigating episodes) while watching reloads instantly.
+  useEffect(() => {
+    if (isPlaying) setStreamUrl(buildUrl(providerId));
+  }, [providerId, isPlaying, buildUrl]);
 
   const backdropUrl = posterPath
     ? `https://image.tmdb.org/t/p/original${posterPath}`
@@ -142,13 +144,17 @@ export default function VideoPlayer({
     <div className="w-full pt-[56px] md:pt-0">
       <div className="relative w-full aspect-video">
         <iframe
+          // Remounting on source/episode change forces a clean reload.
+          key={`${providerId}-${episode?.season ?? 0}-${episode?.number ?? 0}`}
           src={streamUrl}
           title={title}
           className="absolute inset-0 w-full h-full"
           allowFullScreen
-          referrerPolicy="no-referrer"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture"
         />
+      </div>
+      <div className="px-4 md:px-0">
+        <SourceSelector value={providerId} onChange={setProviderId} />
       </div>
       <EpisodeControls />
     </div>

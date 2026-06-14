@@ -117,10 +117,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8f9fa" },
-    { media: "(prefers-color-scheme: dark)", color: "#111827" },
-  ],
+  themeColor: "#111827", // dark-only
   width: "device-width",
   initialScale: 1,
   maximumScale: 5, // Allow zooming for accessibility
@@ -134,7 +131,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         {/* Preconnect to external domains */}
         <link rel="preconnect" href="https://image.tmdb.org" />
@@ -151,7 +148,7 @@ export default function RootLayout({
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
       )}
       <body
-        className={`${montserrat.variable} ${roboto.variable} antialiased bg-[#f8f9fa] dark:bg-gray-950 transition-colors duration-300`}
+        className={`${montserrat.variable} ${roboto.variable} antialiased bg-gray-950`}
       >
         {/* skip to content for accessibility */}
         <a
@@ -165,13 +162,12 @@ export default function RootLayout({
           <UserInitializer>
             <ThemeProvider
               attribute="class"
-              defaultTheme="system"
-              enableSystem
+              forcedTheme="dark"
               disableTransitionOnChange
             >
               <AdBlockBanner />
               <Navbar />
-              <main id="main-content" className="min-h-screen font-montserrat ">
+              <main id="main-content" className="min-h-screen font-roboto">
                 {children}
               </main>
               <Footer />

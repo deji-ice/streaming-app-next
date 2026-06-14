@@ -176,8 +176,8 @@ export default function HeroSlider({ items }: Props) {
           />
         </div>
 
-        {/* Dark gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#040712]/80 via-[#040712]/60 to-transparent" />
+        {/* Dark scrim for text readability */}
+        <div className="absolute inset-0 bg-[#040712]/60" />
 
         <div className="absolute inset-0">
           <div

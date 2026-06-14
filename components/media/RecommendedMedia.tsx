@@ -18,8 +18,10 @@ export default function RecommendedMedia({
 }: RecommendedMediaProps) {
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-montserrat font-bold">{title}</h2>
-      
+      <h2 className="mb-1 border-b border-border pb-2 font-montserrat text-xl font-bold tracking-tight sm:text-2xl">
+        {title}
+      </h2>
+
       <ScrollArea className="w-full whitespace-nowrap rounded-lg">
         <div className="flex w-full gap-4 pb-4">
           {items.map((item) => (

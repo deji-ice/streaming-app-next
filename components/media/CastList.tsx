@@ -27,8 +27,8 @@ export default function CastList({ cast }: CastListProps) {
               className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
             />
 
-            {/* Elegant gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            {/* Hover scrim for name legibility */}
+            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
             {/* Character name shown on hover */}
             <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">

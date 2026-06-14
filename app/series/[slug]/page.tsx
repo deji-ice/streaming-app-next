@@ -32,7 +32,7 @@ const EpisodeGrid = nextDynamic(
     loading: () => (
       <div className="grid gap-4">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-32 bg-white animate-pulse rounded-lg" />
+          <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
         ))}
       </div>
     ),
@@ -120,7 +120,7 @@ export default async function SeriesPage({
   return (
     <div className="min-h-screen pb-8">
       {/* TV Series Schema.org structured data */}
-      <div className="relative aspect-video w-full">
+      <div className="w-full">
         <VideoPlayer
           key={`${currentSeason}-${currentEpisode}`}
           tmdbId={seriesId!}
@@ -152,9 +152,11 @@ export default async function SeriesPage({
           episode={currentEpisode}
         />
 
-        <div className="mt-12 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-montserrat font-bold">Episodes</h2>
+        <div className="mt-10 md:mt-14 space-y-5">
+          <div className="flex flex-col gap-3 border-b border-border pb-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="font-montserrat text-xl font-bold tracking-tight sm:text-2xl">
+              Episodes
+            </h2>
             <SeasonSelector
               seasons={series.seasons}
               currentSeason={currentSeason}
@@ -168,15 +170,18 @@ export default async function SeriesPage({
             }
             seriesId={slug}
             currentSeason={currentSeason}
+            currentEpisode={currentEpisode}
           />
         </div>
 
-        <div className="mt-12">
-          <h2 className="text-2xl font-montserrat font-bold mb-6">Cast</h2>
+        <div className="mt-10 md:mt-14">
+          <h2 className="mb-5 border-b border-border pb-2 font-montserrat text-xl font-bold tracking-tight sm:text-2xl">
+            Cast
+          </h2>
           <CastList cast={series.credits.cast} />
         </div>
 
-        <div className="mt-12">
+        <div className="mt-10 md:mt-14">
           <RecommendedMedia
             items={recommendations}
             type="series"

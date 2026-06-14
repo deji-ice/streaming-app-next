@@ -256,7 +256,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Activity Stats */}
-          <div className="bg-gradient-to-br from-primary/10 to-purple-500/10 border border-primary/20 rounded-lg p-4">
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
             <h3 className="font-semibold text-sm text-foreground mb-4 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-primary" />
               Your Activity

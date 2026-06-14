@@ -110,7 +110,18 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-roboto;
+  }
+
+  /* iOS Safari zooms the viewport when a focused text field is below 16px.
+     Enforce a 16px floor on all text-entry controls on mobile only, so the
+     desktop md:text-sm styling on inputs is left untouched. */
+  @media (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
   }
 }
 /* 

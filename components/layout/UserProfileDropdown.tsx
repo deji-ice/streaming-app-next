@@ -92,7 +92,7 @@ export function UserProfileDropdown({ scrolled }: UserProfileDropdownProps) {
               className="absolute right-0 mt-2 w-56 sm:w-64 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl overflow-hidden z-50"
             >
               {/* User Info */}
-              <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-gradient-to-br from-primary/5 to-transparent">
+              <div className="p-4 border-b border-gray-200 dark:border-gray-800">
                 <div className="flex items-center gap-3">
                   <Avatar className="w-10 h-10">
                     <AvatarImage

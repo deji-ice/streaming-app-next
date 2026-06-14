@@ -128,7 +128,7 @@ export default async function MoviePage({ params }: MoviePageProps) {
       <div className="min-h-screen pb-8">
         {/* Movie Schema.org structured data */}
 
-        <div className="relative aspect-video w-full">
+        <div className="w-full">
           <VideoPlayer
             tmdbId={movie.id}
             type="movie"
@@ -152,12 +152,14 @@ export default async function MoviePage({ params }: MoviePageProps) {
             country={movie.production_countries[0]?.name ?? "United States"}
           />
 
-          <div className="mt-12">
-            <h2 className="text-2xl font-montserrat font-bold mb-6">Cast</h2>
+          <div className="mt-10 md:mt-14">
+            <h2 className="mb-5 border-b border-border pb-2 font-montserrat text-xl font-bold tracking-tight sm:text-2xl">
+              Cast
+            </h2>
             <CastList cast={movie.credits?.cast ?? []} />
           </div>
 
-          <div className="mt-12">
+          <div className="mt-10 md:mt-14">
             <RecommendedMedia
               items={recommendations}
               type="movie"

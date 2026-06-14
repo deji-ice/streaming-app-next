@@ -36,7 +36,7 @@ export default function SeasonSelector({
 
   return (
     <Select value={currentSeason.toString()} onValueChange={handleSeasonChange}>
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-full max-w-[220px] sm:w-[200px]">
         <SelectValue placeholder="Select season" />
       </SelectTrigger>
       <SelectContent>
