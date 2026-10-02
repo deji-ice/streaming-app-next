@@ -1,177 +1,72 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
-import { create } from "zustand";
-import { supabase } from "@/lib/supabase";
-import { useUserStore } from "@/lib/store";
-import type { MediaType } from "@/types";
+import { useCallback, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { recordView, rehydrateLocalHistory } from "@/lib/history";
+import { type LogWatchInput, useMergedHistory, writeWatchToAccount } from "@/lib/user-data/history";
+import { errorMessage, userDataKeys } from "@/lib/user-data/shared";
 
-export type HistoryMediaType = "movie" | "tv";
+export type { HistoryMediaType, LogWatchInput, WatchHistoryItem } from "@/lib/user-data/history";
 
-export interface WatchHistoryItem {
-    id: string;
-    user_id: string;
-    tmdb_id: number;
-    media_type: HistoryMediaType;
-    title: string;
-    poster_path: string | null;
-    backdrop_path: string | null;
-    season_number: number | null;
-    episode_number: number | null;
-    progress_seconds: number;
-    duration_seconds: number | null;
-    watched_at: string;
-    updated_at: string;
-}
-
-export interface LogWatchInput {
-    tmdbId: number;
-    mediaType: MediaType;
-    title: string;
-    posterPath: string | null;
-    backdropPath: string | null;
-    seasonNumber?: number;
-    episodeNumber?: number;
-    progressSeconds?: number;
-    durationSeconds?: number | null;
-}
-
-const normalizeMediaType = (type: MediaType): HistoryMediaType =>
-    type === "series" ? "tv" : (type as HistoryMediaType);
-
-interface WatchHistoryStore {
-    items: WatchHistoryItem[];
-    isLoading: boolean;
-    error: string | null;
-    lastUserId: string | null;
-    fetchHistory: (userId: string) => Promise<void>;
-    logWatchStart: (userId: string, input: LogWatchInput) => Promise<void>;
-    clear: () => void;
-}
-
-const useWatchHistoryStore = create<WatchHistoryStore>((set) => ({
-    items: [],
-    isLoading: false,
-    error: null,
-    lastUserId: null,
-
-    fetchHistory: async (userId) => {
-        set({ isLoading: true, error: null, lastUserId: userId });
-        const { data, error } = await supabase
-            .from("watch_history")
-            .select(
-                "id, user_id, tmdb_id, media_type, title, poster_path, backdrop_path, season_number, episode_number, progress_seconds, duration_seconds, watched_at, updated_at",
-            )
-            .eq("user_id", userId)
-            .order("watched_at", { ascending: false });
-
-        if (error) {
-            set({ error: error.message, isLoading: false });
-            return;
-        }
-
-        set({ items: (data as WatchHistoryItem[]) ?? [], isLoading: false });
-    },
-
-    logWatchStart: async (userId, input) => {
-        set({ error: null });
-
-        const normalized = normalizeMediaType(input.mediaType);
-
-        let deleteQuery = supabase
-            .from("watch_history")
-            .delete()
-            .eq("user_id", userId)
-            .eq("tmdb_id", input.tmdbId)
-            .eq("media_type", normalized);
-
-        if (normalized === "tv") {
-            if (typeof input.seasonNumber === "number") {
-                deleteQuery = deleteQuery.eq("season_number", input.seasonNumber);
-            } else {
-                deleteQuery = deleteQuery.is("season_number", null);
-            }
-
-            if (typeof input.episodeNumber === "number") {
-                deleteQuery = deleteQuery.eq("episode_number", input.episodeNumber);
-            } else {
-                deleteQuery = deleteQuery.is("episode_number", null);
-            }
-        } else {
-            deleteQuery = deleteQuery.is("season_number", null).is("episode_number", null);
-        }
-
-        await deleteQuery;
-
-        const payload = {
-            user_id: userId,
-            tmdb_id: input.tmdbId,
-            media_type: normalized,
-            title: input.title,
-            poster_path: input.posterPath,
-            backdrop_path: input.backdropPath,
-            season_number: input.seasonNumber ?? null,
-            episode_number: input.episodeNumber ?? null,
-            progress_seconds: input.progressSeconds ?? 0,
-            duration_seconds: input.durationSeconds ?? null,
-            watched_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-        };
-
-        const { error } = await supabase.from("watch_history").insert([payload]);
-
-        if (error) {
-            set({ error: error.message });
-            throw error;
-        }
-    },
-
-    clear: () => set({ items: [], isLoading: false, error: null, lastUserId: null }),
-}));
-
+/**
+ * Watch history for display and logging.
+ *
+ * - `items`: local (localStorage) + account history merged, one item per
+ *   title, newest first. Local-only items have id "local:{media_type}:{tmdb_id}"
+ *   and user_id "".
+ * - `logWatchStart`: always records locally (works signed out, never throws
+ *   for signed-out users). Signed in, it also writes to Supabase with an
+ *   optimistic cache merge (no full refetch). Rejects only when that account
+ *   write fails.
+ * - `refresh`: re-reads localStorage and refetches the account history.
+ *
+ * Removing or clearing history: `useHistoryActions()` from "@/lib/user-data".
+ */
 export function useWatchHistory() {
-    const userId = useUserStore((state) => state.user?.id ?? null);
-    const {
-        items,
-        isLoading,
-        error,
-        lastUserId,
-        fetchHistory,
-        logWatchStart: logWatchStartStore,
-        clear,
-    } = useWatchHistoryStore();
+  const queryClient = useQueryClient();
+  const { userId, items, isLoading, error: loadError } = useMergedHistory();
+  const [writeError, setWriteError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!userId) {
-            clear();
-            return;
-        }
+  const logWatchStart = useCallback(
+    async (input: LogWatchInput): Promise<void> => {
+      const watchedAt = new Date().toISOString();
+      recordView({
+        tmdbId: input.tmdbId,
+        mediaType: input.mediaType,
+        title: input.title,
+        posterPath: input.posterPath,
+        backdropPath: input.backdropPath,
+        season: input.seasonNumber,
+        episode: input.episodeNumber,
+        watchedAt,
+      });
 
-        if (lastUserId !== userId) {
-            fetchHistory(userId);
-        }
-    }, [userId, lastUserId, fetchHistory, clear]);
+      if (!userId) return;
 
-    const logWatchStart = useCallback(
-        async (input: LogWatchInput) => {
-            if (!userId) {
-                throw new Error("You must be signed in to continue watching.");
-            }
+      try {
+        await writeWatchToAccount(queryClient, userId, input, watchedAt);
+        setWriteError(null);
+      } catch (error) {
+        setWriteError(errorMessage(error, "Failed to save watch history"));
+        throw error;
+      }
+    },
+    [queryClient, userId],
+  );
 
-            await logWatchStartStore(userId, input);
-            await fetchHistory(userId);
-        },
-        [userId, logWatchStartStore, fetchHistory],
-    );
+  const refresh = useCallback(async (): Promise<void> => {
+    rehydrateLocalHistory();
+    if (userId) await queryClient.invalidateQueries({ queryKey: userDataKeys.history(userId) });
+  }, [queryClient, userId]);
 
-    return useMemo(
-        () => ({
-            items,
-            isLoading,
-            error,
-            logWatchStart,
-            refresh: userId ? () => fetchHistory(userId) : () => undefined,
-        }),
-        [items, isLoading, error, logWatchStart, fetchHistory, userId],
-    );
+  return useMemo(
+    () => ({
+      items,
+      isLoading,
+      error: writeError ?? loadError,
+      logWatchStart,
+      refresh,
+    }),
+    [items, isLoading, writeError, loadError, logWatchStart, refresh],
+  );
 }

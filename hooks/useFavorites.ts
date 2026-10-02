@@ -1,141 +1,69 @@
-import { useCallback, useEffect, useState } from "react";
-import { useUserStore } from "@/lib/store";
-import { supabase } from "@/lib/supabase";
+"use client";
 
-export interface Favorite {
-    id: string;
-    user_id: string;
-    tmdb_id: number;
-    media_type: "movie" | "tv";
-    title: string;
-    poster_path: string | null;
-}
+import { useCallback, useMemo } from "react";
+import type { MediaType } from "@/types";
+import { idSet, mediaKey } from "@/lib/user-data/shared";
+import { useFavoriteActions, useFavoriteItems } from "@/lib/user-data/favorites";
 
+export type { AddToFavoritesInput, Favorite } from "@/lib/user-data/favorites";
+
+/**
+ * Favorite rows and actions, backed by ONE shared TanStack Query per user
+ * (["user-data", "favorites", userId], staleTime 60s). Any number of
+ * components can call this; they share a single request.
+ *
+ * `mediaType` accepts "movie", "tv" or "series" ("series" and "tv" are the
+ * same table value). For a single card prefer `useIsFavorite(id, type)` and
+ * `useFavoriteActions()` from "@/lib/user-data".
+ */
 export function useFavorites() {
-    const user = useUserStore((state) => state.user);
-    const [items, setItems] = useState<Favorite[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+  const { items, isLoading, error, refetch } = useFavoriteItems();
+  const { add, remove } = useFavoriteActions();
+  const ids = useMemo(() => idSet(items), [items]);
 
-    // Fetch all favorites
-    const fetchFavorites = useCallback(async () => {
-        if (!user?.id) {
-            setIsLoading(false);
-            return;
-        }
+  const isInFavorites = useCallback(
+    (tmdbId: number, mediaType: MediaType) => ids.has(mediaKey(mediaType, tmdbId)),
+    [ids],
+  );
 
-        try {
-            setIsLoading(true);
-            const { data, error } = await supabase
-                .from("favorites")
-                .select("*")
-                .eq("user_id", user.id);
+  const addToFavorites = useCallback(
+    (
+      tmdbId: number,
+      mediaType: MediaType,
+      title: string,
+      posterPath?: string | null,
+      extra?: { backdropPath?: string | null; voteAverage?: number | null },
+    ) =>
+      add({
+        tmdbId,
+        mediaType,
+        title,
+        posterPath: posterPath ?? null,
+        backdropPath: extra?.backdropPath ?? null,
+        voteAverage: extra?.voteAverage ?? null,
+      }),
+    [add],
+  );
 
-            if (error) throw error;
-            setItems(data || []);
-        } catch (err) {
-            console.error("Favorites fetch error:", err);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [user?.id]);
+  const removeFromFavorites = useCallback(
+    (tmdbId: number, mediaType: MediaType) => remove(tmdbId, mediaType),
+    [remove],
+  );
 
-    // Check if item is in favorites
-    const isInFavorites = useCallback(
-        (tmdbId: number, mediaType: "movie" | "series") => {
-            const type = mediaType === "series" ? "tv" : "movie";
-            return items.some((item) => item.tmdb_id === tmdbId && item.media_type === type);
-        },
-        [items]
-    );
+  const refresh = useCallback(async (): Promise<void> => {
+    await refetch();
+  }, [refetch]);
 
-    // Add to favorites
-    const addToFavorites = useCallback(
-        async (
-            tmdbId: number,
-            mediaType: "movie" | "series",
-            title: string,
-            posterPath?: string | null
-        ) => {
-            if (!user?.id) {
-                throw new Error("You must be signed in to add favorites.");
-            }
-
-            try {
-                const type = mediaType === "series" ? "tv" : "movie";
-
-                const { error } = await supabase.from("favorites").insert([
-                    {
-                        user_id: user.id,
-                        tmdb_id: tmdbId,
-                        media_type: type,
-                        title,
-                        poster_path: posterPath || null,
-                    },
-                ]);
-
-                if (error) throw error;
-
-                setItems((prev) => [
-                    {
-                        id: `temp-${Date.now()}`,
-                        user_id: user.id,
-                        tmdb_id: tmdbId,
-                        media_type: type,
-                        title,
-                        poster_path: posterPath || null,
-                    },
-                    ...prev,
-                ]);
-            } catch (err) {
-                console.error("Add to favorites error:", err);
-                throw err;
-            }
-        },
-        [user?.id]
-    );
-
-    // Remove from favorites
-    const removeFromFavorites = useCallback(
-        async (tmdbId: number, mediaType: "movie" | "series") => {
-            if (!user?.id) {
-                throw new Error("You must be signed in to remove favorites.");
-            }
-
-            try {
-                const type = mediaType === "series" ? "tv" : "movie";
-
-                const { error } = await supabase
-                    .from("favorites")
-                    .delete()
-                    .eq("user_id", user.id)
-                    .eq("tmdb_id", tmdbId)
-                    .eq("media_type", type);
-
-                if (error) throw error;
-
-                setItems((prev) =>
-                    prev.filter(
-                        (item) => !(item.tmdb_id === tmdbId && item.media_type === type)
-                    )
-                );
-            } catch (err) {
-                console.error("Remove from favorites error:", err);
-                throw err;
-            }
-        },
-        [user?.id]
-    );
-
-    useEffect(() => {
-        fetchFavorites();
-    }, [fetchFavorites]);
-
-    return {
-        items,
-        isLoading,
-        addToFavorites,
-        removeFromFavorites,
-        isInFavorites,
-        refresh: fetchFavorites,
-    };
+  return useMemo(
+    () => ({
+      items,
+      isLoading,
+      error,
+      addToFavorites,
+      removeFromFavorites,
+      isInFavorites,
+      refresh,
+    }),
+    [items, isLoading, error, addToFavorites, removeFromFavorites, isInFavorites, refresh],
+  );
 }
