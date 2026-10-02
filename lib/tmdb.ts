@@ -1,17 +1,99 @@
-import type { Movie, Series, MovieDetails, SeriesDetails, Genre, Episode } from "@/types";
-import { cachedFetch, cacheKeys } from './tmdb-cache';
+import "server-only";
+import type { Episode, Genre, Movie, MovieDetails, Series, SeriesDetails } from "@/types";
+import { isTmdbNotFound } from "./tmdb/client";
+import { getMovie, getSeason, getTv } from "./tmdb/details";
+import {
+  toLegacyCard,
+  toLegacyEpisodes,
+  toLegacyMovie,
+  toLegacyMovieDetails,
+  toLegacySeriesDetails,
+  toLegacySeriesItem,
+  withLegacyFields,
+  withLegacyPersonFields,
+} from "./tmdb/legacy";
+import { getGenres, getLatestSeries as getLatestSeriesCards, getMovieList, getTrending } from "./tmdb/lists";
+import { searchMulti } from "./tmdb/search";
 
-// Use server-only token (no NEXT_PUBLIC_ prefix)
-const TMDB_TOKEN = process.env.TMDB_API_KEY || process.env.NEXT_PUBLIC_TMDB_API_KEY;
-const BASE_URL = 'https://api.themoviedb.org/3';
+/**
+ * Server-only entry point for TMDB data.
+ *
+ * New code: import the loaders re-exported below (getMovie, getTv,
+ * getTrending, discoverMovies, search...), which return the DTOs in
+ * lib/tmdb/types. Client components must never import this module (the
+ * "server-only" import makes such a build fail); they call /api/search,
+ * /api/recommendations, /api/movies or /api/series instead.
+ *
+ * Legacy: the `tmdb` object and getSeriesDetails keep the old method names
+ * and raw-TMDB-shaped return values for the pages that still use them. They
+ * run on the new cached loaders (no throttler, no module-level LRU) and go
+ * away when those pages are rewritten.
+ */
 
-const options = {
-  method: 'GET',
-  headers: {
-    accept: 'application/json',
-    Authorization: `Bearer ${TMDB_TOKEN}`
-  }
-};
+export type * from "./tmdb/types";
+export { TmdbError, isTmdbNotFound } from "./tmdb/client";
+export {
+  clampPage,
+  discover,
+  discoverMovies,
+  discoverTv,
+  getGenreMap,
+  getGenres,
+  getLatestMovies,
+  getLatestSeries,
+  getMovieList,
+  getNowPlayingMovies,
+  getTrending,
+  getTvList,
+  getWatchRegions,
+  isMovieList,
+  isTvList,
+  isoDay,
+  MOVIE_LISTS,
+  MOVIE_SORTS,
+  normalizeSort,
+  TV_LISTS,
+  TV_SORTS,
+  type DiscoverFilters,
+  type MovieList,
+  type MovieSort,
+  type RegionDTO,
+  type TrendingType,
+  type TrendingWindow,
+  type TvList,
+  type TvSort,
+} from "./tmdb/lists";
+export { getCollection, getMovie, getPerson, getSeason, getTv, getWatchProviders } from "./tmdb/details";
+export { normalizeQuery, search, searchMovies, searchMulti, searchPeople, searchTv, type SearchResultDTO, type SearchType } from "./tmdb/search";
+export {
+  discoverByCompany,
+  discoverByNetwork,
+  discoverByProvider,
+  getCompany,
+  getNetwork,
+  getProviderOriginals,
+  type BrowseOptions,
+} from "./tmdb/browse";
+export {
+  CURATED_NETWORKS,
+  CURATED_PROVIDERS,
+  CURATED_STUDIOS,
+  curatedSlugForProviderId,
+  getCuratedNetwork,
+  getCuratedProvider,
+  getCuratedStudio,
+  resolveCompanySlug,
+  resolveNetworkSlug,
+  selectWatchProviders,
+  type CuratedNetwork,
+  type CuratedProvider,
+  type CuratedStudio,
+} from "./tmdb/providers";
+export { getRegionName, resolveRegion, type ResolvedRegion } from "./tmdb/region";
+
+/* ------------------------------------------------------------------------ */
+/* Legacy facade                                                             */
+/* ------------------------------------------------------------------------ */
 
 interface TMDBResponse<T> {
   results: T[];
@@ -19,230 +101,130 @@ interface TMDBResponse<T> {
   total_pages: number;
   total_results: number;
 }
-interface VideoResult {
-  key: string;
-  site: string;
-  type: string;
-}
-type MediaType = 'movie' | 'tv';
 
+type LegacyMediaType = "movie" | "tv";
+
+const legacyPage = <T>(paged: { page: number; totalPages: number; totalResults: number }, results: T[]): TMDBResponse<T> => ({
+  results,
+  page: paged.page,
+  total_pages: paged.totalPages,
+  total_results: paged.totalResults,
+});
+
+const EMPTY_PAGE = { results: [], page: 1, total_pages: 0, total_results: 0 };
+
+/** @deprecated Use the DTO loaders exported from this module. */
 export const tmdb = {
+  /** Trending movies this week. */
   async getTrending(): Promise<TMDBResponse<Movie>> {
-    return cachedFetch(
-      cacheKeys.trending(),
-      async () => {
-        const res = await fetch(`${BASE_URL}/trending/movie/week`, options);
-        if (!res.ok) throw new Error('Failed to fetch trending');
-        return res.json();
-      }
-    );
+    const paged = await getTrending("movie", "week", 1);
+    return legacyPage(paged, paged.results.map(toLegacyMovie));
   },
 
   async getPopularMovies(): Promise<TMDBResponse<Movie>> {
-    return cachedFetch(
-      cacheKeys.popularMovies(),
-      async () => {
-        const res = await fetch(`${BASE_URL}/movie/popular`, options);
-        if (!res.ok) throw new Error('Failed to fetch popular movies');
-        return res.json();
-      }
-    );
+    const paged = await getMovieList("popular", 1);
+    return legacyPage(paged, paged.results.map(toLegacyMovie));
   },
 
+  /** Trending series this week (list items: no credits, seasons or last episode). */
   async getPopularSeries(): Promise<TMDBResponse<SeriesDetails>> {
-    return cachedFetch(
-      cacheKeys.popularSeries(),
-      async () => {
-        // Use append_to_response to get all data in one request (fixes N+1 query problem)
-        const res = await fetch(
-          `${BASE_URL}/trending/tv/week?append_to_response=credits`,
-          options
-        );
-
-        if (!res.ok) throw new Error('Failed to fetch trending series');
-
-        const data: TMDBResponse<SeriesDetails> = await res.json();
-        return data;
-      }
-    );
+    const paged = await getTrending("tv", "week", 1);
+    return legacyPage(paged, paged.results.map(toLegacySeriesItem));
   },
 
-  async getMediaDetails(id: string, type: MediaType): Promise<MovieDetails | SeriesDetails> {
-    const cacheKey = type === 'movie' ? cacheKeys.movieDetails(id) : cacheKeys.seriesDetails(id);
-
-    return cachedFetch(
-      cacheKey,
-      async () => {
-        // Fetch all related data in one request (credits, videos, similar)
-        const res = await fetch(
-          `${BASE_URL}/${type}/${id}?append_to_response=credits,videos,similar`,
-          options
-        );
-        if (!res.ok) throw new Error(`Failed to fetch ${type} details`);
-        return res.json();
-      }
-    );
+  async getMediaDetails(id: string, type: LegacyMediaType): Promise<MovieDetails | SeriesDetails> {
+    return type === "movie" ? toLegacyMovieDetails(await getMovie(id)) : toLegacySeriesDetails(await getTv(id));
   },
 
   async searchMulti(query: string): Promise<TMDBResponse<Movie | Series>> {
     try {
-      return await cachedFetch(
-        cacheKeys.search(query),
-        async () => {
-          const res = await fetch(
-            `${BASE_URL}/search/multi?query=${encodeURIComponent(query)}`,
-            options
-          );
-          if (!res.ok) throw new Error("Failed to search");
-          return res.json();
-        }
-      );
+      const paged = await searchMulti(query, 1);
+      const rows = paged.results.map((r) => (r.mediaType === "person" ? withLegacyPersonFields(r) : withLegacyFields(r)));
+      return legacyPage(paged, rows as unknown as (Movie | Series)[]);
     } catch (error) {
-      console.error("Error:", error);
-      return { results: [], page: 1, total_pages: 0, total_results: 0 };
+      console.error("TMDB search failed:", error);
+      return EMPTY_PAGE;
     }
   },
 
-  async getSeasonDetails(
-    seriesId: number,
-    seasonNumber: number
-  ): Promise<{ episodes: Episode[] }> {
+  async getSeasonDetails(seriesId: number, seasonNumber: number): Promise<{ episodes: Episode[] }> {
     try {
-      return await cachedFetch(
-        cacheKeys.season(seriesId, seasonNumber),
-        async () => {
-          const res = await fetch(
-            `${BASE_URL}/tv/${seriesId}/season/${seasonNumber}`,
-            options
-          );
-          if (!res.ok) throw new Error('Failed to fetch season details');
-          return res.json();
-        }
-      );
+      return { episodes: toLegacyEpisodes(await getSeason(seriesId, seasonNumber)) };
     } catch (error) {
-      console.error('Error fetching season details:', error);
+      console.error("TMDB season failed:", error);
       return { episodes: [] };
     }
   },
 
-  async getRecommendations(
-    id: number,
-    type: MediaType
-  ): Promise<(Movie | SeriesDetails)[]> {
+  /** Recommendations from the cached details call (no extra request). */
+  async getRecommendations(id: number, type: LegacyMediaType): Promise<(Movie | SeriesDetails)[]> {
     try {
-      return await cachedFetch(
-        cacheKeys.recommendations(id, type),
-        async () => {
-          const res = await fetch(
-            `${BASE_URL}/${type}/${id}/recommendations`,
-            options
-          );
-          if (!res.ok) throw new Error(`Failed to fetch ${type} recommendations`);
-          const data = await res.json();
-          return data.results.slice(0, 10); // Limit to 10 recommendations
-        }
-      );
+      const details = type === "movie" ? await getMovie(id) : await getTv(id);
+      return details.recommendations.slice(0, 10).map(toLegacyCard);
     } catch (error) {
-      console.error(`Error fetching ${type} recommendations:`, error);
+      console.error("TMDB recommendations failed:", error);
       return [];
     }
   },
 
+  /** Movie and TV genres merged (legacy behavior; new code uses getGenres(type)). */
   async getGenres(): Promise<Genre[]> {
     try {
-      return await cachedFetch(
-        cacheKeys.genres(),
-        async () => {
-          const [movieGenres, tvGenres] = await Promise.all([
-            fetch(`${BASE_URL}/genre/movie/list`, options),
-            fetch(`${BASE_URL}/genre/tv/list`, options)
-          ]);
-
-          const movieData = await movieGenres.json();
-          const tvData = await tvGenres.json();
-
-          // Combine and deduplicate genres
-          const allGenres = [...movieData.genres, ...tvData.genres];
-          const uniqueGenres = Array.from(new Map(allGenres.map(g => [g.id, g])).values());
-
-          return uniqueGenres;
-        }
-      );
+      const [movie, tv] = await Promise.all([getGenres("movie"), getGenres("tv")]);
+      return Array.from(new Map([...movie, ...tv].map((g) => [g.id, g])).values());
     } catch (error) {
-      console.error("Error fetching genres:", error);
+      console.error("TMDB genres failed:", error);
       return [];
     }
   },
 
-  async getLatestMovies(sortBy: string = 'release_date.desc'): Promise<TMDBResponse<Movie>> {
+  /** Movies in theaters now (the sortBy argument was always ignored by TMDB). */
+  async getLatestMovies(_sortBy?: string): Promise<TMDBResponse<Movie>> {
     try {
-      return await cachedFetch(
-        cacheKeys.latestMovies(sortBy),
-        async () => {
-          const res = await fetch(
-            `${BASE_URL}/movie/now_playing?language=en-US&page=1&sort_by=${sortBy}`,
-            options
-          );
-          if (!res.ok) throw new Error('Failed to fetch now playing movies');
-          return res.json();
-        }
-      );
+      const paged = await getMovieList("now_playing", 1);
+      return legacyPage(paged, paged.results.map(toLegacyMovie));
     } catch (error) {
-      console.error('Error:', error);
-      return { results: [], page: 1, total_pages: 0, total_results: 0 };
+      console.error("TMDB now playing failed:", error);
+      return EMPTY_PAGE;
     }
   },
 
-  async getLatestSeries(sortBy: string = 'latest_air_date.desc'): Promise<TMDBResponse<SeriesDetails>> {
-    const today = new Date().toISOString().slice(0, 10);
+  /** Series with new episodes this week (the old sort was silently ignored by TMDB). */
+  async getLatestSeries(_sortBy?: string): Promise<TMDBResponse<SeriesDetails>> {
     try {
-      return await cachedFetch(
-        cacheKeys.latestSeries(sortBy),
-        async () => {
-          // Exclude news (genre ID 10763) and talk shows (genre ID 10767) from results
-          // Use append_to_response to get credits in one request (fixes N+1 query problem)
-          const res = await fetch(
-            `${BASE_URL}/discover/tv?language=en-US&page=1&sort_by=${sortBy}&without_genres=10763,10767,99,10764&first_air_date.lte=${today}&append_to_response=credits`,
-            options
-          );
-          if (!res.ok) throw new Error('Failed to fetch latest series');
-          const data: TMDBResponse<SeriesDetails> = await res.json();
-          return data;
-        }
-      );
+      const paged = await getLatestSeriesCards(1);
+      return legacyPage(paged, paged.results.map(toLegacySeriesItem));
     } catch (error) {
-      console.error('Error:', error);
-      return { results: [], page: 1, total_pages: 0, total_results: 0 };
+      console.error("TMDB latest series failed:", error);
+      return EMPTY_PAGE;
     }
   },
 
-  async getTrailers(id: number, type: MediaType): Promise<string | null> {
+  /** YouTube embed URL of the main trailer, from the cached details. */
+  async getTrailers(id: number, type: LegacyMediaType): Promise<string | null> {
     try {
-      return await cachedFetch(
-        cacheKeys.trailers(id, type),
-        async () => {
-          const res = await fetch(
-            `${BASE_URL}/${type}/${id}/videos`,
-            options
-          );
-
-          if (!res.ok) throw new Error('Failed to fetch trailers');
-
-          const data = await res.json();
-          const trailer = data.results?.find((video: VideoResult) =>
-            video.type === "Trailer" && video.site === "YouTube"
-          );
-
-          if (!trailer) {
-            return null;
-          }
-
-          return `https://www.youtube.com/embed/${trailer.key}`;
-        }
-      );
+      const details = type === "movie" ? await getMovie(id) : await getTv(id);
+      return details.trailer ? `https://www.youtube-nocookie.com/embed/${details.trailer.key}` : null;
     } catch (error) {
-      console.error('Error fetching trailers:', error);
+      console.error("TMDB trailer failed:", error);
       return null;
     }
-  }
+  },
 };
+
+/**
+ * Series details with the current season's episodes (moved from lib/utils).
+ * Details and season load in parallel. Returns null when the series does not exist.
+ * @deprecated Use getTv + getSeason.
+ */
+export async function getSeriesDetails(slug: string, currentSeason: number = 1): Promise<SeriesDetails | null> {
+  const id = slug.split("-").pop();
+  if (!id || !/^\d+$/.test(id)) return null;
+  try {
+    const [series, season] = await Promise.all([getTv(id), getSeason(id, currentSeason).catch(() => null)]);
+    return toLegacySeriesDetails(series, season);
+  } catch (error) {
+    if (!isTmdbNotFound(error)) console.error("Error fetching series details:", error);
+    return null;
+  }
+}
