@@ -6,7 +6,6 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Create dummy client if credentials are missing (for development without auth)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const supabase = supabaseUrl && supabaseAnonKey
     ? createClient<Database>(supabaseUrl, supabaseAnonKey, {
         auth: {
@@ -28,7 +27,6 @@ export const supabase = supabaseUrl && supabaseAnonKey
     } as any);
 
 // Server-side client with service role (bypasses RLS)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const supabaseAdmin = supabaseUrl && serviceRoleKey
     ? createClient<Database>(supabaseUrl, serviceRoleKey, {
         auth: {
