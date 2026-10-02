@@ -1,194 +1,251 @@
-import { notFound } from "next/navigation";
-import { Metadata } from "next";
-import { tmdb } from "@/lib/tmdb";
-import SeasonSelector from "@/components/media/SeasonSelector";
-import { SeriesPageProps, Series } from "@/types";
-import nextDynamic from "next/dynamic";
-import { getSeriesDetails } from "@/lib/utils";
+import type { Metadata } from "next";
+import { notFound, permanentRedirect } from "next/navigation";
+import { Suspense } from "react";
 
-export const dynamic = "force-dynamic";
+import { FavoriteToggle, ShareButton, WatchlistToggle, type SaveTarget } from "@/components/details/actions";
+import { CastRail } from "@/components/details/cast-rail";
+import { countryNames, languageName, plural } from "@/components/details/detail-format";
+import { EpisodesRail } from "@/components/details/episodes";
+import { factRow, FactsList, PeopleList } from "@/components/details/facts-list";
+import { FunFacts } from "@/components/details/fun-facts";
+import { blockGap, pageWrapper } from "@/components/details/layout-classes";
+import { LogoChipList } from "@/components/details/logo-chip-list";
+import { MetaLink, RatingPill } from "@/components/details/meta-items";
+import { buildDetailMetadata } from "@/components/details/metadata";
+import { OverviewSection } from "@/components/details/overview-section";
+import { PlayerBand } from "@/components/details/player-band";
+import { RecommendationsRail } from "@/components/details/recommendations-rail";
+import {
+  defaultSeasonNumber,
+  listedSeasons,
+  nextEpisodeLabel,
+  parseCountParam,
+  runLabel,
+  todayIso,
+  toQueryString,
+} from "@/components/details/series-utils";
+import { FunFactsSkeleton } from "@/components/details/skeletons";
+import { hasWatchOptions, StreamingOn } from "@/components/details/streaming-on";
+import { TitleHeader } from "@/components/details/title-header";
+import { MetaRow } from "@/components/ds/meta-row";
+import { Rating } from "@/components/ds/rating";
+import { TrailerButton, VideoRail } from "@/components/ds/trailer";
+import VideoPlayer from "@/components/media/VideoPlayer";
+import { formatDate, formatRuntime } from "@/lib/format";
+import { RecordView } from "@/lib/history/record-view";
+import { companyHref, mediaHref, networkHref, parseIdFromSlug } from "@/lib/slug";
+import { getTv, isTmdbNotFound, type TvDTO } from "@/lib/tmdb";
+import { selectWatchProviders } from "@/lib/tmdb/providers";
+import { cn } from "@/lib/utils";
 
-const VideoPlayer = nextDynamic(
-  () => import("@/components/media/VideoPlayer"),
-  {
-    loading: () => <div>Loading player...</div>,
-  },
-);
-const MediaInfo = nextDynamic(() => import("@/components/media/MediaInfo"), {
-  loading: () => <div>Loading movie details...</div>,
-});
-const CastList = nextDynamic(() => import("@/components/media/CastList"), {
-  loading: () => <div>Loading cast...</div>,
-});
-const RecommendedMedia = nextDynamic(
-  () => import("@/components/media/RecommendedMedia"),
-  {
-    loading: () => <div>Loading recommendations...</div>,
-  },
-);
-const EpisodeGrid = nextDynamic(
-  () => import("@/components/media/EpisodeGrid"),
-  {
-    loading: () => (
-      <div className="grid gap-4">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
-        ))}
-      </div>
-    ),
-  },
-);
+// This page reads ?season= and ?episode=, so it renders per request. The TMDB data behind
+// it (series, season) is cached by the loaders in lib/tmdb.
 
-export async function generateMetadata({
-  params,
-}: SeriesPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const series = await getSeriesDetails(slug);
+type PageProps = {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
-  if (!series) {
-    return {
-      title: "Series Not Found",
-      description: "The requested series could not be found.",
-    };
+/**
+ * Loads the series for a route slug. getTv is request-cached, so generateMetadata and the
+ * page share one TMDB call. Only a real TMDB "not found" becomes a 404; other errors reach
+ * app/error.tsx.
+ */
+async function loadTv(slug: string): Promise<TvDTO> {
+  const id = parseIdFromSlug(slug);
+  if (id === null) notFound();
+  try {
+    return await getTv(id);
+  } catch (error) {
+    if (isTmdbNotFound(error)) notFound();
+    throw error;
   }
-
-  const posterUrl = series.poster_path
-    ? `https://image.tmdb.org/t/p/w500${series.poster_path}`
-    : "https://www.streamscapex.live/placeholder-poster.jpg";
-
-  return {
-    title: `${series.name} - Watch Now`,
-    description: series.overview,
-    keywords: [
-      series.name,
-      ...series.genres.map((g) => g.name),
-      "TV series",
-      "watch online",
-      "streaming",
-      "episodes",
-      "seasons",
-    ],
-    openGraph: {
-      title: `${series.name} - StreamScapeX`,
-      description: series.overview,
-      url: `https://www.streamscapex.live/series/${slug}`,
-      type: "video.tv_show",
-      images: [
-        {
-          url: posterUrl,
-          width: 500,
-          height: 750,
-          alt: series.name,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${series.name} - Watch Now`,
-      description: series.overview,
-      images: [posterUrl],
-    },
-  };
 }
 
-export default async function SeriesPage({
-  params,
-  searchParams,
-}: SeriesPageProps) {
-  const slug = (await params).slug;
-  const seriesId = slug.split("-").pop();
-  const tmdbId = Number(seriesId);
-  const { season, episode } = await searchParams;
-  const currentSeason = Number(season) || 1;
+export async function generateMetadata({ params }: Pick<PageProps, "params">): Promise<Metadata> {
+  const { slug } = await params;
+  const tv = await loadTv(slug);
+  return buildDetailMetadata({
+    kind: "tv",
+    title: tv.title,
+    year: tv.year,
+    overview: tv.overview,
+    canonicalPath: mediaHref("tv", tv.id, tv.title),
+    backdropPath: tv.backdropPath,
+    posterPath: tv.posterPath,
+  });
+}
 
-  const currentEpisode = Number(episode) || 1; // default to first episode
+export default async function SeriesPage({ params, searchParams }: PageProps) {
+  const { slug } = await params;
+  const query = await searchParams;
+  const tv = await loadTv(slug);
 
-  const series = await getSeriesDetails(slug, currentSeason);
-  const seasonData = series?.seasons.find(
-    (s) => s.season_number === currentSeason,
-  );
-  const seasonEpisodesLength = seasonData?.episodes.length || 0;
+  // One URL per series: send legacy and mistyped slugs to the normalized one, keeping the query.
+  const basePath = mediaHref("tv", tv.id, tv.title);
+  if (`/series/${slug}` !== basePath) permanentRedirect(`${basePath}${toQueryString(query)}`);
 
-  if (!series) {
-    notFound();
-  }
+  // Season and episode come from the URL. Without a valid ?season= the latest aired season is
+  // shown; the episode defaults to 1.
+  const seasons = listedSeasons(tv.seasons);
+  const requestedSeason = parseCountParam(query.season, { allowZero: true });
+  const requestedEpisode = parseCountParam(query.episode);
+  const currentSeason =
+    requestedSeason !== null && seasons.some((season) => season.seasonNumber === requestedSeason)
+      ? requestedSeason
+      : defaultSeasonNumber(tv, todayIso());
+  const currentEpisode = requestedEpisode ?? 1;
+  // Only a position the URL names is history; otherwise the stored episode is kept.
+  const positionFromUrl = requestedSeason !== null || requestedEpisode !== null;
+  const seasonLength = seasons.find((season) => season.seasonNumber === currentSeason)?.episodeCount;
 
-  const recommendations = await tmdb
-    .getRecommendations(series.id, "tv")
-    .catch(() => []);
+  const providers = selectWatchProviders(tv.watchProviders, "US");
+  const saveTarget: SaveTarget = {
+    tmdbId: tv.id,
+    mediaType: "tv",
+    title: tv.title,
+    posterPath: tv.posterPath,
+    backdropPath: tv.backdropPath,
+    voteAverage: tv.rating,
+    releaseDate: tv.firstAirDate,
+  };
+  const episodeRuntime = formatRuntime(tv.episodeRuntime);
+  const nextEpisode = nextEpisodeLabel(tv.nextEpisodeToAir);
+  const language = languageName(tv.originalLanguage, tv.spokenLanguages);
+  const lastAired = tv.lastAirDate && tv.lastAirDate !== tv.firstAirDate ? formatDate(tv.lastAirDate, "long") : null;
 
   return (
-    <div className="min-h-screen pb-8">
-      {/* TV Series Schema.org structured data */}
-      <div className="w-full">
+    <>
+      <PlayerBand>
         <VideoPlayer
           key={`${currentSeason}-${currentEpisode}`}
-          tmdbId={seriesId!}
+          tmdbId={tv.id}
           type="series"
-          posterPath={series.backdrop_path ?? series.poster_path ?? ""}
-          title={series.name}
-          episode={{
-            season: currentSeason,
-            number: currentEpisode,
-          }}
-          seasonLength={seasonEpisodesLength}
+          posterPath={tv.backdropPath ?? tv.posterPath ?? ""}
+          title={tv.title}
+          episode={{ season: currentSeason, number: currentEpisode }}
+          seasonLength={seasonLength || undefined}
         />
-      </div>
+      </PlayerBand>
 
-      <div className="container mx-auto px-4 py-8">
-        <MediaInfo
-          type={"series"}
-          tmdbId={tmdbId}
-          title={series.name}
-          overview={series.overview}
-          releaseDate={series.first_air_date}
-          rating={series.vote_average}
-          posterPath={series.poster_path ?? ""}
-          genres={series.genres.map((g) => g.name)}
-          duration={series.last_episode_to_air.runtime ?? 0}
-          cast={series.credits.cast}
-          country={series.production_countries[0]?.name ?? "United States"}
-          season={currentSeason}
-          episode={currentEpisode}
-        />
+      {/* Episodes sit directly under the player: picking an episode is the main action here. */}
+      <EpisodesRail
+        tvId={tv.id}
+        basePath={basePath}
+        ended={tv.ended}
+        seasons={seasons}
+        currentSeason={currentSeason}
+        currentEpisode={currentEpisode}
+      />
 
-        <div className="mt-10 md:mt-14 space-y-5">
-          <div className="flex flex-col gap-3 border-b border-border pb-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="font-montserrat text-xl font-bold tracking-tight sm:text-2xl">
-              Episodes
-            </h2>
-            <SeasonSelector
-              seasons={series.seasons}
-              currentSeason={currentSeason}
+      <div className={cn(pageWrapper, "flex flex-col pt-2 md:pt-4", blockGap)}>
+        <TitleHeader
+          title={tv.title}
+          posterPath={tv.posterPath}
+          logo={tv.logo}
+          tagline={tv.tagline}
+          meta={
+            <MetaRow
+              items={[
+                runLabel(tv),
+                tv.contentRating ? <RatingPill key="content-rating">{tv.contentRating}</RatingPill> : null,
+                tv.numberOfSeasons > 0 ? plural(tv.numberOfSeasons, "season") : null,
+                episodeRuntime ? `${episodeRuntime} per episode` : null,
+                ...tv.genres.map((genre) => (
+                  <MetaLink key={genre.id} href={`/series?genres=${genre.id}`}>
+                    {genre.name}
+                  </MetaLink>
+                )),
+              ]}
             />
-          </div>
+          }
+          rating={<Rating value={tv.rating} votes={tv.voteCount} showSource size="md" />}
+          actions={
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              {tv.trailer ? <TrailerButton videos={tv.videos} title={tv.title} /> : null}
+              <WatchlistToggle target={saveTarget} />
+              <FavoriteToggle target={saveTarget} />
+              <ShareButton title={tv.title} />
+            </div>
+          }
+        />
 
-          <EpisodeGrid
-            episodes={
-              series.seasons.find((s) => s.season_number === currentSeason)
-                ?.episodes || []
-            }
-            seriesId={slug}
-            currentSeason={currentSeason}
-            currentEpisode={currentEpisode}
+        <OverviewSection
+          overview={tv.overview}
+          funFacts={
+            <Suspense fallback={<FunFactsSkeleton />}>
+              <FunFacts type="tv" wikidataId={tv.externalIds.wikidataId} tmdb={tv} />
+            </Suspense>
+          }
+          credits={
+            hasWatchOptions(providers) || tv.networks.length > 0 || tv.productionCompanies.length > 0 ? (
+              <>
+                <StreamingOn providers={providers} regionLabel="In the United States" />
+                <LogoChipList
+                  title={tv.networks.length > 1 ? "Networks" : "Network"}
+                  headingId="network-heading"
+                  items={tv.networks.map((network) => ({
+                    id: network.id,
+                    name: network.name,
+                    logoPath: network.logoPath,
+                    href: networkHref(network.id, network.name),
+                  }))}
+                />
+                <LogoChipList
+                  title="Production"
+                  headingId="production-heading"
+                  items={tv.productionCompanies.map((company) => ({
+                    id: company.id,
+                    name: company.name,
+                    logoPath: company.logoPath,
+                    href: companyHref(company.id, company.name),
+                  }))}
+                />
+              </>
+            ) : null
+          }
+        >
+          <FactsList
+            rows={[
+              factRow("Created by", tv.createdBy.length > 0 ? <PeopleList people={tv.createdBy} /> : null),
+              factRow(
+                "Status",
+                tv.status || nextEpisode ? (
+                  <>
+                    {tv.status}
+                    {nextEpisode ? (
+                      <span className={cn("text-muted-foreground", tv.status && "block")}>{nextEpisode}</span>
+                    ) : null}
+                  </>
+                ) : null,
+              ),
+              factRow("Seasons", tv.numberOfSeasons > 0 ? String(tv.numberOfSeasons) : null),
+              factRow("Episodes", tv.numberOfEpisodes > 0 ? String(tv.numberOfEpisodes) : null),
+              factRow("Original title", tv.originalTitle !== tv.title ? tv.originalTitle : null),
+              factRow("First aired", formatDate(tv.firstAirDate, "long")),
+              factRow("Last aired", lastAired),
+              factRow("Original language", language),
+              factRow("Countries", countryNames(tv.productionCountries) ?? (tv.originCountry.join(", ") || null)),
+            ]}
           />
-        </div>
-
-        <div className="mt-10 md:mt-14">
-          <h2 className="mb-5 border-b border-border pb-2 font-montserrat text-xl font-bold tracking-tight sm:text-2xl">
-            Cast
-          </h2>
-          <CastList cast={series.credits.cast} />
-        </div>
-
-        <div className="mt-10 md:mt-14">
-          <RecommendedMedia
-            items={recommendations}
-            type="series"
-            title="Similar Series"
-          />
-        </div>
+        </OverviewSection>
       </div>
-    </div>
+
+      <div className="mt-6 md:mt-8">
+        <CastRail title={tv.title} cast={tv.cast} crew={tv.crew} />
+        <VideoRail videos={tv.videos} title={tv.title} />
+        <RecommendationsRail items={tv.recommendations} />
+      </div>
+
+      <RecordView
+        tmdbId={tv.id}
+        mediaType="tv"
+        title={tv.title}
+        posterPath={tv.posterPath}
+        backdropPath={tv.backdropPath}
+        season={positionFromUrl ? currentSeason : undefined}
+        episode={positionFromUrl ? currentEpisode : undefined}
+      />
+    </>
   );
 }

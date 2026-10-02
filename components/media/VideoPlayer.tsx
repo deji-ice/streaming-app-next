@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { Play, ChevronLeft, ChevronRight } from "lucide-react";
+import { CaretLeftIcon, CaretRightIcon, PlayIcon } from "@phosphor-icons/react";
 import { VideoPlayerProps } from "@/types";
 import { trackEvent } from "@/lib/analytics";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -11,6 +11,9 @@ import { useWatchHistory } from "@/hooks/useWatchHistory";
 import { useStreamSource } from "@/hooks/useStreamSource";
 import { getProvider } from "@/lib/stream-providers";
 import SourceSelector from "@/components/media/SourceSelector";
+import { IMAGE_SIZES, tmdbImage } from "@/lib/tmdb-image";
+import { cn } from "@/lib/utils";
+import { playerHeight } from "@/components/details/layout-classes";
 
 export default function VideoPlayer({
   tmdbId,
@@ -72,9 +75,8 @@ export default function VideoPlayer({
     if (isPlaying) setStreamUrl(buildUrl(providerId));
   }, [providerId, isPlaying, buildUrl]);
 
-  const backdropUrl = posterPath
-    ? `https://image.tmdb.org/t/p/original${posterPath}`
-    : "/placeholder-poster.jpg";
+  // The TMDB image loader picks a sane size (w1280 at most) from `sizes`.
+  const posterSrc = tmdbImage(posterPath);
 
   // episode navigation controls
   const EpisodeControls = () => {
@@ -94,23 +96,23 @@ export default function VideoPlayer({
     };
 
     return type === "series" ? (
-      <div className="flex justify-center gap-4">
+      <div className="flex flex-wrap justify-center gap-3 px-gutter pb-4">
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={() => navigateEpisode("prev")}
           disabled={!episode || episode.number <= 1}
         >
-          <ChevronLeft className="mr-2 h-4 w-4" /> Previous Episode
+          <CaretLeftIcon aria-hidden="true" /> Previous Episode
         </Button>
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={() => navigateEpisode("next")}
           disabled={
             !episode ||
             (seasonLength !== undefined && episode.number >= seasonLength)
           }
         >
-          Next Episode <ChevronRight className="ml-2 h-4 w-4" />
+          Next Episode <CaretRightIcon aria-hidden="true" />
         </Button>
       </div>
     ) : null;
@@ -118,31 +120,41 @@ export default function VideoPlayer({
 
   if (!isPlaying) {
     return (
-      <div className="w-full pt-[56px] md:pt-0">
-        <div
-          className="relative w-full aspect-video cursor-pointer group"
+      <div className="w-full">
+        <button
+          type="button"
           onClick={handlePlay}
+          aria-label={`Play ${title}`}
+          className={cn(
+            "group relative block w-full overflow-hidden bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+            playerHeight,
+          )}
         >
-          <Image
-            src={backdropUrl}
-            alt={title}
-            fill
-            className="object-cover  brightness-50"
-            priority
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-slate-800 p-3 sm:p-4 rounded-full transition-transform group-hover:scale-110">
-              <Play className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-            </div>
-          </div>
-        </div>
+          {posterSrc ? (
+            <Image
+              src={posterSrc}
+              alt=""
+              fill
+              sizes={IMAGE_SIZES.player}
+              className="object-cover"
+              priority
+            />
+          ) : null}
+          <span aria-hidden="true" className="absolute inset-0 bg-black/40" />
+          <span className="absolute inset-0 flex items-center justify-center">
+            <span className="flex size-[72px] items-center justify-center rounded-full bg-primary text-primary-foreground transition-[transform,background-color] duration-150 ease-out group-hover:bg-primary-hover group-active:scale-[0.98]">
+              <PlayIcon weight="fill" size={32} aria-hidden="true" />
+              <span className="sr-only">Play {title}</span>
+            </span>
+          </span>
+        </button>
       </div>
     );
   }
 
   return streamUrl ? (
-    <div className="w-full pt-[56px] md:pt-0">
-      <div className="relative w-full aspect-video">
+    <div className="w-full">
+      <div className={cn("relative w-full", playerHeight)}>
         <iframe
           // Remounting on source/episode change forces a clean reload.
           key={`${providerId}-${episode?.season ?? 0}-${episode?.number ?? 0}`}
@@ -153,7 +165,8 @@ export default function VideoPlayer({
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; gyroscope; picture-in-picture"
         />
       </div>
-      <div className="px-4 md:px-0">
+      {/* The player band is full-bleed, so the controls under it use the page gutter. */}
+      <div className="px-gutter pb-4 pt-1">
         <SourceSelector value={providerId} onChange={setProviderId} />
       </div>
       <EpisodeControls />
