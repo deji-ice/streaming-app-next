@@ -24,24 +24,6 @@ export interface StreamProvider {
 
 export const STREAM_PROVIDERS: StreamProvider[] = [
   {
-    id: "vidsrc",
-    label: "VidSrc",
-    iosFriendly: true,
-    buildUrl: ({ type, tmdbId, season = 1, episode = 1 }) =>
-      type === "movie"
-        ? `https://vidsrc.to/embed/movie/${tmdbId}`
-        : `https://vidsrc.to/embed/tv/${tmdbId}/${season}/${episode}`,
-  },
-  {
-    id: "multiembed",
-    label: "MultiEmbed",
-    iosFriendly: true,
-    buildUrl: ({ type, tmdbId, season = 1, episode = 1 }) => {
-      const base = `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1`;
-      return type === "movie" ? base : `${base}&s=${season}&e=${episode}`;
-    },
-  },
-  {
     // The app's original provider. Kept as an option; query string preserved
     // byte-for-byte from the previous app/api/stream/route.ts behaviour.
     id: "vidlink",
@@ -52,6 +34,25 @@ export const STREAM_PROVIDERS: StreamProvider[] = [
         ? `https://vidlink.pro/movie/${tmdbId}/?primaryColor=d31d09&secondaryColor=a2a2a2&iconColor=f7f7f8&player=jw&title=true&poster=true&autoplay=false&nextbutton=false`
         : `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}/?primaryColor=d31d09&secondaryColor=a2a2a2&iconColor=f7f7f8&player=default&title=true&poster=true&autoplay=false&nextbutton=false`,
   },
+  {
+    id: "vidsrc",
+    label: "VidSrc",
+    iosFriendly: true,
+    buildUrl: ({ type, tmdbId, season = 1, episode = 1 }) =>
+      type === "movie"
+        ? `https://vidsrc.to/embed/movie/${tmdbId}`
+        : `https://vidsrc.to/embed/tv/${tmdbId}/${season}/${episode}`,
+  },
+  {
+    id: "videasy",
+    label: "Videasy",
+    iosFriendly: true,
+    buildUrl: ({ type, tmdbId, season = 1, episode = 1 }) =>
+      type === "movie"
+        ? `https://player.videasy.ws/embed/movie/${tmdbId}`
+        : `https://player.videasy.ws/embed/tv/${tmdbId}/${season}/${episode}`,
+  },
+
   // Owner's additional sites drop in here as one object each.
 ];
 
