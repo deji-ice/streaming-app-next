@@ -2,7 +2,7 @@
 
 import { FilmSlateIcon, TelevisionIcon } from "@phosphor-icons/react";
 import Image from "next/image";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { focusRing, hoverTitle, pillBase, pillVariants } from "@/components/ds/classes";
 import { IntentLink } from "@/components/ds/intent-link";
@@ -105,7 +105,6 @@ function DepartmentList({
   expanded: boolean;
   onExpand: () => void;
 }) {
-  const baseId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const focusIndex = useRef<number | null>(null);
 
@@ -129,17 +128,16 @@ function DepartmentList({
   return (
     <div ref={containerRef} className="max-w-4xl">
       {groups.map((group) => {
-        const headingId = `${baseId}-${department.id}-${group.id}`;
         const start = offset;
         offset += group.rows.length;
         return (
-          <section
+          // A div, not a section: one landmark per year would flood the landmark list
+          // (and the "Upcoming" group repeats the rail's name). The h3 still gives structure.
+          <div
             key={group.id}
-            aria-labelledby={headingId}
             className="border-t border-border py-3 first:border-t-0 first:pt-0 sm:grid sm:grid-cols-[5rem_minmax(0,1fr)] sm:gap-x-4"
           >
             <h3
-              id={headingId}
               className="pb-1 text-sm font-semibold leading-5 tabular-nums text-subtle-foreground sm:flex sm:h-[72px] sm:items-center sm:pb-0"
             >
               {group.label}
@@ -149,7 +147,7 @@ function DepartmentList({
                 <CreditRow key={row.key} row={row} index={start + rowIndex} />
               ))}
             </ul>
-          </section>
+          </div>
         );
       })}
 
