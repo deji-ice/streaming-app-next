@@ -1,15 +1,25 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // TMDB already serves resized renditions, so the custom loader maps each
+  // requested width to a valid TMDB size bucket instead of running the
+  // Next optimizer (see lib/tmdb-image-loader.ts and design spec section 4).
   images: {
-    unoptimized: true,
+    loader: 'custom',
+    // Root-level shim (see image-loader.ts): a subfolder path breaks Turbopack on Windows.
+    loaderFile: './image-loader.ts',
+    imageSizes: [92, 154, 185, 300, 342],
+    deviceSizes: [500, 780, 1280, 1920],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'image.tmdb.org'
+        hostname: 'image.tmdb.org',
+        pathname: '/t/p/**'
       }
     ]
+  },
+  experimental: {
+    optimizePackageImports: ['@phosphor-icons/react'],
   },
   async headers() {
     return [

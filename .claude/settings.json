@@ -2,7 +2,33 @@
   "permissions": {
     "allow": [
       "PowerShell(npm run lint 2>&1)",
-      "PowerShell(npx tsc --noEmit 2>&1)"
+      "PowerShell(npx tsc --noEmit 2>&1)",
+      "Bash(grep -o -E '\\\\[\"wrangler\\\\.json\", ?\"wrangler\\\\.jsonc\", ?\"wrangler\\\\.toml\"\\\\]|wrangler\\\\.json\"[^;]{0,80}wrangler\\\\.toml' node_modules/wrangler/wrangler-dist/cli.js)",
+      "Bash(grep -n -A3 '^onError$\\\\|^onReady$' yt_iframe_api.txt)",
+      "Bash(curl -s -A \"Mozilla/5.0\" -o apple_dvc.json -w \"apple %{http_code} %{size_download}\\\\n\" \"https://developer.apple.com/tutorials/data/documentation/webkit/delivering-video-content-for-safari.json\")",
+      "Bash(node -e ' *)",
+      "Bash(node -e \"console.log\\(require\\('@types/react/package.json'\\).version, require\\('react/package.json'\\).version, require\\('@radix-ui/react-dialog/package.json'\\).version, require\\('@radix-ui/react-tabs/package.json'\\).version, require\\('tailwindcss-animate/package.json'\\).version\\)\")",
+      "Bash(git diff *)",
+      "PowerShell(Get-CimInstance Win32_Process -Filter \"Name = 'node.exe'\" | Where-Object { $_.CommandLine -match 'streaming-app-next' } | Select-Object ProcessId, @{n='Cmd';e={$_.CommandLine.Substring\\(0,[Math]::Min\\(150,$_.CommandLine.Length\\)\\)}} | Format-Table -AutoSize -Wrap; \\(Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -in 3000,3001,3002 } | Select-Object LocalPort, OwningProcess | Format-Table -AutoSize\\))",
+      "PowerShell(Get-Process node,msedge,chrome -ErrorAction SilentlyContinue | Sort-Object CPU -Descending | Select-Object -First 8 Id, ProcessName, @{n='CPUsec';e={[int]$_.CPU}}, @{n='MemMB';e={[int]\\($_.WorkingSet64/1MB\\)}} | Format-Table -AutoSize; \\(Get-CimInstance Win32_OperatingSystem | Select-Object @{n='FreeMemMB';e={[int]\\($_.FreePhysicalMemory/1024\\)}}, @{n='TotalMemMB';e={[int]\\($_.TotalVisibleMemorySize/1024\\)}}\\) | Format-Table -AutoSize)",
+      "Bash(grep -E '^_about_?\\\\.html$')",
+      "PowerShell($cpu = \\(Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average\\).Average; \"CPU load %: $cpu\"; Get-Process | Sort-Object CPU -Descending | Select-Object -First 6 Id, ProcessName, @{n='CPUsec';e={[int]$_.CPU}}, @{n='MemMB';e={[int]\\($_.WorkingSet64/1MB\\)}} | Format-Table -AutoSize; Get-Process node | Select-Object Id, @{n='MemMB';e={[int]\\($_.WorkingSet64/1MB\\)}}, StartTime | Format-Table -AutoSize)",
+      "Bash(node overflow-audit.mjs / home)",
+      "Bash(MSYS_NO_PATHCONV=1 node overflow-audit.mjs / home)",
+      "Bash(MSYS_NO_PATHCONV=1 node drill.mjs / 390 1)",
+      "Bash(MSYS_NO_PATHCONV=1 node drill.mjs / 1440 0)",
+      "Bash(MSYS_NO_PATHCONV=1 node overflow-audit.mjs / home2)",
+      "Bash(tr '\\\\\\\\' ' ')",
+      "Bash(curl -s --max-time 120 http://localhost:3001/ -o /tmp/home-now.html; echo \"fetchpriority=high count: $\\(grep -o 'fetchPriority=\"high\"\\\\|fetchpriority=\"high\"' /tmp/home-now.html | wc -l\\)\"; grep -o '<link rel=\"preload\"[^>]*imageSrcSet[^>]*>' /tmp/home-now.html | head -2 | cut -c1-260; grep -o '<link rel=\"preload\" as=\"image\"[^>]*>' /tmp/home-now.html | head -2 | cut -c1-260)",
+      "Read(//tmp/**)",
+      "Bash(MSYS_NO_PATHCONV=1 node shoot.mjs / 390 1 m390 \"Top 10\" \"Streaming services\" \"New in theaters\" \"Browse by genre\")",
+      "Bash(MSYS_NO_PATHCONV=1 node shoot.mjs / 1440 0 d1440 \"Top 10\" \"Streaming services\")",
+      "Bash(MSYS_NO_PATHCONV=1 WIDTHS=\"320,360,414,1024,1280,1920\" node overflow-audit.mjs / homew)",
+      "Bash(MSYS_NO_PATHCONV=1 WIDTHS=\"390,1440\" node overflow-audit.mjs \"/series/reacher-108978\" reacher)",
+      "Bash(MSYS_NO_PATHCONV=1 WIDTHS=\"1440\" node overflow-audit.mjs \"/movie/the-batman-414906\" batman)",
+      "Bash(sed -i '31{/eslint-disable-next-line @typescript-eslint\\\\/no-explicit-any/d}' lib/supabase.ts)",
+      "Bash(sed -i '9{/eslint-disable-next-line @typescript-eslint\\\\/no-explicit-any/d}' lib/supabase.ts)",
+      "PowerShell($j = \"C:\\\\Users\\\\ADMIN\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-ADMIN-Desktop-dev-streaming-app-next\\\\9ea85bd4-cdd3-4d6b-abeb-a506beadbaab\\\\scratchpad\\\\b\\\\node_modules\"; cmd /c rmdir \"$j\"; \"junction removed: \" + \\(-not \\(Test-Path $j\\)\\); \"real node_modules intact: \" + \\(Test-Path \"C:\\\\Users\\\\ADMIN\\\\Desktop\\\\dev\\\\streaming-app-next\\\\node_modules\\\\next\\\\package.json\"\\))"
     ]
   }
 }
