@@ -118,7 +118,7 @@ export default async function SeriesPage({ params, searchParams }: PageProps) {
     <>
       <PlayerBand>
         <VideoPlayer
-          key={`${currentSeason}-${currentEpisode}`}
+          // key={`${currentSeason}-${currentEpisode}`}
           tmdbId={tv.id}
           type="series"
           posterPath={tv.backdropPath ?? tv.posterPath ?? ""}
