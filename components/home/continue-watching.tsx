@@ -87,7 +87,8 @@ export function ContinueWatching() {
       {!hydrated ? (
         <HistoryRailSkeleton />
       ) : cards.length > 0 ? (
-        <Rail title="Continue watching" variant="landscape" action={<HistoryLink />}>
+        // Its height is reserved up front by .history-slot, so it always renders.
+        <Rail title="Continue watching" variant="landscape" action={<HistoryLink />} deferRender={false}>
           {cards.map((card) => (
             <LandscapeCard
               key={card.key}

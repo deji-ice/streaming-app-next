@@ -206,6 +206,8 @@ async function EpisodesRailContent({ tvId, basePath, ended, seasons, currentSeas
       action={summary}
       beforeList={pills}
       initialSelector='[data-current="true"]'
+      // Sits right under the player and scrolls itself to the current episode.
+      deferRender={false}
     >
       {episodes.map((episode) => (
         <EpisodeCard

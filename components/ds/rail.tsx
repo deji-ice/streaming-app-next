@@ -41,6 +41,14 @@ export interface RailProps {
   children: ReactNode;
   /** Controls the gap between items only. */
   variant?: RailVariant;
+  /**
+   * Skip rendering while the rail is far off screen (content-visibility: auto).
+   * A page of rails is hundreds of elements, and every modal open (Radix sets an
+   * inherited property on body) restyles all of them; skipped rails cost nothing.
+   * The browser renders a rail again just before it scrolls into view. Turn it off
+   * for a rail that must measure itself or reserve its height up front.
+   */
+  deferRender?: boolean;
   className?: string;
 }
 
@@ -50,6 +58,19 @@ const GAP: Record<RailVariant, string> = {
   person: "gap-2 md:gap-3",
   logo: "gap-3 md:gap-4",
   ranked: "gap-4 md:gap-6",
+};
+
+/**
+ * Placeholder height while a rail is skipped; "auto" swaps in the real height
+ * once it has rendered. Close to a rail's measured height on a phone, so the
+ * scrollbar barely moves when a rail renders.
+ */
+const DEFERRED: Record<RailVariant, string> = {
+  poster: "[content-visibility:auto] [contain-intrinsic-size:auto_340px]",
+  landscape: "[content-visibility:auto] [contain-intrinsic-size:auto_260px]",
+  person: "[content-visibility:auto] [contain-intrinsic-size:auto_210px]",
+  logo: "[content-visibility:auto] [contain-intrinsic-size:auto_170px]",
+  ranked: "[content-visibility:auto] [contain-intrinsic-size:auto_360px]",
 };
 
 function keyOf(child: ReturnType<typeof Children.toArray>[number], index: number): string {
@@ -77,6 +98,7 @@ export function Rail({
   initialSelector,
   children,
   variant = "poster",
+  deferRender = true,
   className,
 }: RailProps) {
   const autoId = useId();
@@ -149,7 +171,10 @@ export function Rail({
   );
 
   return (
-    <section aria-labelledby={id} className={cn("py-5 md:py-7", className)}>
+    <section
+      aria-labelledby={id}
+      className={cn("py-5 md:py-7", deferRender && DEFERRED[variant], className)}
+    >
       <div className="flex min-h-11 items-center justify-between gap-4 px-gutter">
         <h2 id={id} className="type-section min-w-0 text-foreground">
           {title}
