@@ -39,11 +39,14 @@ function useAuthBootstrap() {
         const { data } = supabase.auth.onAuthStateChange(
           (event: AuthChangeEvent, session: Session | null) => {
             useUserStore.getState().setSession(session);
-            // Drop the previous account's cached watchlist/favorites/history.
+            // Drop the previous account's cached watchlist/favorites/history, and this
+            // browser's local watch history: it is merged into whichever account signs
+            // in next, so on a shared device it would otherwise carry over.
             if (event === "SIGNED_OUT") {
               void import("@/lib/user-data").then((m) =>
                 m.resetUserDataCache(queryClient),
               );
+              void import("@/lib/history").then((m) => m.clearLocalHistory());
             }
 
             const userId = session?.user?.id;
