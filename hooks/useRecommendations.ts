@@ -1,8 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
-import { useUserStore } from "@/lib/store";
-import { supabase } from "@/lib/supabase";
-import { tmdb } from "@/lib/tmdb";
+"use client";
 
+import { useCallback, useMemo } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import {
+  type RecommendationResult,
+  recommendationsQueryOptions,
+  useRecommendationSeeds,
+} from "@/lib/user-data/recommendations";
+
+/** Legacy TMDB-like shape kept for existing consumers. */
 export interface Recommendation {
     id: number;
     title: string;
@@ -11,119 +17,64 @@ export interface Recommendation {
     backdrop_path: string | null;
     release_date?: string;
     first_air_date?: string;
+    /** Always "" (the recommendations route does not return overviews). */
     overview: string;
     vote_average: number;
+    /** Always 0 (not returned by the route). */
     vote_count: number;
     media_type: "movie" | "tv";
-    score: number; // Recommendation score (0-100)}
+    /** Rank-based ordering score, 100 for the first result. Internal: do not display. */
+    score: number;
 }
 
+const EMPTY: Recommendation[] = [];
+
+function toRecommendation(result: RecommendationResult, index: number): Recommendation {
+    const year = result.year != null && String(result.year).trim() !== "" ? String(result.year) : undefined;
+    const base = {
+        id: result.id,
+        title: result.title,
+        poster_path: result.posterPath ?? null,
+        backdrop_path: result.backdropPath ?? null,
+        overview: "",
+        vote_average: typeof result.rating === "number" ? result.rating : 0,
+        vote_count: 0,
+        media_type: result.mediaType === "tv" ? ("tv" as const) : ("movie" as const),
+        score: Math.max(0, 100 - index),
+    };
+    return result.mediaType === "tv"
+        ? { ...base, name: result.title, first_air_date: year }
+        : { ...base, release_date: year };
+}
+
+/**
+ * Recommendations from GET /api/recommendations, seeded by favorites,
+ * watchlist and history (local history works signed out). Returns an empty
+ * list when there are no seeds yet.
+ */
 export function useRecommendations() {
-    const user = useUserStore((state) => state.user);
-    const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const { seeds, exclude, isLoading: seedsLoading } = useRecommendationSeeds();
+    const seedKeys = useMemo(() => seeds.map((seed) => seed.key), [seeds]);
 
-    const generateRecommendations = useCallback(async () => {
-        if (!user?.id) {
-            setRecommendations([]);
-            return;
-        }
+    const query = useQuery({
+        ...recommendationsQueryOptions(seedKeys, exclude),
+        enabled: !seedsLoading && seedKeys.length > 0,
+        placeholderData: keepPreviousData,
+    });
 
-        try {
-            setIsLoading(true);
+    const recommendations = useMemo(
+        () => (query.data ? query.data.map(toRecommendation) : EMPTY),
+        [query.data],
+    );
 
-            // Fetch user's watchlist and favorites
-            const [watchlistRes, favoritesRes] = await Promise.all([
-                supabase
-                    .from("watchlist")
-                    .select("tmdb_id, media_type")
-                    .eq("user_id", user.id),
-                supabase
-                    .from("favorites")
-                    .select("tmdb_id, media_type")
-                    .eq("user_id", user.id),
-            ]);
-
-            const watchlistIds = watchlistRes.data?.map((item: any) => item.tmdb_id) || [];
-            const favoriteIds = favoritesRes.data?.map((item: any) => item.tmdb_id) || [];
-            const allUserItems = [...new Set([...watchlistIds, ...favoriteIds])];
-
-            if (allUserItems.length === 0) {
-                // If no watchlist/favorites, return trending content
-                const trending = await tmdb.getTrending();
-
-                const allTrending = (trending.results || [])
-                    .map((item: any) => ({
-                        ...item,
-                        media_type: item.media_type || "movie",
-                        score: (item.popularity || 0) * 5,
-                    }))
-                    .sort((a, b) => b.score - a.score)
-                    .slice(0, 20);
-
-                setRecommendations(allTrending);
-                return;
-            }
-
-            // Get similar items for each user item
-            const recommendedMap = new Map<number, Recommendation>();
-
-            for (const itemId of allUserItems.slice(0, 5)) {
-                // Limit to first 5 for performance
-                const watchlistItem = watchlistRes.data?.find((w: any) => w.tmdb_id === itemId);
-                const mediaType = watchlistItem?.media_type || "movie";
-
-                try {
-                    const details = await tmdb.getMediaDetails(
-                        itemId.toString(),
-                        mediaType === "tv" ? "tv" : "movie"
-                    );
-
-                    const similar = (details as any).similar?.results || [];
-
-                    if (similar && similar.length > 0) {
-                        for (const item of similar) {
-                            const key = `${mediaType}-${item.id}`;
-
-                            // Increase score if already in recommendations
-                            if (recommendedMap.has(item.id)) {
-                                const existing = recommendedMap.get(item.id)!;
-                                existing.score += item.vote_average || 5;
-                            } else {
-                                recommendedMap.set(item.id, {
-                                    ...item,
-                                    media_type: mediaType as "movie" | "tv",
-                                    score: (item.vote_average || 5) * (favoriteIds.includes(itemId) ? 1.5 : 1),
-                                });
-                            }
-                        }
-                    }
-                } catch (err) {
-                    console.error(`Error fetching similar content for ${itemId}:`, err);
-                }
-            }
-
-            // Filter out items already in user's watchlist/favorites
-            const filtered = Array.from(recommendedMap.values())
-                .filter((rec) => !allUserItems.includes(rec.id))
-                .sort((a, b) => b.score - a.score)
-                .slice(0, 20);
-
-            setRecommendations(filtered);
-        } catch (err) {
-            console.error("Recommendations generation error:", err);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [user?.id]);
-
-    useEffect(() => {
-        generateRecommendations();
-    }, [generateRecommendations]);
+    const { refetch } = query;
+    const refresh = useCallback(async (): Promise<void> => {
+        if (seedKeys.length > 0) await refetch();
+    }, [refetch, seedKeys.length]);
 
     return {
-        recommendations,
-        isLoading,
-        refresh: generateRecommendations,
+        recommendations: seedKeys.length > 0 ? recommendations : EMPTY,
+        isLoading: seedsLoading || query.isLoading,
+        refresh,
     };
 }

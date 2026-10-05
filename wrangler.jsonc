@@ -10,5 +10,23 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
-  }
+  },
+  // OpenNext persistent cache (see open-next.config.ts and https://opennext.js.org/cloudflare/caching).
+  // Self-reference used by the DO queue to revalidate ISR pages; the service name must match "name".
+  "services": [
+    { "binding": "WORKER_SELF_REFERENCE", "service": "stream" }
+  ],
+  // Create the bucket before the first deploy: npx wrangler r2 bucket create stream-next-inc-cache
+  "r2_buckets": [
+    { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "stream-next-inc-cache" }
+  ],
+  // DOQueueHandler is exported by the generated .open-next/worker.js.
+  "durable_objects": {
+    "bindings": [
+      { "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] }
+  ]
 }

@@ -1,137 +1,96 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Facebook, Twitter, Instagram, Youtube, Mail } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+
+const EXPLORE_LINKS = [
+  { label: "Home", href: "/" },
+  { label: "Movies", href: "/movie" },
+  { label: "Series", href: "/series" },
+  { label: "Browse", href: "/browse" },
+  { label: "Search", href: "/search" },
+] as const;
+
+const INFO_LINKS = [{ label: "About and credits", href: "/about" }] as const;
+
+export const TMDB_NOTICE =
+  "This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.";
+
+const linkClass =
+  "inline-flex min-h-11 items-center rounded-full text-sm text-muted-foreground transition-colors duration-150 ease-out hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background md:min-h-8";
+
+function LinkColumn({
+  label,
+  links,
+}: {
+  label: string;
+  links: ReadonlyArray<{ label: string; href: string }>;
+}) {
+  return (
+    <nav aria-label={label}>
+      <p className="text-[13px] font-semibold text-foreground">{label}</p>
+      <ul className="mt-2">
+        {links.map((item) => (
+          <li key={item.href}>
+            <Link href={item.href} className={linkClass}>
+              {item.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
 
 export default function Footer() {
+  const year = new Date().getFullYear();
+
   return (
-    <footer className="bg-[#f8f9fa] dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 pt-6 sm:pt-8 lg:pt-12 pb-4 sm:pb-6">
-      <div className="container mx-auto px-3 sm:px-4">
-        {/* Main Footer Content */}
-        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 mb-6 sm:mb-8 lg:mb-12">
-          {/* Column 1: Logo & About */}
-          <div className="space-y-3 sm:space-y-4">
-            <div className="flex items-center">
-              <h2 className="font-montserrat font-bold text-base sm:text-lg lg:text-xl text-gray-900 dark:text-white">
-                StreamScapeX
-              </h2>
-            </div>
-            <p className="text-gray-600 dark:text-gray-300 text-xs sm:text-sm leading-relaxed">
-              Your premier destination for streaming the latest movies and TV
-              shows in high definition.
+    <footer className="mt-12 border-t border-border bg-background md:mt-16">
+      <div className="mx-auto max-w-[1440px] px-gutter py-10 md:py-12">
+        {/* Row 1: brand + link columns */}
+        <div className="grid gap-8 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:gap-12 lg:gap-20">
+          <div>
+            <p className="font-display text-xl font-extrabold leading-none tracking-tight text-foreground [font-stretch:80%]">
+              StreamScape<span className="text-primary">X</span>
             </p>
-            <div className="flex space-x-3 sm:space-x-4">
-              <a
-                href="https://twitter.com"
-                aria-label="Twitter"
-                className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors"
-              >
-                <Twitter
-                  size={16}
-                  className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
-                />
-              </a>
-              <a
-                href="https://facebook.com"
-                aria-label="Facebook"
-                className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors"
-              >
-                <Facebook
-                  size={16}
-                  className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
-                />
-              </a>
-              <a
-                href="https://instagram.com"
-                aria-label="Instagram"
-                className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors"
-              >
-                <Instagram
-                  size={16}
-                  className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
-                />
-              </a>
-              <a
-                href="https://youtube.com"
-                aria-label="YouTube"
-                className="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors"
-              >
-                <Youtube
-                  size={16}
-                  className="w-4 h-4 sm:w-[18px] sm:h-[18px]"
-                />
-              </a>
-            </div>
-          </div>
-
-          {/* Column 2: Quick Links */}
-          <div className="space-y-3 sm:space-y-4">
-            <h3 className="font-montserrat font-bold text-sm sm:text-base text-gray-900 dark:text-white">
-              Quick Links
-            </h3>
-            {(() => {
-              const quickLinks = [
-                { title: "Home", href: "/" },
-                { title: "Movies", href: "/movie" },
-                { title: "TV Shows", href: "/series" },
-                { title: "Search", href: "/search" },
-              ];
-              return (
-                <ul className="space-y-1 sm:space-y-2">
-                  {quickLinks.map((item) => (
-                    <li key={item.title}>
-                      <Link
-                        href={item.href}
-                        className="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors text-xs sm:text-sm"
-                      >
-                        {item.title}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              );
-            })()}
-          </div>
-
-          {/* Column 3: Newsletter */}
-          <div className="space-y-3 sm:space-y-4">
-            <h3 className="font-montserrat font-bold text-sm sm:text-base text-gray-900 dark:text-white">
-              Newsletter
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 text-xs sm:text-sm">
-              Subscribe to receive updates on new releases and features.
+            <p className="mt-3 max-w-[40ch] text-sm text-muted-foreground">
+              Browse movies, series and the people who make them.
             </p>
-            <form className="flex gap-1 sm:gap-2">
-              <Input
-                type="email"
-                placeholder="Your email"
-                className="bg-white dark:bg-gray-800 h-10"
-              />
-              <Button
-                type="submit"
-                size="sm"
-                className="whitespace-nowrap h-10 text-xs sm:text-sm"
-              >
-                <Mail className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                <span>Subscribe</span>
-              </Button>
-            </form>
           </div>
+          <LinkColumn label="Explore" links={EXPLORE_LINKS} />
+          <LinkColumn label="Info" links={INFO_LINKS} />
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-gray-200 dark:border-gray-800 pt-4 sm:pt-6 flex flex-col xs:flex-row justify-between items-center">
-          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-            © {new Date().getFullYear()} StreamScapeX. All rights reserved.
+        {/* Row 2: TMDB attribution */}
+        <div className="mt-8 flex flex-col gap-2 border-t border-border pt-6 sm:flex-row sm:items-center sm:gap-4">
+          <a
+            href="https://www.themoviedb.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-11 shrink-0 items-center self-start rounded-media focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:self-auto md:min-h-8"
+          >
+            <Image
+              src="/brand/tmdb/tmdb-alt-short-blue.svg"
+              alt="The Movie Database (TMDB), opens in a new tab"
+              width={92}
+              height={12}
+              unoptimized
+              className="h-3 w-auto"
+            />
+          </a>
+          <p className="text-[13px] text-subtle-foreground">{TMDB_NOTICE}</p>
+        </div>
+
+        {/* Row 3: copyright + disclaimer */}
+        <div className="mt-6 space-y-2">
+          <p className="text-[13px] text-subtle-foreground tabular-nums">
+            © {year} StreamScapeX
           </p>
-        </div>
-        <div className="mt-5 sm:mt-6 lg:mt-8 border-t pt-3 sm:pt-4">
-          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 text-center sm:text-left">
-            <strong>DISCLAIMER:</strong> This website is a personal project
-            created for educational, demonstration, and portfolio purposes only.
-            StreamScapeX does not host any content; it utilizes TMDB API for
-            metadata and external services for streaming. No copyright
-            infringement is intended.
+          <p className="max-w-[110ch] text-xs leading-relaxed text-subtle-foreground">
+            <strong className="font-semibold text-muted-foreground">DISCLAIMER:</strong>{" "}
+            This website is a personal project created for educational,
+            demonstration, and portfolio purposes only. StreamScapeX does not host
+            any content; it utilizes TMDB API for metadata and external services for
+            streaming. No copyright infringement is intended.
           </p>
         </div>
       </div>

@@ -2,106 +2,121 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  StreamScapeX design tokens (design spec section 2).
+  Dark only. Colors are RGB channels so Tailwind alpha modifiers work:
+  tailwind.config.ts maps each one as rgb(var(--token) / <alpha-value>).
+*/
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    color-scheme: dark;
 
-    --foreground: 222.2 84% 4.9%;
+    /* 2.1 Colors */
+    --background: 13 13 16; /* #0D0D10 page */
+    --foreground: 245 244 242; /* #F5F4F2 primary text */
 
-    --card: 0 0% 100%;
+    --card: 21 21 26; /* #15151A surface 1 */
+    --card-foreground: 245 244 242;
 
-    --card-foreground: 222.2 84% 4.9%;
+    --popover: 29 29 36; /* #1D1D24 surface 2 */
+    --popover-foreground: 245 244 242;
 
-    --popover: 0 0% 100%;
+    --primary: 255 107 74; /* #FF6B4A coral accent */
+    --primary-hover: 255 133 102; /* #FF8566 */
+    --primary-foreground: 22 10 7; /* #160A07 */
 
-    --popover-foreground: 222.2 84% 4.9%;
+    --secondary: 29 29 36;
+    --secondary-foreground: 245 244 242;
 
-    --primary: 222.2 47.4% 11.2%;
+    --muted: 29 29 36;
+    --muted-foreground: 180 179 186; /* #B4B3BA secondary text */
+    --subtle-foreground: 143 142 152; /* #8F8E98 meta text */
 
-    --primary-foreground: 210 40% 98%;
+    --accent: 39 39 48; /* #272730 surface 3: hover and pressed */
+    --accent-foreground: 245 244 242;
 
-    --secondary: 210 40% 96.1%;
+    --destructive: 244 112 103; /* #F47067 */
+    --destructive-foreground: 22 10 7;
+    --success: 95 208 138; /* #5FD08A */
+    --warning: 242 184 75; /* #F2B84B */
 
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --border: 44 44 53; /* #2C2C35 decorative hairlines */
+    --input: 110 110 123; /* #6E6E7B form control borders */
+    --ring: 255 107 74; /* focus ring = primary */
 
-    --muted: 210 40% 96.1%;
+    /* 2.3 Page gutter */
+    --gutter: 1rem;
 
-    --muted-foreground: #ffffff;
+    /* 2.5 Z-index scale (mirrored in lib/z.ts and tailwind zIndex) */
+    --z-nav: 40;
+    --z-banner: 45;
+    --z-overlay: 50;
+    --z-popover: 55;
+    --z-toast: 60;
 
-    --accent: 210 40% 96.1%;
+    /* Toasts clear the mobile tab bar (64px + safe area) until md, where it is hidden. */
+    --toast-offset-bottom: calc(64px + env(safe-area-inset-bottom) + 12px);
 
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /*
+      8.3 Continue watching slot reservation: the height of one landscape rail.
+      rail padding (py-5 = 2 x 20px; md:py-7 = 2 x 28px)
+      + header row (44px control row + 12px gap below it)
+      + 16:9 LandscapeCard frame at the rail card width (75vw, sm 280px, lg 320px)
+      + card text (8px gap + 20px title line + 18px subtitle line)
+      Result: about 300px on phones (306px at 390px wide), 300px sm, 316px md, 338px lg+.
+    */
+    --history-rail-pad: 2.5rem;
+    --history-rail-head: 3.5rem;
+    --history-card-w: 75vw;
+    --history-card-text: 2.875rem;
+    --history-slot-h: calc(
+      var(--history-rail-pad) + var(--history-rail-head) +
+        (var(--history-card-w) * 0.5625) + var(--history-card-text)
+    );
 
-    --destructive: 0 84.2% 60.2%;
-
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-
-    --input: 214.3 31.8% 91.4%;
-
-    --ring: 222.2 84% 4.9%;
-
-    --chart-1: 12 76% 61%;
-
-    --chart-2: 173 58% 39%;
-
-    --chart-3: 197 37% 24%;
-
-    --chart-4: 43 74% 66%;
-
-    --chart-5: 27 87% 67%;
-
-    --radius: 0.5rem;
+    /*
+      Player box height cap (playerHeight in components/details/layout-classes.ts):
+      the first viewport minus the sticky nav (56px, 64px from md, plus the iOS
+      status bar inset), minus the mobile tab bar, minus a strip of page left
+      showing under the player. The strip is what lets people scroll: the embed
+      is a cross-origin iframe and some players swallow wheel and touch events,
+      so a player that filled the whole first viewport left nothing to scroll on.
+      svh, not dvh, so the box doesn't resize as mobile browser toolbars collapse.
+    */
+    --player-peek: clamp(4rem, 12svh, 6rem);
+    --player-max-h: calc(
+      100svh - 56px - env(safe-area-inset-top) - 64px - env(safe-area-inset-bottom) -
+        var(--player-peek)
+    );
   }
-  .dark {
-    --background: 222.2 84% 4.9%;
 
-    --foreground: 210 40% 98%;
+  @media (min-width: 640px) {
+    :root {
+      --gutter: 1.5rem;
+      --history-card-w: 280px;
+    }
+  }
 
-    --card: 222.2 84% 4.9%;
+  @media (min-width: 768px) {
+    :root {
+      --history-rail-pad: 3.5rem;
+      --toast-offset-bottom: 24px;
+      /* Taller nav, no tab bar. */
+      --player-max-h: calc(100svh - 64px - env(safe-area-inset-top) - var(--player-peek));
+    }
+  }
 
-    --card-foreground: 210 40% 98%;
+  @media (min-width: 1024px) {
+    :root {
+      --gutter: 2.5rem;
+      --history-card-w: 320px;
+    }
+  }
 
-    --popover: 222.2 84% 4.9%;
-
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-
-    --input: 217.2 32.6% 17.5%;
-
-    --ring: 212.7 26.8% 83.9%;
-
-    --chart-1: 220 70% 50%;
-
-    --chart-2: 160 60% 45%;
-
-    --chart-3: 30 80% 55%;
-
-    --chart-4: 280 65% 60%;
-
-    --chart-5: 340 75% 55%;
+  @media (min-width: 1280px) {
+    :root {
+      --gutter: 3.5rem;
+    }
   }
 }
 
@@ -109,8 +124,47 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
-    @apply bg-background text-foreground font-roboto;
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+
+  ::selection {
+    background-color: rgb(var(--primary));
+    color: rgb(var(--primary-foreground));
+  }
+
+  /* @tailwindcss/forms ships a blue focus color and white checkboxes; map them to tokens. */
+  [type="text"]:focus,
+  [type="email"]:focus,
+  [type="url"]:focus,
+  [type="password"]:focus,
+  [type="number"]:focus,
+  [type="date"]:focus,
+  [type="search"]:focus,
+  [type="tel"]:focus,
+  [multiple]:focus,
+  textarea:focus,
+  select:focus {
+    --tw-ring-color: rgb(var(--ring));
+    border-color: rgb(var(--ring));
+  }
+
+  [type="checkbox"],
+  [type="radio"] {
+    color: rgb(var(--primary));
+    background-color: rgb(var(--card));
+    border-color: rgb(var(--input));
+  }
+
+  [type="checkbox"]:focus,
+  [type="radio"]:focus {
+    --tw-ring-color: rgb(var(--ring));
+    --tw-ring-offset-color: rgb(var(--background));
   }
 
   /* iOS Safari zooms the viewport when a focused text field is below 16px.
@@ -124,19 +178,104 @@
     }
   }
 }
-/* 
-@keyframes fadeOut {
-  0% {
-    opacity: 1;
+
+/* 2.2 Type styles */
+@layer components {
+  .type-display-xl {
+    @apply font-display;
+    font-weight: 800;
+    font-stretch: 78%;
+    letter-spacing: -0.02em;
+    line-height: 0.95;
+    font-size: clamp(2.5rem, 3.6vw + 1rem, 4.5rem);
   }
-  70% {
-    opacity: 1;
+
+  .type-display-lg {
+    @apply font-display;
+    font-weight: 750;
+    font-stretch: 82%;
+    letter-spacing: -0.015em;
+    line-height: 1;
+    font-size: clamp(2rem, 2.4vw + 1rem, 3.25rem);
   }
-  100% {
-    opacity: 0;
+
+  .type-display-md {
+    @apply font-display;
+    font-weight: 700;
+    font-stretch: 86%;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+    font-size: clamp(1.75rem, 1.2vw + 1.25rem, 2.25rem);
+  }
+
+  .type-section {
+    @apply font-display;
+    font-weight: 700;
+    font-stretch: 88%;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    font-size: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .type-section {
+      font-size: 1.5rem;
+    }
+  }
+
+  .type-eyebrow {
+    @apply font-sans text-subtle-foreground;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* 8.3 Continue watching: reserve one rail of height before paint when the
+     inline head script found local history, so the rail never shifts layout. */
+  .history-slot {
+    min-height: 0;
+  }
+
+  html[data-history="1"] .history-slot {
+    min-height: var(--history-slot-h);
   }
 }
 
-.animate-fadeOut {
-  animation: fadeOut 2s forwards;
-} */
+@layer utilities {
+  /* 2.3 Gutter helpers */
+  .px-gutter {
+    padding-inline: var(--gutter);
+  }
+
+  .scroll-px-gutter {
+    scroll-padding-inline: var(--gutter);
+  }
+
+  /* Hidden scrollbar for horizontal rails and chip rows */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* 2.6 Reduced motion guard */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

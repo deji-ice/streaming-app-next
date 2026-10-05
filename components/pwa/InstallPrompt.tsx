@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Share } from "lucide-react";
+import { DownloadSimpleIcon, ExportIcon, XIcon } from "@phosphor-icons/react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -10,11 +10,27 @@ interface BeforeInstallPromptEvent extends Event {
 
 const DISMISS_KEY = "pwa-install-dismissed";
 
+function readDismissed(): boolean {
+  try {
+    return Boolean(localStorage.getItem(DISMISS_KEY));
+  } catch {
+    return false;
+  }
+}
+
+function writeDismissed() {
+  try {
+    localStorage.setItem(DISMISS_KEY, "1");
+  } catch {
+    // Storage unavailable (private mode): the prompt simply shows again next visit.
+  }
+}
+
 /**
  * Lightweight install nudge. Self-suppresses when the app is already installed
  * (standalone) or previously dismissed. Uses the native beforeinstallprompt on
- * Android/Chrome and shows manual Add-to-Home-Screen guidance on iOS.
- * Note: installing the app does NOT block ads — the ad-blocker note is kept.
+ * Android/Chrome and shows manual Add to Home Screen guidance on iOS.
+ * Sits above the mobile tab bar (z-banner, below dialogs and menus).
  */
 export default function InstallPrompt() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
@@ -24,7 +40,7 @@ export default function InstallPrompt() {
   const [dismissed, setDismissed] = useState(true);
 
   useEffect(() => {
-    if (localStorage.getItem(DISMISS_KEY)) return;
+    if (readDismissed()) return;
 
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
@@ -56,7 +72,7 @@ export default function InstallPrompt() {
 
   const close = () => {
     setDismissed(true);
-    localStorage.setItem(DISMISS_KEY, "1");
+    writeDismissed();
   };
 
   const install = async () => {
@@ -69,41 +85,49 @@ export default function InstallPrompt() {
   if (dismissed || (!deferred && !showIosHint)) return null;
 
   return (
-    <div className="fixed inset-x-3 bottom-3 z-[90] mx-auto max-w-md rounded-xl border border-border bg-background/95 p-4 shadow-lg backdrop-blur">
+    <div
+      role="region"
+      aria-label="Install app"
+      className="fixed inset-x-3 bottom-[calc(64px+env(safe-area-inset-bottom)+12px)] z-banner mx-auto max-w-md rounded-panel border border-border bg-popover p-4 text-popover-foreground md:inset-x-auto md:bottom-4 md:right-4 md:mx-0 md:w-[360px]"
+    >
       <div className="flex items-start gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="font-montserrat text-sm font-bold">
+        <div className="min-w-0 flex-1 pt-0.5">
+          <p className="text-sm font-semibold text-foreground">
             Install StreamScapeX
           </p>
           {showIosHint ? (
-            <p className="mt-1 text-xs text-muted-foreground">
-              Tap Share <Share className="inline h-3 w-3" />, then &ldquo;Add to
-              Home Screen&rdquo;.
+            <p className="mt-1 text-[13px] leading-5 text-muted-foreground">
+              Tap Share{" "}
+              <ExportIcon
+                size={16}
+                aria-hidden="true"
+                className="inline-block align-text-bottom"
+              />
+              , then &ldquo;Add to Home Screen&rdquo;.
             </p>
           ) : (
-            <p className="mt-1 text-xs text-muted-foreground">
-              Add to your home screen for an app-like experience.
+            <p className="mt-1 text-[13px] leading-5 text-muted-foreground">
+              Add it to your home screen for an app-like experience.
             </p>
           )}
-          <p className="mt-2 text-[11px] text-amber-500">
-            Note: installing does not block ads. You still need an ad blocker or
-            Brave for popup-free playback.
-          </p>
           {deferred && (
             <button
+              type="button"
               onClick={install}
-              className="mt-3 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              className="mt-3 inline-flex h-11 items-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition-transform duration-150 ease-out hover:bg-primary-hover active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-popover md:h-10"
             >
+              <DownloadSimpleIcon size={20} aria-hidden="true" />
               Install
             </button>
           )}
         </div>
         <button
+          type="button"
           onClick={close}
           aria-label="Dismiss install prompt"
-          className="text-muted-foreground hover:text-foreground"
+          className="-mr-2 -mt-2 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-popover"
         >
-          <X className="h-4 w-4" />
+          <XIcon size={20} aria-hidden="true" />
         </button>
       </div>
     </div>

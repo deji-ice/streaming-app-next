@@ -1,140 +1,77 @@
-import { useCallback, useEffect, useState } from "react";
-import { useUserStore } from "@/lib/store";
-import { supabase } from "@/lib/supabase";
+"use client";
 
-export interface UserProfile {
-    id: string;
-    email: string;
-    username: string | null;
-    full_name: string | null;
-    avatar_url: string | null;
-    bio: string | null;
-    created_at: string;
-    updated_at: string;
-}
+import { useCallback, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  type AccountProfile,
+  useAccountProfile,
+  useUpdateProfile,
+  useUserDataCounts,
+} from "@/lib/user-data/profile";
+import { useUserId, userDataKeys } from "@/lib/user-data/shared";
 
+/** public.profiles row. `bio` is not in supabase-schema.sql and is always null unless the database adds it. */
+export type UserProfile = AccountProfile;
+
+/**
+ * Real values only. `totalHours` is kept for compatibility but is always null:
+ * playback progress is not tracked, so watch time cannot be computed.
+ */
 export interface ProfileStats {
-    totalMoviesWatched: number;
-    totalSeriesWatched: number;
-    totalHours: number;
-    watchlistCount: number;
-    favoritesCount: number;
+  /** Distinct movies in account watch history. */
+  totalMoviesWatched: number;
+  /** Distinct series in account watch history. */
+  totalSeriesWatched: number;
+  /** Always null (not computable). Do not display. */
+  totalHours: number | null;
+  watchlistCount: number;
+  favoritesCount: number;
 }
 
+/**
+ * Profile row + real counts. Both are shared TanStack queries
+ * (["user-data", "profile" | "counts", userId], staleTime 60s); counts use
+ * head-only exact count queries.
+ */
 export function useUserProfile() {
-    const user = useUserStore((state) => state.user);
-    const [profile, setProfile] = useState<UserProfile | null>(null);
-    const [stats, setStats] = useState<ProfileStats | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const userId = useUserId();
+  const { profile, isLoading, error } = useAccountProfile();
+  const { counts } = useUserDataCounts();
+  const update = useUpdateProfile();
 
-    // Fetch user profile
-    const fetchProfile = useCallback(async () => {
-        if (!user?.id) {
-            setIsLoading(false);
-            return;
-        }
+  const stats = useMemo<ProfileStats | null>(
+    () =>
+      counts
+        ? {
+            totalMoviesWatched: counts.moviesWatched,
+            totalSeriesWatched: counts.seriesWatched,
+            totalHours: null,
+            watchlistCount: counts.watchlist,
+            favoritesCount: counts.favorites,
+          }
+        : null,
+    [counts],
+  );
 
-        try {
-            setIsLoading(true);
-            const { data, error: fetchError } = await supabase
-                .from("profiles")
-                .select("*")
-                .eq("id", user.id)
-                .single();
+  /** Sends only full_name, username and avatar_url (the editable schema columns). */
+  const updateProfile = useCallback(
+    (updates: Partial<UserProfile>) => update(updates),
+    [update],
+  );
 
-            if (fetchError) throw fetchError;
+  const refresh = useCallback(() => {
+    if (!userId) return;
+    void queryClient.invalidateQueries({ queryKey: userDataKeys.profile(userId) });
+    void queryClient.invalidateQueries({ queryKey: userDataKeys.counts(userId) });
+  }, [queryClient, userId]);
 
-            setProfile(data);
-            setError(null);
-        } catch (err) {
-            const message = err instanceof Error ? err.message : "Failed to fetch profile";
-            setError(message);
-            console.error("Profile fetch error:", err);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [user?.id]);
-
-    // Fetch profile statistics
-    const fetchStats = useCallback(async () => {
-        if (!user?.id) return;
-
-        try {
-            const [watchHistoryRes, watchlistRes, favoritesRes] = await Promise.all([
-                supabase
-                    .from("watch_history")
-                    .select("id, media_type", { count: "exact" })
-                    .eq("user_id", user.id),
-                supabase
-                    .from("watchlist")
-                    .select("id", { count: "exact" })
-                    .eq("user_id", user.id),
-                supabase
-                    .from("favorites")
-                    .select("id", { count: "exact" })
-                    .eq("user_id", user.id),
-            ]);
-
-            const movieCount =
-                watchHistoryRes.data?.filter((item: any) => item.media_type === "movie").length || 0;
-            const seriesCount =
-                watchHistoryRes.data?.filter((item: any) => item.media_type === "tv").length || 0;
-
-            setStats({
-                totalMoviesWatched: movieCount,
-                totalSeriesWatched: seriesCount,
-                totalHours: Math.round((movieCount + seriesCount * 6) * 1.5), // Rough estimate
-                watchlistCount: watchlistRes.count || 0,
-                favoritesCount: favoritesRes.count || 0,
-            });
-        } catch (err) {
-            console.error("Stats fetch error:", err);
-        }
-    }, [user?.id]);
-
-    // Update profile
-    const updateProfile = useCallback(
-        async (updates: Partial<UserProfile>) => {
-            if (!user?.id) return;
-
-            try {
-                const { error: updateError } = await supabase
-                    .from("profiles")
-                    .update({
-                        ...updates,
-                        updated_at: new Date().toISOString(),
-                    })
-                    .eq("id", user.id);
-
-                if (updateError) throw updateError;
-
-                setProfile((prev) => (prev ? { ...prev, ...updates } : null));
-                return true;
-            } catch (err) {
-                const message = err instanceof Error ? err.message : "Failed to update profile";
-                setError(message);
-                console.error("Profile update error:", err);
-                return false;
-            }
-        },
-        [user?.id]
-    );
-
-    useEffect(() => {
-        fetchProfile();
-        fetchStats();
-    }, [fetchProfile, fetchStats]);
-
-    return {
-        profile,
-        stats,
-        isLoading,
-        error,
-        updateProfile,
-        refresh: () => {
-            fetchProfile();
-            fetchStats();
-        },
-    };
+  return {
+    profile,
+    stats,
+    isLoading,
+    error,
+    updateProfile,
+    refresh,
+  };
 }

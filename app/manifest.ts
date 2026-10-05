@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 // Served by Next at /manifest.webmanifest; the <link rel="manifest"> is injected
-// automatically. Colors match the dark-only theme (#111827).
+// automatically. Colors match the dark-only theme background token (#0D0D10).
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "StreamScapeX - Watch Movies & TV Shows",
@@ -12,8 +12,8 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     display: "standalone",
     orientation: "any",
-    background_color: "#111827",
-    theme_color: "#111827",
+    background_color: "#0D0D10",
+    theme_color: "#0D0D10",
     categories: ["entertainment", "movies"],
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
