@@ -73,6 +73,21 @@
       var(--history-rail-pad) + var(--history-rail-head) +
         (var(--history-card-w) * 0.5625) + var(--history-card-text)
     );
+
+    /*
+      Player box height cap (playerHeight in components/details/layout-classes.ts):
+      the first viewport minus the sticky nav (56px, 64px from md, plus the iOS
+      status bar inset), minus the mobile tab bar, minus a strip of page left
+      showing under the player. The strip is what lets people scroll: the embed
+      is a cross-origin iframe and some players swallow wheel and touch events,
+      so a player that filled the whole first viewport left nothing to scroll on.
+      svh, not dvh, so the box doesn't resize as mobile browser toolbars collapse.
+    */
+    --player-peek: clamp(4rem, 12svh, 6rem);
+    --player-max-h: calc(
+      100svh - 56px - env(safe-area-inset-top) - 64px - env(safe-area-inset-bottom) -
+        var(--player-peek)
+    );
   }
 
   @media (min-width: 640px) {
@@ -86,6 +101,8 @@
     :root {
       --history-rail-pad: 3.5rem;
       --toast-offset-bottom: 24px;
+      /* Taller nav, no tab bar. */
+      --player-max-h: calc(100svh - 64px - env(safe-area-inset-top) - var(--player-peek));
     }
   }
 

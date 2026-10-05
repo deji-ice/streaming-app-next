@@ -14,13 +14,14 @@ export const playerBand = "bg-black";
 export const playerFrame = "w-full";
 
 /**
- * Player box height: 16:9 of the full width, but never taller than the screen
- * under the sticky nav (56px, 64px from md), so the embed's controls stay in
- * view. On very wide or short windows the box is wider than 16:9 and the
- * embed letterboxes the video inside it, as its own fullscreen mode does.
+ * Player box height: 16:9 of the full width, capped by --player-max-h
+ * (globals.css) so the embed's controls stay in view above the mobile tab bar
+ * and a strip of page always shows under the player to scroll on. On wide or
+ * short windows the box is wider than 16:9 and the embed letterboxes the video
+ * inside it, as its own fullscreen mode does.
  * Used by VideoPlayer and the loading skeleton so they always match.
  */
-export const playerHeight = "aspect-video max-h-[calc(100dvh-56px)] md:max-h-[calc(100dvh-64px)]";
+export const playerHeight = "aspect-video max-h-[var(--player-max-h)]";
 
 /**
  * Title header grid. Poster 96px on phones, 140px from md, 220px from lg.
