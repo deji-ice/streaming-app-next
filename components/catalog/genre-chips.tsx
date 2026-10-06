@@ -15,7 +15,7 @@ export interface GenreChipsProps {
   selected: readonly number[];
   /** Path of the page, for example /movie. */
   basePath: string;
-  /** Every other param the page keeps (sort, type, region). `page` is dropped on purpose. */
+  /** Every other param the page keeps (sort, type). `page` is dropped on purpose. */
   query: CatalogQuery;
   className?: string;
 }

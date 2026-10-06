@@ -51,8 +51,6 @@ export interface EntityConfig {
    * Movies tab). Only checked on page 1 without genres.
    */
   autoType?: boolean;
-  /** An explicit ?region= to keep in every link (provider pages). */
-  region?: string | null;
   /** Loads one page of titles. Sort is already one of the three UI sorts. */
   load: EntityLoader;
 }
@@ -114,7 +112,6 @@ export async function resolveEntity(
       genres,
       query: pageQuery({
         type: types.length > 1 && (explicit || type !== types[0]) ? type : undefined,
-        region: config.region,
         sort,
         genres,
       }),
@@ -136,7 +133,7 @@ export async function entityImage(config: EntityConfig, params: RawSearchParams)
 export interface EntityCatalogProps {
   config: EntityConfig;
   params: RawSearchParams;
-  /** The page header (logo, h1, region picker...). Receives the resolved state for links. */
+  /** The page header (logo, h1...). Receives the resolved state for links. */
   header: (state: EntityState) => ReactNode;
   /** Full-bleed rail between the header and the controls. Only shown on page 1 without genres. */
   rail?: ReactNode;

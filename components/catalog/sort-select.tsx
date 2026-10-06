@@ -15,7 +15,7 @@ export interface SortSelectProps {
   value: string;
   /** Path of the page, for example /movie. */
   basePath: string;
-  /** Every other param the page keeps (genres, type, region). `page` is dropped on purpose. */
+  /** Every other param the page keeps (genres, type). `page` is dropped on purpose. */
   query: CatalogQuery;
   /** Accessible name. */
   label?: string;

@@ -3,7 +3,7 @@
  * /company/[slug], /network/[slug]): parsing, normalizing and building links.
  *
  * Plain functions with no server-only imports, so Server Components and the
- * small client leaves (SortSelect, RegionSelect) share them.
+ * small client leaves (SortSelect and friends) share them.
  */
 
 /** TMDB media type. The app route for "tv" is /series. */
@@ -116,13 +116,11 @@ export function catalogHref(basePath: string, query: CatalogQuery = {}): string 
  */
 export function pageQuery(input: {
   type?: CatalogType | null;
-  region?: string | null;
   sort?: string | null;
   genres?: readonly number[];
 }): CatalogQuery {
   return {
     type: input.type ?? undefined,
-    region: input.region ?? undefined,
     sort: input.sort && input.sort !== DEFAULT_SORT ? input.sort : undefined,
     genres: input.genres && input.genres.length > 0 ? input.genres.join(",") : undefined,
   };

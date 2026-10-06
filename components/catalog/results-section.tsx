@@ -22,7 +22,7 @@ export interface ResultsSectionProps {
   type: CatalogType;
   /** Path of the page, for example /movie. */
   basePath: string;
-  /** Params every link keeps (sort, genres, type, region), without `page`. */
+  /** Params every link keeps (sort, genres, type), without `page`. */
   query: CatalogQuery;
   /** Accessible name of the grid, for example "Movies". */
   label: string;

@@ -15,7 +15,7 @@ export interface TypeTabsProps {
   value: CatalogType;
   /** Path of the page, for example /browse/netflix. */
   basePath: string;
-  /** Every other param the page keeps (sort, region). Genres and page are dropped on purpose. */
+  /** Every other param the page keeps (sort). Genres and page are dropped on purpose. */
   query: CatalogQuery;
   className?: string;
 }

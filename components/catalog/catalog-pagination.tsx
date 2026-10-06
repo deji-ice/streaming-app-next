@@ -15,7 +15,7 @@ export interface CatalogPaginationProps {
   totalPages: number;
   /** Path of the page, for example /movie. */
   basePath: string;
-  /** Every other param the page keeps (sort, genres, type, region). */
+  /** Every other param the page keeps (sort, genres, type). */
   query: CatalogQuery;
   className?: string;
 }

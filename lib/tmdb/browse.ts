@@ -19,14 +19,23 @@ export interface BrowseOptions {
 /* ------------------------------------------------------------------------ */
 
 /**
- * Titles streaming on a provider in a region: discover with
- * with_watch_providers (all tiers OR-ed) + watch_region + flatrate.
+ * The catalog a service's page shows, for every visitor in every country.
+ *
+ * TMDB can only list a provider's titles per country, and every curated service
+ * is a US service, so its full flagship catalog is the US one. The visitor's own
+ * country is deliberately not used: someone in Nigeria opening Hulu should see
+ * Hulu's titles, not "nothing, Hulu is not available here".
+ */
+export const CATALOG_REGION = "US";
+
+/**
+ * Titles streaming on a provider: discover with with_watch_providers (all tiers
+ * OR-ed) + watch_region (always CATALOG_REGION) + flatrate.
  * `provider` is a curated slug or a CuratedProvider. Returns null for an unknown slug.
  */
 export async function discoverByProvider(
   provider: string | CuratedProvider,
   type: MediaType,
-  region: string,
   opts: BrowseOptions = {},
 ): Promise<Paged<CardDTO> | null> {
   const p = typeof provider === "string" ? getCuratedProvider(provider) : provider;
@@ -36,7 +45,7 @@ export async function discoverByProvider(
     page: opts.page,
     genres: opts.genres,
     providers: p.providerIds,
-    watchRegion: region,
+    watchRegion: CATALOG_REGION,
     monetization: "flatrate",
   };
   return type === "movie" ? discoverMovies(filters) : discoverTv(filters);

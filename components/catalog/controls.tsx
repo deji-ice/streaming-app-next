@@ -12,7 +12,7 @@ export interface CatalogControlsProps {
   withTabs?: boolean;
   /** Path of the page, for example /movie. */
   basePath: string;
-  /** Params every control keeps (type, region, sort, genres), without `page`. */
+  /** Params every control keeps (type, sort, genres), without `page`. */
   query: CatalogQuery;
   sort: CatalogSort;
   genres: readonly GenreDTO[];
