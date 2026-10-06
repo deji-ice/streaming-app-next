@@ -7,7 +7,7 @@ import { unstable_cache } from "next/cache";
  * 1. React cache(): one promise per argument list per request, so
  *    generateMetadata and the page share a single call.
  * 2. unstable_cache: the returned DTO is stored in the Next incremental cache
- *    (R2 on Cloudflare via open-next.config.ts) for `revalidate` seconds and
+ *    (Workers KV on Cloudflare via open-next.config.ts) for `revalidate` seconds and
  *    tagged "tmdb", the loader name and `tags(...args)`.
  *
  * Thrown errors are never cached, and a failed background revalidation keeps
@@ -17,6 +17,16 @@ import { unstable_cache } from "next/cache";
  * Arguments must be strings or numbers (they become cache key parts), and the
  * result must be JSON-serializable.
  */
+
+/**
+ * Part of every cache key. unstable_cache keys on the name and arguments, not on
+ * the loader's code, so entries stored by an older version of a loader would keep
+ * being served after a deploy. Bump this whenever a loader's output changes shape
+ * or meaning; every entry is then fetched fresh once.
+ *   2: lists no longer contain titles that are not released yet.
+ */
+const CACHE_VERSION = "2";
+
 export function cached<A extends (string | number)[], R>(
   name: string,
   revalidate: number,
@@ -24,7 +34,7 @@ export function cached<A extends (string | number)[], R>(
   fn: (...args: A) => Promise<R>,
 ): (...args: A) => Promise<R> {
   return cache((...args: A) =>
-    unstable_cache(() => fn(...args), [name, ...args.map(String)], {
+    unstable_cache(() => fn(...args), [`v${CACHE_VERSION}`, name, ...args.map(String)], {
       revalidate,
       tags: ["tmdb", name, ...tags(...args)],
     })(),

@@ -260,6 +260,24 @@ export function toCards(items: RawListItem[] | undefined, fallbackType?: MediaTy
   return out;
 }
 
+/**
+ * True once a title is out: it has a release date and that date is today or
+ * earlier (UTC). A title TMDB has no date for is an announced one, so it counts
+ * as not released.
+ */
+export const isReleased = (card: Pick<CardDTO, "releaseDate">, today: string = new Date().toISOString().slice(0, 10)): boolean =>
+  !!card.releaseDate && card.releaseDate <= today;
+
+/**
+ * Drops the titles that are not out yet. Every list the app shows goes through
+ * this (or a date cap in the TMDB query) so nobody is offered a title they can't
+ * watch. Person credits are the one exception: an actor's page shows what is coming.
+ */
+export const releasedOnly = <T extends Pick<CardDTO, "releaseDate">>(cards: T[]): T[] => {
+  const today = new Date().toISOString().slice(0, 10);
+  return cards.filter((card) => isReleased(card, today));
+};
+
 export function toPersonCard(raw: RawListItem): PersonCardDTO | null {
   const name = str(raw.name);
   if (!name || typeof raw.id !== "number") return null;
@@ -492,8 +510,8 @@ function usCertification(raw: RawMovie["release_dates"]): string | null {
 }
 
 function recommendationsOf(raw: RawDetailBase, type: MediaType): CardDTO[] {
-  const recs = toCards(raw.recommendations?.results, type, false);
-  const list = recs.length ? recs : toCards(raw.similar?.results, type, false);
+  const recs = releasedOnly(toCards(raw.recommendations?.results, type, false));
+  const list = recs.length ? recs : releasedOnly(toCards(raw.similar?.results, type, false));
   return list.filter((c) => !(c.id === raw.id && c.mediaType === type)).slice(0, 20);
 }
 
@@ -634,7 +652,7 @@ export function toSeason(raw: RawSeason, tvId: number): SeasonDTO {
 }
 
 export function toCollection(raw: RawCollection): CollectionDTO {
-  const parts = toCards(raw.parts, "movie", true).sort((a, b) => {
+  const parts = releasedOnly(toCards(raw.parts, "movie", true)).sort((a, b) => {
     if (!a.releaseDate) return 1;
     if (!b.releaseDate) return -1;
     return a.releaseDate.localeCompare(b.releaseDate);
