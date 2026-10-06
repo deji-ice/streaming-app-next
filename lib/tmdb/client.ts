@@ -41,7 +41,7 @@ function resolveToken(): string {
     process.env.NEXT_PUBLIC_TMDB_API_KEY,
   ];
   const token = candidates.find((value) => typeof value === "string" && value.trim() !== "");
-  if (!token) throw new TmdbError(500, undefined, "TMDB token is not configured");
+  if (!token) throw new TmdbError(500, undefined, "TMDB token is not configured (set TMDB_READ_TOKEN)");
   return token.trim();
 }
 

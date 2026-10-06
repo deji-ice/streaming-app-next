@@ -16,9 +16,10 @@
   "services": [
     { "binding": "WORKER_SELF_REFERENCE", "service": "stream" }
   ],
-  // Create the bucket before the first deploy: npx wrangler r2 bucket create stream-next-inc-cache
-  "r2_buckets": [
-    { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "stream-next-inc-cache" }
+  // Workers KV holds the incremental cache (free plan, no payment method). The id is the
+  // namespace created with: npx wrangler kv namespace create NEXT_INC_CACHE_KV
+  "kv_namespaces": [
+    { "binding": "NEXT_INC_CACHE_KV", "id": "97061c69cd8b42b48a00391c355bbf5e" }
   ],
   // DOQueueHandler is exported by the generated .open-next/worker.js.
   "durable_objects": {
