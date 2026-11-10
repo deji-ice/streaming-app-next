@@ -11,15 +11,11 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
-  // OpenNext persistent cache (see open-next.config.ts and https://opennext.js.org/cloudflare/caching).
+  // OpenNext cache (see open-next.config.ts). The incremental cache is in-memory, so there is
+  // deliberately no KV or R2 binding here: both bill per operation with no cap on a paid plan.
   // Self-reference used by the DO queue to revalidate ISR pages; the service name must match "name".
   "services": [
     { "binding": "WORKER_SELF_REFERENCE", "service": "stream" }
-  ],
-  // Workers KV holds the incremental cache (free plan, no payment method). The id is the
-  // namespace created with: npx wrangler kv namespace create NEXT_INC_CACHE_KV
-  "kv_namespaces": [
-    { "binding": "NEXT_INC_CACHE_KV", "id": "97061c69cd8b42b48a00391c355bbf5e" }
   ],
   // DOQueueHandler is exported by the generated .open-next/worker.js.
   "durable_objects": {

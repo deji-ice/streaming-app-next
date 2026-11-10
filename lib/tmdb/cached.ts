@@ -7,8 +7,8 @@ import { unstable_cache } from "next/cache";
  * 1. React cache(): one promise per argument list per request, so
  *    generateMetadata and the page share a single call.
  * 2. unstable_cache: the returned DTO is stored in the Next incremental cache
- *    (Workers KV on Cloudflare via open-next.config.ts) for `revalidate` seconds and
- *    tagged "tmdb", the loader name and `tags(...args)`.
+ *    (in the memory of one Worker isolate on Cloudflare, see open-next.config.ts) for
+ *    at most `revalidate` seconds and tagged "tmdb", the loader name and `tags(...args)`.
  *
  * Thrown errors are never cached, and a failed background revalidation keeps
  * the previous entry. Nothing here holds request state at module scope: the
