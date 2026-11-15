@@ -20,7 +20,10 @@ export type AnalyticsEvent =
   | "oauth_start" // method: google | github (the provider page opens; success is not visible here)
   | "browse_provider" // provider, provider_slug
   | "trailer_play" // title
-  | "pwa_install"; // the browser reported the app as installed
+  | "pwa_install" // the browser reported the app as installed
+  | "donate_copy" // chain: solana | ethereum, source: page | prompt (a copy is interest, not a completed donation)
+  | "donate_prompt_shown" // the donation popup opened
+  | "donate_prompt_dismissed"; // choice: later | copied | never
 
 export type AnalyticsParams = Record<string, string | number | boolean | undefined>;
 

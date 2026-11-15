@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { hasDonations } from "@/lib/donate";
+
 const EXPLORE_LINKS = [
   { label: "Home", href: "/" },
   { label: "Movies", href: "/movie" },
@@ -9,7 +11,11 @@ const EXPLORE_LINKS = [
   { label: "Search", href: "/search" },
 ] as const;
 
-const INFO_LINKS = [{ label: "About and credits", href: "/about" }] as const;
+const INFO_LINKS: ReadonlyArray<{ label: string; href: string }> = [
+  { label: "About and credits", href: "/about" },
+  // Only when a donation address is configured for this build (lib/donate.ts).
+  ...(hasDonations ? [{ label: "Support the site", href: "/donate" }] : []),
+];
 
 export const TMDB_NOTICE =
   "This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.";

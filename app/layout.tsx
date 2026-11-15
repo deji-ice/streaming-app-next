@@ -6,6 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import TabBar from "@/components/layout/TabBar";
 import InstallPrompt from "@/components/pwa/InstallPrompt";
+import { DonatePrompt } from "@/components/donate/donate-prompt";
 import { Providers } from "./providers";
 import { UserInitializer } from "./user-initializer";
 import "./globals.css";
@@ -209,6 +210,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <InstallPrompt />
+              <DonatePrompt />
               <Navbar />
               <main
                 id="main-content"
