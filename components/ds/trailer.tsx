@@ -1,8 +1,9 @@
 "use client";
 
 import { FilmStrip } from "@phosphor-icons/react";
-import { useId, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 
+import { trackEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 import { focusRing, pillBase, pillVariants, pressable, railWidths, type PillVariant } from "./classes";
@@ -49,6 +50,11 @@ export function TrailerModal({
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [wasOpen, setWasOpen] = useState(isOpen);
   const listHeadingId = useId();
+
+  // One event per open, not per video swapped inside the modal.
+  useEffect(() => {
+    if (isOpen) trackEvent("trailer_play", { title });
+  }, [isOpen, title]);
 
   // Pick the starting video on every open transition (adjusting state during render).
   if (isOpen !== wasOpen) {

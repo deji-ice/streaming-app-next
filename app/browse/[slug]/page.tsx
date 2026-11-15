@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { TrackEvent } from "@/components/analytics/track-event";
 import { EntityCatalog, type EntityConfig } from "@/components/catalog/entity-catalog";
 import { ProviderHeader } from "@/components/catalog/headers";
 import { catalogMetadata, pickImage, type CatalogImageSource } from "@/components/catalog/metadata";
@@ -70,23 +71,30 @@ export default async function ProviderPage({ params, searchParams }: ProviderPag
   const config = configFor(provider);
 
   return (
-    <EntityCatalog
-      config={config}
-      params={query}
-      header={() => <ProviderHeader name={provider.name} logoPath={provider.logoPath} />}
-      rail={
-        <Suspense fallback={<RailSkeleton variant="poster" count={8} titleWidth="w-48" />}>
-          <OriginalsRail provider={provider} />
-        </Suspense>
-      }
-      headingFor={(type) => `${type === "movie" ? "Movies" : "Series"} on ${provider.name}`}
-      emptyFor={(state) => ({
-        title: `No ${state.type === "movie" ? "movies" : "series"} found on ${provider.name}`,
-        body:
-          state.genres.length > 0
-            ? "Remove a genre to see more."
-            : "Switch between movies and series to see what is on this service.",
-      })}
-    />
+    <>
+      <TrackEvent
+        name="browse_provider"
+        dedupeKey={provider.slug}
+        params={{ provider: provider.name, provider_slug: provider.slug }}
+      />
+      <EntityCatalog
+        config={config}
+        params={query}
+        header={() => <ProviderHeader name={provider.name} logoPath={provider.logoPath} />}
+        rail={
+          <Suspense fallback={<RailSkeleton variant="poster" count={8} titleWidth="w-48" />}>
+            <OriginalsRail provider={provider} />
+          </Suspense>
+        }
+        headingFor={(type) => `${type === "movie" ? "Movies" : "Series"} on ${provider.name}`}
+        emptyFor={(state) => ({
+          title: `No ${state.type === "movie" ? "movies" : "series"} found on ${provider.name}`,
+          body:
+            state.genres.length > 0
+              ? "Remove a genre to see more."
+              : "Switch between movies and series to see what is on this service.",
+        })}
+      />
+    </>
   );
 }

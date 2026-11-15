@@ -1,5 +1,7 @@
+import { TrackEvent } from "@/components/analytics/track-event";
+
 import { loadSearch } from "./data";
-import type { SearchState } from "./params";
+import { MIN_QUERY_LENGTH, type SearchState } from "./params";
 import { ResultTabs } from "./result-tabs";
 import { SearchResultsView } from "./search-results";
 
@@ -17,8 +19,23 @@ export async function SearchBody({ state }: { state: SearchState }) {
   // TMDB totals ignore the rating filter, so counts are left out while it is set.
   const showCounts = state.minRating === null;
 
+  // One search event per typed query: a real query (not the empty page), and not for
+  // pagination. Searches with no results show which titles people want that are missing.
+  const isNewSearch = state.q.length >= MIN_QUERY_LENGTH && state.page === 1;
+
   return (
     <>
+      {isNewSearch ? (
+        <TrackEvent
+          name="search"
+          dedupeKey={state.q}
+          params={{
+            search_term: state.q,
+            result_count: data.totalResults,
+            no_results: nothingAnywhere,
+          }}
+        />
+      ) : null}
       {nothingAnywhere ? null : <ResultTabs state={state} counts={showCounts ? counts : null} />}
       <SearchResultsView state={state} data={data} />
     </>

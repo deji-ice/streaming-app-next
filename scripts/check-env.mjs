@@ -59,6 +59,13 @@ if (!has("NEXT_PUBLIC_APP_URL")) {
   );
 }
 
+// Google Analytics: also compiled into the browser code, and silently off when missing.
+if (!has("NEXT_PUBLIC_GA_ID")) {
+  warnings.push(
+    "NEXT_PUBLIC_GA_ID is not set: no analytics will be sent from this build. Set it to the GA4 measurement ID (G-...) as a BUILD variable.",
+  );
+}
+
 const indent = (text) => text.replace(/^/gm, "    ");
 
 if (warnings.length > 0) {

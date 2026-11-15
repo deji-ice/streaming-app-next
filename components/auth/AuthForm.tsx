@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Eye, EyeSlash, GoogleLogo } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
+import { trackEvent } from "@/lib/analytics";
 
 type AuthMode = "signin" | "signup";
 
@@ -105,6 +106,7 @@ export function AuthForm({ onSuccess, renderHeader }: AuthFormProps) {
         });
 
         if (signUpError) throw signUpError;
+        trackEvent("sign_up", { method: "email" });
 
         if (data?.session) {
           // Email confirmation is off: the user is signed in already.
@@ -123,6 +125,7 @@ export function AuthForm({ onSuccess, renderHeader }: AuthFormProps) {
         });
 
         if (signInError) throw signInError;
+        trackEvent("login", { method: "email" });
 
         onSuccess?.();
       }
@@ -147,6 +150,8 @@ export function AuthForm({ onSuccess, renderHeader }: AuthFormProps) {
       });
 
       if (oauthError) throw oauthError;
+      // Only the start is visible here: whether the person finishes at the provider is not.
+      trackEvent("oauth_start", { method: provider });
       // The browser now redirects to the provider; the profile is ensured after sign-in.
     } catch (err) {
       setError(errorText(err));
