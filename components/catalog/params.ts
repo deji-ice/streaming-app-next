@@ -16,8 +16,24 @@ export type CatalogQuery = Record<string, string | number | null | undefined>;
 
 /** TMDB serves at most 500 pages of discover results. */
 export const MAX_PAGE = 500;
-/** Genres are AND-ed by TMDB, so a handful is already very narrow. */
-export const MAX_GENRES = 5;
+/**
+ * Genres are AND-ed by TMDB, so two is already narrow. Kept low on purpose: every genre
+ * chip is a crawlable link, and at 5 genres in any order each catalog page had about
+ * 1.5 million distinct URLs. A scraper walking them made each request a full, uncached
+ * render (Nov 2026). With 2, sorted, it is 1 + 27 + 351 per page.
+ */
+export const MAX_GENRES = 2;
+
+/**
+ * Every TMDB genre id, movie and TV together (GET /genre/movie/list and /genre/tv/list,
+ * checked 2026-11-15). middleware.ts runs before any TMDB call, so it cannot fetch the
+ * list; ids outside it are dropped from URLs. If TMDB adds a genre, add its id here or the
+ * new chip's links will redirect back without it.
+ */
+export const TMDB_GENRE_IDS: ReadonlySet<number> = new Set([
+  12, 14, 16, 18, 27, 28, 35, 36, 37, 53, 80, 99, 878, 9648, 10402, 10749, 10751, 10752, 10759, 10762,
+  10763, 10764, 10765, 10766, 10767, 10768, 10770,
+]);
 export const DEFAULT_SORT = "popularity.desc";
 
 export type CatalogSort =
@@ -57,17 +73,40 @@ export function parseType(raw: string): CatalogType | null {
   }
 }
 
-/** "28,12" -> [28, 12]. Digits only, unique, in the order given, at most MAX_GENRES. */
+/**
+ * "35,18" -> [18, 35]. Known TMDB genre ids only, unique, the first MAX_GENRES given, then
+ * sorted, so every selection has exactly one URL (see canonicalGenreHref).
+ */
 export function parseGenreIds(raw: string): number[] {
   const ids: number[] = [];
   for (const part of raw.split(",")) {
     const trimmed = part.trim();
     if (!/^\d{1,7}$/.test(trimmed)) continue;
     const id = Number(trimmed);
-    if (id > 0 && !ids.includes(id)) ids.push(id);
+    if (TMDB_GENRE_IDS.has(id) && !ids.includes(id)) ids.push(id);
     if (ids.length === MAX_GENRES) break;
   }
-  return ids;
+  return ids.sort((a, b) => a - b);
+}
+
+/**
+ * Where to send a catalog URL whose ?genres= is not in canonical form (unsorted, repeated,
+ * unknown ids, more than MAX_GENRES, or the param given twice). Returns null when the URL is
+ * already canonical. Used by middleware.ts, so a non-canonical URL costs a redirect, not a
+ * render plus TMDB calls. Other params are kept as they are.
+ */
+export function canonicalGenreHref(href: string): string | null {
+  const url = new URL(href);
+  const values = url.searchParams.getAll("genres");
+  if (values.length === 0) return null;
+  const canonical = parseGenreIds(values[0]).join(",");
+  if (values.length === 1 && values[0] === canonical) return null;
+  // set() keeps the param where it was and drops any repeats.
+  if (canonical) url.searchParams.set("genres", canonical);
+  else url.searchParams.delete("genres");
+  // Same readable commas as catalogHref (?genres=18,35).
+  url.search = url.searchParams.toString().replace(/%2C/gi, ",");
+  return url.href;
 }
 
 const NEWEST = /^(primary_)?release_date\.desc$|^first_air_date\.desc$|^latest(_air_date)?(\.desc)?$|^newest$/;
@@ -126,10 +165,14 @@ export function pageQuery(input: {
   };
 }
 
-/** Adds the genre when it is not selected, removes it when it is. */
+/**
+ * Adds the genre when it is not selected, removes it when it is. The result is sorted, the
+ * canonical order. GenreChips offers no "add" once MAX_GENRES are selected; the slice only
+ * guards other callers.
+ */
 export function toggleGenre(selected: readonly number[], id: number): number[] {
   if (selected.includes(id)) return selected.filter((genreId) => genreId !== id);
-  return [...selected, id].slice(-MAX_GENRES);
+  return [...selected, id].slice(-MAX_GENRES).sort((a, b) => a - b);
 }
 
 /** Canonical path of a catalog page: no sort, no genres, `page` only above 1. */

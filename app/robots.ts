@@ -33,7 +33,8 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       { userAgent: BLOCKED_CRAWLERS, disallow: "/" },
-      { userAgent: "*", allow: "/", disallow: ["/api/", "/auth/"] },
+      // Genre-filtered catalog URLs: their canonical is the unfiltered page, so crawling them adds nothing.
+      { userAgent: "*", allow: "/", disallow: ["/api/", "/auth/", "/*?*genres="] },
     ],
   };
 }

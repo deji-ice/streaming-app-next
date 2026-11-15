@@ -33,6 +33,8 @@ export const chipBase = `inline-flex h-11 shrink-0 select-none items-center just
 
 export const chipOff = "border-border bg-secondary text-muted-foreground hover:bg-accent hover:text-foreground";
 export const chipOn = "border-primary bg-primary text-primary-foreground hover:bg-primary-hover";
+/** A genre that cannot be added because the limit is reached. Not a link, not focusable. */
+export const chipDisabled = "cursor-not-allowed border-border bg-secondary text-muted-foreground opacity-40 active:scale-100";
 
 /** Text link inside the credit line and similar inline copy. */
 export const inlineLink = `rounded-sm font-medium text-foreground underline decoration-border underline-offset-4 transition-colors duration-150 ease-out hover:text-primary hover:decoration-primary ${focusRing}`;
