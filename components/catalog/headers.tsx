@@ -6,29 +6,19 @@ import { tmdbImage } from "@/lib/tmdb-image";
 
 import { countryName } from "./country";
 import { JustWatchCredit } from "./justwatch-credit";
-import type { CatalogQuery } from "./params";
-import { RegionSelect, type RegionOption } from "./region-select";
 import { entityTitle } from "./styles";
 
 export interface ProviderHeaderProps {
   name: string;
   /** TMDB watch-provider logo_path (a square app icon). */
   logoPath: string | null;
-  /** Path of the page, for example /browse/netflix. */
-  basePath: string;
-  regions: readonly RegionOption[];
-  /** ISO code of the region the page shows. */
-  regionCode: string;
-  /** Params the region picker keeps (type, sort, genres). */
-  query: CatalogQuery;
 }
 
 /**
- * Streaming provider header: 56px logo, h1, "Streaming in [region]" picker
- * and the JustWatch credit TMDB's terms ask for. Server component; only the
- * picker is client code.
+ * Streaming provider header: 56px logo, h1 and the JustWatch credit TMDB's
+ * terms ask for. Server component.
  */
-export function ProviderHeader({ name, logoPath, basePath, regions, regionCode, query }: ProviderHeaderProps) {
+export function ProviderHeader({ name, logoPath }: ProviderHeaderProps) {
   const logo = tmdbImage(logoPath);
 
   return (
@@ -39,8 +29,7 @@ export function ProviderHeader({ name, logoPath, basePath, regions, regionCode, 
         </span>
         <h1 className={entityTitle}>{name}</h1>
       </div>
-      <div className="mt-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
-        <RegionSelect regions={regions} value={regionCode} basePath={basePath} query={query} />
+      <div className="mt-4">
         <JustWatchCredit className="text-[13px] leading-5 text-subtle-foreground" />
       </div>
     </header>

@@ -45,7 +45,6 @@ export {
   getNowPlayingMovies,
   getTrending,
   getTvList,
-  getWatchRegions,
   isMovieList,
   isTvList,
   isoDay,
@@ -57,7 +56,6 @@ export {
   type DiscoverFilters,
   type MovieList,
   type MovieSort,
-  type RegionDTO,
   type TrendingType,
   type TrendingWindow,
   type TvList,
@@ -66,6 +64,7 @@ export {
 export { getCollection, getMovie, getPerson, getSeason, getTv, getWatchProviders } from "./tmdb/details";
 export { normalizeQuery, search, searchMovies, searchMulti, searchPeople, searchTv, type SearchResultDTO, type SearchType } from "./tmdb/search";
 export {
+  CATALOG_REGION,
   discoverByCompany,
   discoverByNetwork,
   discoverByProvider,
@@ -89,7 +88,6 @@ export {
   type CuratedProvider,
   type CuratedStudio,
 } from "./tmdb/providers";
-export { getRegionName, resolveRegion, type ResolvedRegion } from "./tmdb/region";
 
 /* ------------------------------------------------------------------------ */
 /* Legacy facade                                                             */

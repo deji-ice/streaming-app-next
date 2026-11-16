@@ -4,8 +4,8 @@ import { CheckIcon, XIcon } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
 import type { GenreDTO } from "@/lib/tmdb/types";
 
-import { catalogHref, toggleGenre, type CatalogQuery } from "./params";
-import { chipBase, chipOff, chipOn, chipScroller } from "./styles";
+import { MAX_GENRES, catalogHref, toggleGenre, type CatalogQuery } from "./params";
+import { chipBase, chipDisabled, chipOff, chipOn, chipScroller } from "./styles";
 import { ToggleLink } from "./toggle-link";
 
 export interface GenreChipsProps {
@@ -15,7 +15,7 @@ export interface GenreChipsProps {
   selected: readonly number[];
   /** Path of the page, for example /movie. */
   basePath: string;
-  /** Every other param the page keeps (sort, type, region). `page` is dropped on purpose. */
+  /** Every other param the page keeps (sort, type). `page` is dropped on purpose. */
   query: CatalogQuery;
   className?: string;
 }
@@ -30,6 +30,7 @@ export interface GenreChipsProps {
 export function GenreChips({ genres, selected, basePath, query, className }: GenreChipsProps) {
   if (genres.length === 0) return null;
 
+  const atLimit = selected.length >= MAX_GENRES;
   const hrefWith = (ids: readonly number[]) =>
     catalogHref(basePath, { ...query, genres: ids.length > 0 ? ids.join(",") : undefined });
 
@@ -51,6 +52,17 @@ export function GenreChips({ genres, selected, basePath, query, className }: Gen
         ) : null}
         {genres.map((genre) => {
           const on = selected.includes(genre.id);
+          // At the limit, the other genres are shown but not linked: no surprise swap, and no
+          // extra URLs for crawlers to follow.
+          if (!on && atLimit) {
+            return (
+              <li key={genre.id}>
+                <span role="button" aria-pressed="false" aria-disabled="true" className={cn(chipBase, chipDisabled)}>
+                  {genre.name}
+                </span>
+              </li>
+            );
+          }
           return (
             <li key={genre.id}>
               <ToggleLink
@@ -65,6 +77,11 @@ export function GenreChips({ genres, selected, basePath, query, className }: Gen
           );
         })}
       </ul>
+      {atLimit ? (
+        <p className="mt-2 text-xs text-subtle-foreground">
+          Up to {MAX_GENRES} genres at a time. Remove one to pick another.
+        </p>
+      ) : null}
     </div>
   );
 }

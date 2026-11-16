@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { Button } from "@/components/ui/button";
 import { useAuthStatus } from "@/hooks/useUser";
+import { trackEvent } from "@/lib/analytics";
 import {
   useFavoriteActions,
   useIsFavorite,
@@ -33,6 +34,15 @@ export interface SaveTarget {
   releaseDate: string | null;
 }
 
+/** Same names as video_play, so saves and plays of a title line up in GA. */
+function saveParams(target: SaveTarget) {
+  return {
+    content_type: target.mediaType === "tv" ? "series" : "movie",
+    content_id: target.tmdbId,
+    title: target.title,
+  };
+}
+
 function errorText(error: unknown, fallback: string): string {
   return error instanceof Error && error.message ? error.message : fallback;
 }
@@ -54,6 +64,7 @@ export function WatchlistToggle({ target }: { target: SaveTarget }) {
     }
     try {
       const nowSaved = await toggle(target);
+      if (nowSaved) trackEvent("add_to_watchlist", saveParams(target));
       toast.success(nowSaved ? "Added to watchlist" : "Removed from watchlist", {
         description: target.title,
         duration: 2500,
@@ -101,6 +112,7 @@ export function FavoriteToggle({ target }: { target: SaveTarget }) {
         backdropPath: target.backdropPath,
         voteAverage: target.voteAverage,
       });
+      if (nowSaved) trackEvent("add_to_favorites", saveParams(target));
       toast.success(nowSaved ? "Added to favorites" : "Removed from favorites", {
         description: target.title,
         duration: 2500,

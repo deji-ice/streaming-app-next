@@ -66,8 +66,23 @@ export default function VideoPlayer({
       content_type: type,
       content_id: tmdbId,
       title: title,
+      provider: providerId,
       ...(episode && { season: episode.season, episode: episode.number }),
     });
+  };
+
+  // Someone changing source while watching usually means the first one did not work.
+  const handleSourceChange = (nextProviderId: string) => {
+    if (nextProviderId !== providerId) {
+      trackEvent("source_switch", {
+        content_type: type,
+        content_id: tmdbId,
+        title: title,
+        from_provider: providerId,
+        to_provider: nextProviderId,
+      });
+    }
+    setProviderId(nextProviderId);
   };
 
   // Switching source (or navigating episodes) while watching reloads instantly.
@@ -86,6 +101,15 @@ export default function VideoPlayer({
 
     const navigateEpisode = (direction: "prev" | "next") => {
       if (type !== "series" || !episode) return;
+      if (direction === "next") {
+        trackEvent("episode_next", {
+          content_id: tmdbId,
+          title: title,
+          provider: providerId,
+          season: episode.season,
+          episode: episode.number,
+        });
+      }
       const newEpisode =
         direction === "next"
           ? episode.number + 1
@@ -167,7 +191,7 @@ export default function VideoPlayer({
       </div>
       {/* The player band is full-bleed, so the controls under it use the page gutter. */}
       <div className="px-gutter pb-4 pt-1">
-        <SourceSelector value={providerId} onChange={setProviderId} />
+        <SourceSelector value={providerId} onChange={handleSourceChange} />
       </div>
       <EpisodeControls />
     </div>

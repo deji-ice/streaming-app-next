@@ -1,7 +1,7 @@
 import "server-only";
 import { cached, TTL } from "./cached";
 import { tmdbFetch, type TmdbParams } from "./client";
-import { toCards, toGenres, toPaged, type RawListItem, type RawPaged } from "./normalize";
+import { releasedOnly, toCards, toGenres, toPaged, type RawListItem, type RawPaged } from "./normalize";
 import type { CardDTO, GenreDTO, MediaType, Paged } from "./types";
 
 /* ------------------------------------------------------------------------ */
@@ -71,7 +71,8 @@ const trendingLoader = cached(
   (type, window, _page) => ["trending", `trending:${type}:${window}`],
   async (type: TrendingType, window: TrendingWindow, page: number): Promise<Paged<CardDTO>> => {
     const raw = await tmdbFetch<RawPaged<RawListItem>>(`/trending/${type}/${window}`, { page });
-    return toPaged(raw, toCards(raw.results, type === "all" ? undefined : type));
+    // Trailers trend before a title is out; only titles that are out belong in a row.
+    return toPaged(raw, releasedOnly(toCards(raw.results, type === "all" ? undefined : type)));
   },
 );
 
@@ -97,7 +98,10 @@ const movieListLoaders = Object.fromEntries(
       () => [`list:movie:${list}`],
       async (page: number, region: string): Promise<Paged<CardDTO>> => {
         const raw = await tmdbFetch<RawPaged<RawListItem>>(`/movie/${list}`, { page, region: region || undefined });
-        return toPaged(raw, toCards(raw.results, "movie"));
+        const cards = toCards(raw.results, "movie");
+        // "upcoming" is the one list that is about titles not out yet (nothing in the UI shows it);
+        // every other list keeps only what is out ("popular" and "now_playing" include tomorrow's openings).
+        return toPaged(raw, list === "upcoming" ? cards : releasedOnly(cards));
       },
     ),
   ]),
@@ -112,7 +116,7 @@ const tvListLoaders = Object.fromEntries(
       () => [`list:tv:${list}`],
       async (page: number): Promise<Paged<CardDTO>> => {
         const raw = await tmdbFetch<RawPaged<RawListItem>>(`/tv/${list}`, { page });
-        return toPaged(raw, toCards(raw.results, "tv"));
+        return toPaged(raw, releasedOnly(toCards(raw.results, "tv")));
       },
     ),
   ]),
@@ -190,9 +194,11 @@ const day = (value: string | undefined) => (value && /^\d{4}-\d{2}-\d{2}$/.test(
 function discoverParams(type: MediaType, f: DiscoverFilters): TmdbParams {
   const sort = normalizeSort(type, f.sort);
   const newest = sort === "primary_release_date.desc" || sort === "first_air_date.desc";
-  // Without a vote floor, rating and date sorts surface obscure or unreleased titles.
+  // Without a vote floor, rating and date sorts surface obscure titles.
   const defaultMinVotes = sort === "vote_average.desc" ? 300 : newest ? 10 : undefined;
-  const dateTo = day(f.dateTo) ?? (newest ? isoDay(0) : undefined);
+  // Never past today unless the caller asks for a range: a title that is not out yet can't be watched.
+  // (Popularity order puts the most hyped upcoming films first, so this applies to every sort.)
+  const dateTo = day(f.dateTo) ?? isoDay(0);
   const params: TmdbParams = {
     sort_by: sort,
     page: clampPage(f.page ?? 1),
@@ -285,25 +291,3 @@ const latestSeriesLoader = cached(
 export function getLatestSeries(page: number = 1): Promise<Paged<CardDTO>> {
   return latestSeriesLoader(clampPage(page), isoDay(-7), isoDay(0));
 }
-
-/* ------------------------------------------------------------------------ */
-/* Watch regions                                                             */
-/* ------------------------------------------------------------------------ */
-
-export interface RegionDTO {
-  code: string;
-  name: string;
-}
-
-/** Regions TMDB has watch-provider data for (about 140). */
-export const getWatchRegions = cached(
-  "watch-regions",
-  TTL.config,
-  () => ["watch-regions"],
-  async (): Promise<RegionDTO[]> => {
-    const raw = await tmdbFetch<{ results?: { iso_3166_1: string; english_name: string }[] }>("/watch/providers/regions");
-    return (raw.results ?? [])
-      .map((r) => ({ code: r.iso_3166_1, name: r.english_name }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  },
-);

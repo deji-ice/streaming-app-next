@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { DownloadSimpleIcon, ExportIcon, XIcon } from "@phosphor-icons/react";
 
+import { trackEvent } from "@/lib/analytics";
+
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
@@ -60,7 +62,10 @@ export default function InstallPrompt() {
       setDeferred(e as BeforeInstallPromptEvent);
       setDismissed(false);
     };
-    const onInstalled = () => setDismissed(true);
+    const onInstalled = () => {
+      trackEvent("pwa_install");
+      setDismissed(true);
+    };
 
     window.addEventListener("beforeinstallprompt", onBeforeInstall);
     window.addEventListener("appinstalled", onInstalled);

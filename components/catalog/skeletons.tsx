@@ -99,7 +99,7 @@ export function ListingPageSkeleton({ chips = 19 }: { chips?: number }) {
   );
 }
 
-/** Streaming provider header: 56px logo, name, region picker and the JustWatch credit. */
+/** Streaming provider header: 56px logo, name and the JustWatch credit. */
 export function ProviderHeaderSkeleton() {
   return (
     <div aria-hidden="true">
@@ -107,14 +107,8 @@ export function ProviderHeaderSkeleton() {
         <SkeletonBlock className="size-14 shrink-0" />
         <SkeletonBlock className="h-8 w-48 rounded-full md:h-10" />
       </div>
-      <div className="mt-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
-        <div className="flex items-center gap-3">
-          <SkeletonBlock className="h-3.5 w-20 rounded-full" />
-          <SkeletonBlock className="h-11 w-48 rounded-full md:h-9" />
-        </div>
-        <div className="flex h-5 items-center">
-          <SkeletonBlock className="h-3 w-44 rounded-full" />
-        </div>
+      <div className="mt-4 flex h-5 items-center">
+        <SkeletonBlock className="h-3 w-44 rounded-full" />
       </div>
     </div>
   );
