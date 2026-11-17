@@ -45,15 +45,13 @@ export const ANJYS_BAGS = {
   /** The store's logo for dark backgrounds, copied from the store repo. Never recolour or redraw it. */
   logo: { src: "/sponsors/anjys-bags-logo.png", width: 396, height: 396 },
   /**
-   * The hero bag, then the strip's four. All photos are 930x1163 (4:5) on plain white, picked
-   * by the store: lifestyle shots (Mide Tote, Corporate Shoulder Bag) read as second-hand
-   * listings next to studio ones.
+   * The bags in the ads: the six of the store's 23 shot on plain white (checked 2026-11-17).
+   * The rest are room shots (hands, blinds, shelves, other bags) that read as second-hand
+   * listings next to studio ones. Most photos are 930x1163 (4:5); Sienna Loop Bag is square.
+   * Each page view shows them in a random order (components/sponsor/use-shuffled.ts): the
+   * strip shows four, the banner, poster bar and rail tile show the first. Add or remove bags
+   * here when the store gets new ones on a plain background.
    */
-  hero: {
-    name: "The Perfect Bag",
-    path: "/ng/products/the-perfect-bag",
-    image: "v1776892438/ehftlnvnxdecfzod9xxi.jpg",
-  },
   products: [
     {
       name: "The Perfect Bag",
@@ -80,6 +78,18 @@ export const ANJYS_BAGS = {
       price: "₦15,000",
       image: "v1794339520/qzxazjdujiccs4wuctaa.jpg",
     },
+    {
+      name: "JB bag",
+      path: "/ng/products/jb-bag",
+      price: "₦15,000",
+      image: "v1776890635/sczk3rb7kri9mspwq6hh.jpg",
+    },
+    {
+      name: "Sienna Loop Bag",
+      path: "/ng/products/sienna-loop-bag",
+      price: "₦15,000",
+      image: "v1776847564/tx8yx9dfxnjlw2jcb6tk.jpg",
+    },
   ] satisfies SponsorProduct[],
 } as const;
 
@@ -94,7 +104,8 @@ export function sponsorHref(path: string, placement: SponsorPlacement): string {
 
 /** Cloudinary rendition at a given width, in the best format and quality the browser accepts. */
 export function sponsorImage(image: string, width: number): string {
-  return `${CLOUDINARY_UPLOAD}/w_${width},q_auto,f_auto/${image}`;
+  // c_limit: never enlarge past the original (some originals are only 800px wide).
+  return `${CLOUDINARY_UPLOAD}/w_${width},c_limit,q_auto,f_auto/${image}`;
 }
 
 /** srcset for a plain <img>: Cloudinary resizes, so the TMDB image loader is not involved. */

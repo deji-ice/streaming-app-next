@@ -1,3 +1,5 @@
+"use client";
+
 import { GENRE_SECTION_CLASS } from "@/components/home/classes";
 import { ANJYS_BAGS, SPONSOR_ADS_ENABLED, sponsorHref, sponsorImage, sponsorSrcSet } from "@/lib/sponsor";
 import { cn } from "@/lib/utils";
@@ -13,13 +15,19 @@ import {
   sponsoredLabel,
 } from "./brand";
 import { SponsorImpression, SponsorLink } from "./sponsor-tracking";
+import { useShuffled } from "./use-shuffled";
+
+/** Bags in the strip: four from md, the first two on phones. */
+const STRIP_COUNT = 4;
 
 /**
  * Home page shop strip: the brand on the left, four bags with their prices on
- * the right (two on phones). Each bag opens its product page; the pill opens the store.
+ * the right (two on phones), a random pick from the list per page view. Each bag
+ * opens its product page; the pill opens the store.
  * Uses the genre section's wrapper so it lines up with the page grid.
  */
 export function SponsorStrip() {
+  const products = useShuffled(ANJYS_BAGS.products);
   if (!SPONSOR_ADS_ENABLED) return null;
 
   return (
@@ -58,7 +66,7 @@ export function SponsorStrip() {
             </div>
 
             <ul className="grid min-w-0 flex-1 grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-              {ANJYS_BAGS.products.map((product, index) => (
+              {products.slice(0, STRIP_COUNT).map((product, index) => (
                 <li key={product.path} className={cn(index >= 2 && "max-md:hidden")}>
                   <SponsorLink
                     href={sponsorHref(product.path, "home_strip")}
