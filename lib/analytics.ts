@@ -23,7 +23,10 @@ export type AnalyticsEvent =
   | "pwa_install" // the browser reported the app as installed
   | "donate_copy" // chain: solana | ethereum, source: page | prompt (a copy is interest, not a completed donation)
   | "donate_prompt_shown" // the donation popup opened
-  | "donate_prompt_dismissed"; // choice: later | copied | never
+  | "donate_prompt_dismissed" // choice: later | copied | never
+  | "sponsor_impression" // half of a sponsor unit was on screen: sponsor, placement (once per page view)
+  | "sponsor_click" // opened the sponsor's site: sponsor, placement, item (product name, or "store")
+  | "sponsor_dismiss"; // closed a sponsor unit that has a close button: sponsor, placement
 
 export type AnalyticsParams = Record<string, string | number | boolean | undefined>;
 

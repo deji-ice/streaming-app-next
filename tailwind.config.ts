@@ -88,9 +88,19 @@ export default {
 					"85%": { transform: "translateY(-2px)" },
 					"100%": { transform: "translateY(0)", opacity: "1" },
 				},
+				// Sponsor units: a short drop, one squash on landing, a small rebound, then still.
+				// Pair with origin-bottom so the squash presses against the "floor".
+				"sponsor-drop": {
+					"0%": { opacity: "0", transform: "translateY(-28px) scale(1, 1)" },
+					"45%": { opacity: "1", transform: "translateY(0) scale(1.03, 0.93)" },
+					"65%": { transform: "translateY(-6px) scale(0.985, 1.025)" },
+					"82%": { transform: "translateY(0) scale(1.01, 0.99)" },
+					"100%": { opacity: "1", transform: "translateY(0) scale(1, 1)" },
+				},
 			},
 			animation: {
 				skeleton: "skeleton 1.6s ease-in-out infinite",
+				"sponsor-drop": "sponsor-drop 720ms cubic-bezier(0.3, 0.7, 0.4, 1) both",
 				"coin-drop": "coin-drop 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 250ms both",
 			},
 			transitionTimingFunction: {
