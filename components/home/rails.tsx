@@ -6,8 +6,10 @@ import { PosterCard } from "@/components/ds/poster-card";
 import { ProviderTile } from "@/components/ds/provider-tile";
 import { Rail } from "@/components/ds/rail";
 import { RankedPosterCard } from "@/components/ds/ranked-card";
+import { SponsorTile } from "@/components/sponsor/sponsor-tile";
 import { formatDate } from "@/lib/format";
 import { mediaHref, providerHref } from "@/lib/slug";
+import { SPONSOR_ADS_ENABLED } from "@/lib/sponsor";
 import { CURATED_PROVIDERS } from "@/lib/tmdb/providers";
 import type { CardDTO } from "@/lib/tmdb/types";
 import { cn } from "@/lib/utils";
@@ -20,30 +22,41 @@ import { cn } from "@/lib/utils";
 
 const JUSTWATCH_URL = "https://www.justwatch.com";
 
-/** Poster rail (PosterCard) for movies or series. `href` adds a "See all" link. */
+/**
+ * Poster rail (PosterCard) for movies or series. `href` adds a "See all" link.
+ * `sponsorAt` puts the sponsor tile at that position (0-based) when sponsor ads are on
+ * and the rail is long enough.
+ */
 export function PosterRail({
   title,
   cards,
   href,
+  sponsorAt,
 }: {
   title: string;
   cards: readonly CardDTO[];
   href?: string;
+  sponsorAt?: number;
 }) {
   if (cards.length === 0) return null;
 
+  const items = cards.map((card) => (
+    <PosterCard
+      key={`${card.mediaType}-${card.id}`}
+      href={mediaHref(card.mediaType, card.id, card.title)}
+      title={card.title}
+      posterPath={card.posterPath}
+      year={card.year}
+      rating={card.rating}
+    />
+  ));
+  if (SPONSOR_ADS_ENABLED && sponsorAt !== undefined && sponsorAt < items.length) {
+    items.splice(sponsorAt, 0, <SponsorTile key="sponsor-tile" />);
+  }
+
   return (
     <Rail title={title} href={href} variant="poster">
-      {cards.map((card) => (
-        <PosterCard
-          key={`${card.mediaType}-${card.id}`}
-          href={mediaHref(card.mediaType, card.id, card.title)}
-          title={card.title}
-          posterPath={card.posterPath}
-          year={card.year}
-          rating={card.rating}
-        />
-      ))}
+      {items}
     </Rail>
   );
 }

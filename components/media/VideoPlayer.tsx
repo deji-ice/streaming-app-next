@@ -14,6 +14,8 @@ import SourceSelector from "@/components/media/SourceSelector";
 import { IMAGE_SIZES, tmdbImage } from "@/lib/tmdb-image";
 import { cn } from "@/lib/utils";
 import { playerHeight } from "@/components/details/layout-classes";
+import { SponsorPosterCard } from "@/components/sponsor/sponsor-poster-card";
+import { SPONSOR_ADS_ENABLED } from "@/lib/sponsor";
 
 export default function VideoPlayer({
   tmdbId,
@@ -144,7 +146,8 @@ export default function VideoPlayer({
 
   if (!isPlaying) {
     return (
-      <div className="w-full">
+      // `group/poster` lets the play button make room for the sponsor bar on phones.
+      <div className="group/poster relative w-full">
         <button
           type="button"
           onClick={handlePlay}
@@ -165,13 +168,16 @@ export default function VideoPlayer({
             />
           ) : null}
           <span aria-hidden="true" className="absolute inset-0 bg-black/40" />
-          <span className="absolute inset-0 flex items-center justify-center">
+          {/* On phones the button centres in the space above the sponsor bar while it shows. */}
+          <span className="absolute inset-0 flex items-center justify-center max-md:group-has-[[data-sponsor-card]]/poster:pb-16">
             <span className="flex size-[72px] items-center justify-center rounded-full bg-primary text-primary-foreground transition-[transform,background-color] duration-150 ease-out group-hover:bg-primary-hover group-active:scale-[0.98]">
               <PlayIcon weight="fill" size={32} aria-hidden="true" />
               <span className="sr-only">Play {title}</span>
             </span>
           </span>
         </button>
+        {/* Over the poster only: pressing Play unmounts it, and the stream is never touched. */}
+        {SPONSOR_ADS_ENABLED ? <SponsorPosterCard /> : null}
       </div>
     );
   }

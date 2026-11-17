@@ -21,6 +21,7 @@ import { MetaRow } from "@/components/ds/meta-row";
 import { Rating } from "@/components/ds/rating";
 import { TrailerButton, VideoRail } from "@/components/ds/trailer";
 import VideoPlayer from "@/components/media/VideoPlayer";
+import { SponsorBanner } from "@/components/sponsor/sponsor-banner";
 import { formatDate, formatMoney, formatRuntime } from "@/lib/format";
 import { RecordView } from "@/lib/history/record-view";
 import { companyHref, mediaHref, parseIdFromSlug } from "@/lib/slug";
@@ -178,6 +179,9 @@ export default async function MoviePage({ params }: PageProps) {
           />
         </OverviewSection>
       </div>
+
+      {/* Between the details and the rails, away from the player. */}
+      <SponsorBanner className="pt-10 md:pt-14" />
 
       <div className="mt-6 md:mt-8">
         <CastRail title={movie.title} cast={movie.cast} crew={movie.crew} />
