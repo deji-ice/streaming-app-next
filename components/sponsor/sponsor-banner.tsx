@@ -1,3 +1,5 @@
+"use client";
+
 import { focusRing } from "@/components/ds/classes";
 import { pageWrapper } from "@/components/details/layout-classes";
 import { ANJYS_BAGS, SPONSOR_ADS_ENABLED, sponsorHref, sponsorImage, sponsorSrcSet } from "@/lib/sponsor";
@@ -13,17 +15,19 @@ import {
   sponsoredLabel,
 } from "./brand";
 import { SponsorImpression, SponsorLink } from "./sponsor-tracking";
+import { useShuffled } from "./use-shuffled";
 
 /**
  * Banner on the movie and series pages, between the overview/details and the
- * cast rail (not under the player). Laid out from the store's brief: one bag on a white panel (about 45%), and on Deep Plum the
+ * cast rail (not under the player). Laid out from the store's brief: one bag
+ * (random per page view) on a white panel (about 45%), and on Deep Plum the
  * logo, headline, short line, button and web address. The whole banner is one
  * link to the store. Below sm the logo and the short line drop out first, so
  * the headline and the button stay readable on a phone.
  */
 export function SponsorBanner({ className }: { className?: string }) {
+  const hero = useShuffled(ANJYS_BAGS.products)[0];
   if (!SPONSOR_ADS_ENABLED) return null;
-  const { hero } = ANJYS_BAGS;
 
   return (
     <div className={cn(pageWrapper, className)}>

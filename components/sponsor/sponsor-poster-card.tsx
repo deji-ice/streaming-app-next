@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 
 import { blushText, bodyFont, headlineClass, PHOTO_WIDTHS, pillClass, plumFocusRing, plumSurface } from "./brand";
 import { sponsorDropClass, SponsorImpression, SponsorLink } from "./sponsor-tracking";
+import { useShuffled } from "./use-shuffled";
 
 const DISMISS_KEY = "ssx-sponsor-poster-dismissed";
 
@@ -28,6 +29,7 @@ const DISMISS_KEY = "ssx-sponsor-poster-dismissed";
  */
 export function SponsorPosterCard() {
   const [visible, setVisible] = useState(false);
+  const hero = useShuffled(ANJYS_BAGS.products)[0];
 
   useEffect(() => {
     let dismissed = false;
@@ -51,7 +53,6 @@ export function SponsorPosterCard() {
     }
   };
 
-  const { hero } = ANJYS_BAGS;
 
   return (
     <div

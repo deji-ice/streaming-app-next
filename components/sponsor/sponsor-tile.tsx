@@ -1,18 +1,21 @@
+"use client";
+
 import { groupFocusRing, hoverTitle, hoverZoom, pressable, railWidths } from "@/components/ds/classes";
 import { ANJYS_BAGS, sponsorHref, sponsorImage, sponsorSrcSet } from "@/lib/sponsor";
 import { cn } from "@/lib/utils";
 
 import { blushText, bodyFont, headlineClass, PHOTO_WIDTHS, plumSurface } from "./brand";
 import { SponsorImpression, SponsorLink } from "./sponsor-tracking";
+import { useShuffled } from "./use-shuffled";
 
 /**
- * Poster-sized sponsor tile for a rail: the hero bag on white over a plum panel,
+ * Poster-sized sponsor tile for a rail: a random bag on white over a plum panel,
  * with a "Sponsored" caption where a poster has its title. Same width and press
  * feedback as PosterCard so the rail keeps its rhythm. The caller checks
  * SPONSOR_ADS_ENABLED (a Rail gives every child a slot, even one that renders nothing).
  */
 export function SponsorTile() {
-  const { hero } = ANJYS_BAGS;
+  const hero = useShuffled(ANJYS_BAGS.products)[0];
 
   return (
     <SponsorImpression placement="row_tile" className={railWidths.poster}>
