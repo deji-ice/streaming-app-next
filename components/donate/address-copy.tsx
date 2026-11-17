@@ -13,33 +13,50 @@ import { cn } from "@/lib/utils";
 const SUCCESS_MS = 2500;
 
 /**
- * Clipboard API first. Some browsers and embedded webviews refuse it, so the fallback
- * selects the address on screen and uses the older copy command; if that fails too, the
- * address stays selected for a manual copy.
+ * Older copy path for browsers and in-app webviews that refuse the Clipboard API. Copies from
+ * a hidden textarea holding the raw address, so the grouping shown on screen never ends up in
+ * the clipboard. Inside a dialog the textarea goes into the dialog, so its focus trap allows it.
  */
-async function copyText(text: string, node: HTMLElement | null): Promise<boolean> {
+function legacyCopy(text: string): boolean {
+  const host = document.activeElement?.closest('[role="dialog"]') ?? document.body;
+  const area = document.createElement("textarea");
+  area.value = text;
+  area.setAttribute("readonly", "");
+  area.style.position = "fixed";
+  area.style.opacity = "0";
+  area.style.pointerEvents = "none";
+  host.appendChild(area);
+  area.select();
+  area.setSelectionRange(0, text.length);
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } catch {
+    copied = false;
+  }
+  area.remove();
+  return copied;
+}
+
+async function copyText(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);
     return true;
   } catch {
-    if (!node) return false;
-    const selection = window.getSelection();
-    selection?.selectAllChildren(node);
-    try {
-      const copied = document.execCommand("copy");
-      if (copied) selection?.removeAllRanges();
-      return copied;
-    } catch {
-      return false;
-    }
+    return legacyCopy(text);
   }
 }
 
+/** "AKsJwX9L..." -> ["AKsJ", "wX9L", ...]: groups of 4, easier to read and to compare. */
+function groups(address: string): string[] {
+  return address.match(/.{1,4}/g) ?? [address];
+}
+
 /**
- * A wallet address that copies when tapped, with a copy button under it. Both share one
- * state: after a copy from either, the address box and the button turn green with a check
- * for a moment, and screen readers hear "copied". Copying is not donating: the analytics
- * event only measures interest.
+ * A wallet address shown in groups of four, the first and last groups highlighted (the ones
+ * people are told to check). Tapping it copies the raw address, and so does the button under
+ * it. Both share one state: after a copy, the box and the button turn green for a moment and
+ * screen readers hear "copied". Copying is not donating: the event only measures interest.
  *
  * Give it a `key` per address where the address can change (the popup's network switch),
  * so a success state never carries over to another address.
@@ -55,8 +72,8 @@ export function AddressCopy({
   onCopied?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const addressRef = useRef<HTMLElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const parts = groups(method.address);
 
   useEffect(
     () => () => {
@@ -66,9 +83,8 @@ export function AddressCopy({
   );
 
   const copy = async () => {
-    const ok = await copyText(method.address, addressRef.current);
-    if (!ok) {
-      toast.error("Could not copy. The address is selected, so copy it by hand.");
+    if (!(await copyText(method.address))) {
+      toast.error("Could not copy on this browser. Copy the address by hand.");
       return;
     }
     trackEvent("donate_copy", { chain: method.chain, source });
@@ -83,17 +99,27 @@ export function AddressCopy({
       <button
         type="button"
         onClick={copy}
+        aria-label={`${method.name} address ${method.address}. Copy`}
         className={cn(
-          "block w-full rounded-media border px-3 py-2.5 text-left transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          "block w-full rounded-media border px-3.5 py-3 text-left transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           copied ? "border-success/40 bg-success/10" : "border-border bg-muted hover:border-muted-foreground/40",
         )}
       >
-        <code ref={addressRef} className="block break-all font-mono text-[13px] leading-relaxed text-foreground">
-          {method.address}
-        </code>
+        <span className="flex flex-wrap gap-x-[0.5em] gap-y-1 font-mono text-[15px] leading-snug tracking-wide md:text-sm">
+          {parts.map((part, index) => (
+            <span
+              key={index}
+              className={
+                index === 0 || index === parts.length - 1 ? "font-semibold text-foreground" : "text-muted-foreground"
+              }
+            >
+              {part}
+            </span>
+          ))}
+        </span>
         <span
           className={cn(
-            "mt-1.5 flex items-center gap-1.5 text-xs font-medium",
+            "mt-2 flex items-center gap-1.5 text-xs font-medium",
             copied ? "text-success" : "text-subtle-foreground",
           )}
         >
@@ -115,9 +141,11 @@ export function AddressCopy({
 
       <Button
         type="button"
-        variant="secondary"
         onClick={copy}
-        className={cn("mt-3 w-full", copied && "border-success/40 bg-success/10 text-success hover:bg-success/10")}
+        className={cn(
+          "mt-3 w-full",
+          copied && "border border-success/40 bg-success/10 text-success hover:bg-success/10",
+        )}
       >
         {copied ? <CheckIcon aria-hidden="true" /> : <CopyIcon aria-hidden="true" />}
         {copied ? "Address copied" : `Copy ${method.name} address`}
