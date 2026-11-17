@@ -80,9 +80,18 @@ export default {
 					"0%, 100%": { opacity: "1" },
 					"50%": { opacity: "0.55" },
 				},
+				// Donate mark: the coin drops into the cup and settles (components/donate/coin-cup.tsx).
+				"coin-drop": {
+					"0%": { transform: "translateY(-34px)", opacity: "0" },
+					"35%": { opacity: "1" },
+					"70%": { transform: "translateY(3px)" },
+					"85%": { transform: "translateY(-2px)" },
+					"100%": { transform: "translateY(0)", opacity: "1" },
+				},
 			},
 			animation: {
 				skeleton: "skeleton 1.6s ease-in-out infinite",
+				"coin-drop": "coin-drop 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 250ms both",
 			},
 			transitionTimingFunction: {
 				out: "cubic-bezier(0.2, 0.8, 0.2, 1)",

@@ -8,6 +8,8 @@ import { DONATE_METHODS, type DonateChain } from "@/lib/donate";
 
 import { AddressCopy } from "./address-copy";
 import { ChainLogo } from "./chain-logo";
+import { CoinCup } from "./coin-cup";
+import { QrReveal } from "./qr-reveal";
 import { QrCode } from "./donate-qr";
 
 // Props are plain strings, so the QR code is encoded once per network, not on every render.
@@ -35,20 +37,22 @@ export default function DonateDialog({ open, onOpenChange, onCopied, onNever }: 
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
       <ModalContent title="Support StreamScapeX" size="md">
-        <p className="text-base leading-relaxed text-muted-foreground">
-          StreamScapeX is free and has no ads. Our hosting provider, unfortunately, is not free. Donating
-          doesn’t unlock any extras, but if you use the site a lot and want to help keep it running, we really
-          appreciate it.
-        </p>
+        <div className="flex items-start gap-4">
+          <CoinCup clipId="coin-cup-popup" className="size-14 shrink-0 md:size-16" />
+          <p className="text-base leading-relaxed text-muted-foreground">
+            StreamScapeX is free and has no ads. Our hosting provider, unfortunately, is not free. Donating
+            doesn’t unlock any extras, but if you use the site a lot and want to help keep it running, we really
+            appreciate it.
+          </p>
+        </div>
 
         {DONATE_METHODS.length > 1 ? (
-          <div role="group" aria-label="Choose a network" className="mt-6 flex flex-wrap gap-2">
+          <div role="group" aria-label="Choose a network" className="mt-5 grid grid-cols-2 gap-2 md:mt-6 md:flex md:flex-wrap">
             {DONATE_METHODS.map((item) => {
               const active = item.chain === chain;
               return (
                 <Button
                   key={item.chain}
-                  size="sm"
                   variant={active ? "default" : "outline"}
                   aria-pressed={active}
                   onClick={() => setChain(item.chain)}
@@ -61,12 +65,10 @@ export default function DonateDialog({ open, onOpenChange, onCopied, onNever }: 
           </div>
         ) : null}
 
-        <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-start">
-          <Qr
-            address={method.address}
-            label={`QR code for the ${method.name} address`}
-            className="size-[168px] shrink-0 self-center sm:self-start"
-          />
+        <div className="mt-5 flex flex-col gap-4 md:mt-6 md:flex-row md:items-start md:gap-6">
+          <QrReveal className="order-last md:order-none md:shrink-0">
+            <Qr address={method.address} label={`QR code for the ${method.name} address`} className="size-[168px]" />
+          </QrReveal>
           <div className="min-w-0 flex-1">
             <p className="text-sm leading-relaxed text-muted-foreground">
               {method.assets}, {method.network} only.
@@ -82,9 +84,9 @@ export default function DonateDialog({ open, onOpenChange, onCopied, onNever }: 
                 }}
               />
             </div>
-            <p className="mt-3 min-h-5 text-sm text-foreground">
-              {copied ? "Address copied. Paste it into your wallet to send. Thank you!" : null}
-            </p>
+            {copied ? (
+              <p className="mt-3 text-sm text-foreground">Address copied. Paste it into your wallet to send. Thank you!</p>
+            ) : null}
           </div>
         </div>
 

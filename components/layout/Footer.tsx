@@ -1,5 +1,7 @@
+import { CoffeeIcon } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { hasDonations } from "@/lib/donate";
 
@@ -11,10 +13,12 @@ const EXPLORE_LINKS = [
   { label: "Search", href: "/search" },
 ] as const;
 
-const INFO_LINKS: ReadonlyArray<{ label: string; href: string }> = [
+type FooterLink = { label: string; href: string; icon?: ReactNode };
+
+const INFO_LINKS: ReadonlyArray<FooterLink> = [
   { label: "About and credits", href: "/about" },
   // Only when a donation address is configured for this build (lib/donate.ts).
-  ...(hasDonations ? [{ label: "Support the site", href: "/donate" }] : []),
+  ...(hasDonations ? [{ label: "Donate", href: "/donate", icon: <CoffeeIcon size={16} aria-hidden="true" /> }] : []),
 ];
 
 export const TMDB_NOTICE =
@@ -28,7 +32,7 @@ function LinkColumn({
   links,
 }: {
   label: string;
-  links: ReadonlyArray<{ label: string; href: string }>;
+  links: ReadonlyArray<FooterLink>;
 }) {
   return (
     <nav aria-label={label}>
@@ -36,7 +40,8 @@ function LinkColumn({
       <ul className="mt-2">
         {links.map((item) => (
           <li key={item.href}>
-            <Link href={item.href} className={linkClass}>
+            <Link href={item.href} className={`${linkClass} gap-1.5`}>
+              {item.icon}
               {item.label}
             </Link>
           </li>
