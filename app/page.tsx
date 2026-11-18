@@ -12,7 +12,6 @@ import {
   TheatersRail,
 } from "@/components/home/rails";
 import { loadSpotlightItems, Spotlight, SPOTLIGHT_COUNT } from "@/components/home/spotlight";
-import { SponsorStrip } from "@/components/sponsor/sponsor-strip";
 import { tmdbImage } from "@/lib/tmdb-image";
 import {
   getGenres,
@@ -123,7 +122,6 @@ export default async function HomePage() {
       <PosterRail title="Popular movies" cards={popularMovies} href="/movie" sponsorAt={4} />
       <PosterRail title="Popular series" cards={popularSeries} href="/series" />
       <TheatersRail title="New in theaters" cards={theaters} />
-      <SponsorStrip />
       <GenreGrid tiles={genreTiles} />
       <PosterRail title="Top rated series" cards={topRatedSeries} href="/series?sort=vote_average.desc" />
     </div>

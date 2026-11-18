@@ -18,9 +18,10 @@ const DISMISS_KEY = "ssx-sponsor-poster-dismissed";
  * Play (the poster, and this bar with it, then unmounts) or closes it. It sits
  * on the poster only and never touches the stream.
  *
- * Phones get a slim bar along the bottom (bag, headline, web address); from md
- * it is a centred bar inside the middle 80% of the player, with the button, and
- * from lg the logo; from xl the short line. The close button hides it for the
+ * A product ad: the bag's photo, name and price, linking to its page. Phones
+ * get a slim bar along the bottom (photo, name, price and "Get this bag"); from md
+ * it is a centred bar inside the middle 80% of the player with the button, from
+ * lg the logo, and from xl the web address moves beside the button. The close button hides it for the
  * browser session. Rendered after mount so a closed bar never flashes back in;
  * it is absolutely positioned, so appearing late shifts nothing.
  *
@@ -29,7 +30,7 @@ const DISMISS_KEY = "ssx-sponsor-poster-dismissed";
  */
 export function SponsorPosterCard() {
   const [visible, setVisible] = useState(false);
-  const hero = useShuffled(ANJYS_BAGS.products)[0];
+  const bag = useShuffled(ANJYS_BAGS.products)[0];
 
   useEffect(() => {
     let dismissed = false;
@@ -71,18 +72,18 @@ export function SponsorPosterCard() {
           )}
         >
           <SponsorLink
-            href={sponsorHref(ANJYS_BAGS.homePath, "player_poster")}
+            href={sponsorHref(bag.path, "player_poster")}
             placement="player_poster"
-            item="store"
-            ariaLabel={`Sponsored: shop ${ANJYS_BAGS.name} (opens in a new tab)`}
+            item={bag.name}
+            ariaLabel={`Sponsored: get the ${bag.name}, ${bag.price}, from ${ANJYS_BAGS.name} (opens in a new tab)`}
             className="group flex min-w-0 flex-1 items-center gap-3 pr-12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#FDFAF9] md:gap-5 md:pr-16"
           >
             <span className="relative block h-full w-14 shrink-0 bg-white md:w-24 lg:w-32">
               {/* Cloudinary resizes the photo; next/image would send it through the TMDB loader. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={sponsorImage(hero.image, 240)}
-                srcSet={sponsorSrcSet(hero.image, PHOTO_WIDTHS)}
+                src={sponsorImage(bag.image, 240)}
+                srcSet={sponsorSrcSet(bag.image, PHOTO_WIDTHS)}
                 sizes="(min-width: 1024px) 128px, (min-width: 768px) 96px, 56px"
                 alt=""
                 width={930}
@@ -105,14 +106,16 @@ export function SponsorPosterCard() {
                 Sponsored
               </span>
               <span className={cn(headlineClass, "truncate text-base md:text-[22px] lg:text-[26px]")}>
-                {ANJYS_BAGS.headline}
+                {bag.name}
               </span>
-              <span className={cn(blushText, "truncate text-xs leading-4 md:text-sm md:leading-5 xl:hidden")}>
-                {ANJYS_BAGS.displayUrl}
+              <span className={cn(blushText, "truncate text-xs leading-4 tabular-nums md:text-sm md:leading-5")}>
+                {bag.price}
+                {/* Phones have no room for the button, so the ask goes here instead of the address. */}
+                <span className="text-[#FDFAF9] md:hidden"> · {ANJYS_BAGS.buyCta} →</span>
+                <span className="hidden md:inline xl:hidden"> · {ANJYS_BAGS.displayUrl}</span>
               </span>
-              <span className={cn(blushText, "hidden truncate text-sm leading-5 xl:block")}>{ANJYS_BAGS.line}</span>
             </span>
-            <span className={cn(pillClass, "hidden group-hover:bg-white md:inline-flex")}>{ANJYS_BAGS.cta}</span>
+            <span className={cn(pillClass, "hidden group-hover:bg-white md:inline-flex")}>{ANJYS_BAGS.buyCta}</span>
             <span className={cn(blushText, "hidden shrink-0 text-sm xl:inline")}>{ANJYS_BAGS.displayUrl}</span>
           </SponsorLink>
           <button
