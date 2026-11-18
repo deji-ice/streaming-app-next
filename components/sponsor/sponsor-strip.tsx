@@ -59,7 +59,7 @@ export function SponsorStrip() {
                   className={cn(pillClass, plumFocusRing, "hover:bg-white active:scale-[0.98]")}
                 >
                   {ANJYS_BAGS.cta}
-                  <span className="sr-only"> at {ANJYS_BAGS.name} (opens in a new tab)</span>
+                  <span className="sr-only"> (opens in a new tab)</span>
                 </SponsorLink>
                 <span className={cn(blushText, "text-sm")}>{ANJYS_BAGS.displayUrl}</span>
               </div>
