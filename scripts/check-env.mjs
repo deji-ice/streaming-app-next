@@ -52,12 +52,8 @@ for (const name of ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"]
   }
 }
 
-// Canonical URLs, sitemap and share previews.
-if (!has("NEXT_PUBLIC_APP_URL")) {
-  warnings.push(
-    "NEXT_PUBLIC_APP_URL is not set: canonical URLs and share previews will use the fallback domain in app/layout.tsx. Set it to the site's real URL as a BUILD variable.",
-  );
-}
+// Canonical URLs, sitemap and share previews use the constant in lib/site.ts, not a
+// build variable (NEXT_PUBLIC_APP_URL is no longer read).
 
 // Google Analytics: also compiled into the browser code, and silently off when missing.
 if (!has("NEXT_PUBLIC_GA_ID")) {
