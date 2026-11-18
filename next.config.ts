@@ -1,6 +1,36 @@
 import type { NextConfig } from "next";
 
+/**
+ * The site's one public address. The old workers.dev address and www get a permanent
+ * redirect here, path and query kept.
+ *
+ * workers.dev has to be redirected by the app: Cloudflare's redirect rules only work on
+ * zones you own. www is also redirected by a rule on the streamscapex.app zone, before it
+ * reaches the Worker; the entry below only covers www if it is ever attached to the Worker.
+ *
+ * Host values carry their own ^ and $: OpenNext tests them unanchored, so without them
+ * "stream.scapex.workers.dev" would also match version preview hosts such as
+ * "1a2b3c-stream.scapex.workers.dev" (those must keep working for testing a deploy).
+ */
+const SITE_ORIGIN = "https://streamscapex.app";
+
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "^stream\\.[^.]+\\.workers\\.dev$" }],
+        destination: `${SITE_ORIGIN}/:path*`,
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "^www\\.streamscapex\\.app$" }],
+        destination: `${SITE_ORIGIN}/:path*`,
+        permanent: true,
+      },
+    ];
+  },
   // TMDB already serves resized renditions, so the custom loader maps each
   // requested width to a valid TMDB size bucket instead of running the
   // Next optimizer (see lib/tmdb-image-loader.ts and design spec section 4).
