@@ -24,7 +24,7 @@ const fontSans = Geist({
   display: "swap",
 });
 
-const FALLBACK_SITE_URL = "https://www.streamscapex.live";
+const FALLBACK_SITE_URL = "https://streamscapex.app";
 
 function resolveSiteUrl(): URL {
   const configured = process.env.NEXT_PUBLIC_APP_URL;

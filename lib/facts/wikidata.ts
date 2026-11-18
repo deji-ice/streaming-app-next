@@ -14,7 +14,7 @@ import type { WdRow } from "./build";
  */
 
 const ENDPOINT = "https://query.wikidata.org/sparql";
-const USER_AGENT = "StreamScapeX/1.0 (https://stream.scapex.workers.dev)";
+const USER_AGENT = "StreamScapeX/1.0 (https://streamscapex.app)";
 const TIMEOUT_MS = 2500;
 const REVALIDATE_SECONDS = 604800; // 7 days
 
