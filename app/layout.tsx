@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer";
 import TabBar from "@/components/layout/TabBar";
 import InstallPrompt from "@/components/pwa/InstallPrompt";
 import { DonatePrompt } from "@/components/donate/donate-prompt";
+import { SITE_ORIGIN, SITE_URL } from "@/lib/site";
 import { Providers } from "./providers";
 import { UserInitializer } from "./user-initializer";
 import "./globals.css";
@@ -24,22 +25,9 @@ const fontSans = Geist({
   display: "swap",
 });
 
-const FALLBACK_SITE_URL = "https://streamscapex.app";
-
-function resolveSiteUrl(): URL {
-  const configured = process.env.NEXT_PUBLIC_APP_URL;
-  if (configured) {
-    try {
-      return new URL(configured);
-    } catch {
-      // Malformed value: fall through to the known production URL.
-    }
-  }
-  return new URL(FALLBACK_SITE_URL);
-}
-
-const siteUrl = resolveSiteUrl();
-const siteOrigin = siteUrl.origin;
+// A constant, not a build variable: see lib/site.ts.
+const siteUrl = SITE_URL;
+const siteOrigin = SITE_ORIGIN;
 
 const SITE_DESCRIPTION =
   "Stream your favorite movies and TV shows in HD quality. Watch the latest releases and popular classics on StreamScapeX.";

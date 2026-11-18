@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 
+import { absoluteUrl } from "@/lib/site";
+
 /**
  * Every unique /person and /movie page a crawler opens is a full server render that
  * calls TMDB. Crawlers that bring no search traffic (SEO scrapers, AI training and
@@ -36,5 +38,6 @@ export default function robots(): MetadataRoute.Robots {
       // Genre-filtered catalog URLs: their canonical is the unfiltered page, so crawling them adds nothing.
       { userAgent: "*", allow: "/", disallow: ["/api/", "/auth/", "/*?*genres="] },
     ],
+    sitemap: absoluteUrl("/sitemap.xml"),
   };
 }

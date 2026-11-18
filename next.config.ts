@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 /**
- * The site's one public address. The old workers.dev address and www get a permanent
- * redirect here, path and query kept.
+ * The site's one public address; keep it in sync with lib/site.ts (this file cannot import
+ * app code). The old workers.dev address and www get a permanent redirect here, path and
+ * query kept.
  *
  * workers.dev has to be redirected by the app: Cloudflare's redirect rules only work on
  * zones you own. www is also redirected by a rule on the streamscapex.app zone, before it
