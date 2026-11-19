@@ -17,6 +17,8 @@ type FooterLink = { label: string; href: string; icon?: ReactNode };
 
 const INFO_LINKS: ReadonlyArray<FooterLink> = [
   { label: "About and credits", href: "/about" },
+  { label: "Terms of Service", href: "/legal/terms" },
+  { label: "Privacy Policy", href: "/legal/privacy" },
   // Only when a donation address is configured for this build (lib/donate.ts).
   ...(hasDonations ? [{ label: "Donate", href: "/donate", icon: <CoffeeIcon size={16} aria-hidden="true" /> }] : []),
 ];
