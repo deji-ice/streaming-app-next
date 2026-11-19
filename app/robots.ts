@@ -7,7 +7,8 @@ import { absoluteUrl } from "@/lib/site";
  * calls TMDB. Crawlers that bring no search traffic (SEO scrapers, AI training and
  * answer-engine bots, Apple and Meta indexers) were the bulk of the Worker's traffic, so
  * they are kept out. Googlebot and Bingbot are not listed, so they follow the "*" rule.
- * Remove an entry here to let that crawler back in.
+ * GoogleOther is Google's crawler for non-Search uses, so blocking it leaves Google Search
+ * alone. Remove an entry here to let that crawler back in.
  */
 const BLOCKED_CRAWLERS = [
   "Applebot",
@@ -15,7 +16,9 @@ const BLOCKED_CRAWLERS = [
   "meta-externalagent",
   "meta-webindexer",
   "ClaudeBot",
+  "Claude-SearchBot",
   "anthropic-ai",
+  "GoogleOther",
   "GPTBot",
   "ChatGPT-User",
   "PerplexityBot",
