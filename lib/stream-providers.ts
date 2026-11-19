@@ -52,6 +52,19 @@ export const STREAM_PROVIDERS: StreamProvider[] = [
         ? `https://player.videasy.ws/embed/movie/${tmdbId}`
         : `https://player.videasy.ws/embed/tv/${tmdbId}/${season}/${episode}`,
   },
+  {
+    // Vidy posts PLAYER_EVENT play/pause messages to the parent page,
+    // so the pause-screen sponsor card works with this source.
+    // Episode navigation stays in our own controls, so nextEpisode /
+    // episodeSelector / autoplayNextEpisode are left off.
+    id: "vidy",
+    label: "Vidy",
+    iosFriendly: false, // untested on iPhone; flip to true once confirmed
+    buildUrl: ({ type, tmdbId, season = 1, episode = 1 }) =>
+      type === "movie"
+        ? `https://vidy.st/movie/${tmdbId}?color=d31d09`
+        : `https://vidy.st/tv/${tmdbId}/${season}/${episode}?color=d31d09`,
+  },
 
   // Owner's additional sites drop in here as one object each.
 ];
