@@ -40,7 +40,7 @@ export default function PrivacyPage() {
           <Key>With an account,</Key> we store:
         </p>
         <LegalList>
-          <li>your email address, plus the name and picture from Google or GitHub if you sign in with them;</li>
+          <li>your email address, plus the name and picture from Google if you sign in with it (see section 2);</li>
           <li>your password, if you use one, in hashed form held by our sign-in provider, not in readable text;</li>
           <li>
             your watchlist, favorites, ratings and watch history (the title, season and episode, how far you
@@ -56,7 +56,45 @@ export default function PrivacyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection id="privacy-cookies" number={2} title="Cookies and browser storage">
+      <LegalSection id="privacy-google" number={2} title="Google sign-in and your Google data">
+        <p>
+          You can create an account with your email, or with Google. If you choose Google, Google asks you to
+          approve sharing a short list of details with StreamScapeX. This is everything we receive from your
+          Google account:
+        </p>
+        <LegalList>
+          <li>your name;</li>
+          <li>your email address;</li>
+          <li>your profile picture;</li>
+          <li>an identifier for your Google account, so that signing in again finds the same account.</li>
+        </LegalList>
+        <p>
+          <Key>How we use it.</Key> Only to create your account, to show your name and picture in the profile
+          menu, and to connect your watchlist, favorites and watch history to you. We do not use it for
+          advertising, we do not sell it, and we do not share it with anyone except our sign-in and database
+          provider, Supabase, which stores it for us.
+        </p>
+        <p>
+          <Key>What we do not access.</Key> StreamScapeX does not read your Gmail, Google Drive, contacts,
+          calendar or any other data in your Google account.
+        </p>
+        <p>
+          <Key>How long we keep it.</Key> For as long as your account exists. When you ask us to delete your
+          account, your Google details and everything saved in it are deleted. You can also stop StreamScapeX
+          from receiving anything new at any time in your{" "}
+          <LegalLink href="https://myaccount.google.com/permissions">Google account permissions</LegalLink>.
+        </p>
+        <p>
+          StreamScapeX&rsquo;s use and transfer of information received from Google APIs to any other app will
+          adhere to the{" "}
+          <LegalLink href="https://developers.google.com/terms/api-services-user-data-policy">
+            Google API Services User Data Policy
+          </LegalLink>
+          , including the Limited Use requirements.
+        </p>
+      </LegalSection>
+
+      <LegalSection id="privacy-cookies" number={3} title="Cookies and browser storage">
         <p>The site and its providers use a small number of cookies and local storage entries:</p>
         <LegalList>
           <li>sign-in cookies that keep you signed in, set only if you use an account;</li>
@@ -69,7 +107,7 @@ export default function PrivacyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection id="privacy-third-parties" number={3} title="Third-party content and IP addresses">
+      <LegalSection id="privacy-third-parties" number={4} title="Third-party content and IP addresses">
         <p>
           <Key>StreamScapeX does not host any media.</Key> Posters, video players and trailers load from other
           companies&rsquo; servers, and your browser connects to them directly. That means each of them can
@@ -104,7 +142,7 @@ export default function PrivacyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection id="privacy-sharing" number={4} title="Data sharing and security">
+      <LegalSection id="privacy-sharing" number={5} title="Data sharing and security">
         <p>
           <Key>We do not sell, rent or trade your personal information.</Key> It is shared only with the
           providers above, and only so the site can run.
@@ -120,7 +158,7 @@ export default function PrivacyPage() {
         </p>
       </LegalSection>
 
-      <LegalSection id="privacy-choices" number={5} title="Your choices">
+      <LegalSection id="privacy-choices" number={6} title="Your choices">
         <LegalList>
           <li>Clear your browser data to remove local history, searches and settings.</li>
           <li>Sign out any time from the profile menu.</li>
@@ -131,16 +169,21 @@ export default function PrivacyPage() {
           {CONTACT_EMAIL ? (
             <li>
               To have your account and its data deleted, email <ContactLink /> from the address on the
-              account.
+              account. We delete the account and everything saved in it when you ask.
             </li>
           ) : null}
         </LegalList>
+        {CONTACT_EMAIL ? (
+          <p>
+            Questions about this policy, or about the data we hold about you: email <ContactLink />.
+          </p>
+        ) : null}
         <p>
           StreamScapeX is not meant for children under 13, and we do not knowingly collect their information.
         </p>
       </LegalSection>
 
-      <LegalSection id="privacy-changes" number={6} title="Changes to this policy">
+      <LegalSection id="privacy-changes" number={7} title="Changes to this policy">
         <p>
           We may update this policy as the site changes. The &ldquo;Last updated&rdquo; date at the top shows the
           latest version. Using the site after a change means you accept it. The{" "}

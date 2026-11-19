@@ -58,7 +58,7 @@ export default function TermsPage() {
       <LegalSection id="terms-accounts" number={3} title="Accounts">
         <p>
           An account is optional. You can create one with an email address and password, or sign in with
-          Google or GitHub. It lets you keep a watchlist, favorites, ratings and watch history that follow
+          Google. It lets you keep a watchlist, favorites, ratings and watch history that follow
           you between devices. What we store is described in the{" "}
           <LegalLink href="/legal/privacy">Privacy Policy</LegalLink>.
         </p>

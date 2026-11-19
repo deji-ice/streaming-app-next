@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AboutSite } from "@/components/home/about-site";
 import { BecauseYouWatched } from "@/components/home/because-you-watched";
 import { HOME_PAGE_CLASS } from "@/components/home/classes";
 import { ContinueWatching } from "@/components/home/continue-watching";
@@ -124,6 +125,7 @@ export default async function HomePage() {
       <TheatersRail title="New in theaters" cards={theaters} />
       <GenreGrid tiles={genreTiles} />
       <PosterRail title="Top rated series" cards={topRatedSeries} href="/series?sort=vote_average.desc" />
+      <AboutSite />
     </div>
   );
 }
