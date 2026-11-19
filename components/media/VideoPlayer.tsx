@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { playerHeight } from "@/components/details/layout-classes";
 import { SponsorPosterCard } from "@/components/sponsor/sponsor-poster-card";
 import { SPONSOR_ADS_ENABLED } from "@/lib/sponsor";
+import { PopupTip } from "@/components/media/popup-tip";
 
 export default function VideoPlayer({
   tmdbId,
@@ -200,6 +201,8 @@ export default function VideoPlayer({
         <SourceSelector value={providerId} onChange={handleSourceChange} />
       </div>
       <EpisodeControls />
+      {/* Renders nothing itself: once the player is open, it may toast a pop-up blocker tip. */}
+      <PopupTip />
     </div>
   ) : null;
 }
