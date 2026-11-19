@@ -17,20 +17,21 @@ const SITE_ORIGIN = "https://streamscapex.app";
 
 const nextConfig: NextConfig = {
   async redirects() {
-    return [
+    // Each host gets two rules, the root first. OpenNext (the Cloudflare adapter) fills in
+    // ":path*" only when the source captured something, so for "/" a single catch-all sent
+    // people to the literal address "https://streamscapex.app/:path*". Next's own server
+    // fills it in anyway, so `next dev` cannot catch this. After changing these rules, run
+    // `node scripts/check-redirects.mjs` (found 2026-11-19).
+    const hosts = ["^stream\\.[^.]+\\.workers\\.dev$", "^www\\.streamscapex\\.app$"];
+    return hosts.flatMap((host) => [
+      { source: "/", has: [{ type: "host" as const, value: host }], destination: SITE_ORIGIN, permanent: true },
       {
         source: "/:path*",
-        has: [{ type: "host", value: "^stream\\.[^.]+\\.workers\\.dev$" }],
+        has: [{ type: "host" as const, value: host }],
         destination: `${SITE_ORIGIN}/:path*`,
         permanent: true,
       },
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "^www\\.streamscapex\\.app$" }],
-        destination: `${SITE_ORIGIN}/:path*`,
-        permanent: true,
-      },
-    ];
+    ]);
   },
   // TMDB already serves resized renditions, so the custom loader maps each
   // requested width to a valid TMDB size bucket instead of running the
