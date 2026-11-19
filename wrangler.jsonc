@@ -25,5 +25,16 @@
   },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] }
-  ]
+  ],
+  // Workers Logs. A deploy overwrites whatever the dashboard's Observability settings say,
+  // so the setting lives here. Workers Paid includes 20M log events a month, then $0.60 per
+  // million. Logging 1 request in 10 is about 1M a month at Nov 2026 traffic, so it costs
+  // nothing extra. Raise the rate only with the bill in mind.
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true,
+      "head_sampling_rate": 0.1
+    }
+  }
 }
