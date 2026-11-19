@@ -66,8 +66,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               // Intentional allowlist of the streaming sources in lib/stream-providers.ts
               // plus YouTube (trailers). Add a provider's domain here when you add it to the registry.
-              "frame-src 'self' https://vidsrc.to https://*.vidsrc.to https://vidlink.pro https://*.vidlink.pro https://player.videasy.ws https://*.videasy.ws https://www.youtube.com https://www.youtube-nocookie.com",
-              "frame-ancestors 'self'",
+              "frame-src 'self' https://vidsrc.to https://*.vidsrc.to https://vidlink.pro https://*.vidlink.pro https://player.videasy.ws https://*.videasy.ws https://vidy.st https://*.vidy.st https://www.youtube.com https://www.youtube-nocookie.com",
               "img-src 'self' https: data: blob:",
               "media-src 'self' https: data: blob:",
               "connect-src 'self' https: data: blob:",
