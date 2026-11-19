@@ -62,6 +62,14 @@ if (!has("NEXT_PUBLIC_GA_ID")) {
   );
 }
 
+// Contact address for the Terms and Privacy pages (lib/legal.ts): compiled into the pages, and the
+// contact lines silently disappear when it is missing.
+if (!has("NEXT_PUBLIC_CONTACT_EMAIL")) {
+  warnings.push(
+    "NEXT_PUBLIC_CONTACT_EMAIL is not set: the Terms and Privacy pages will give no way to contact you or to ask for account deletion. Set it as a BUILD variable, to a public StreamScapeX address (forwarded by Cloudflare Email Routing), not a personal one.",
+  );
+}
+
 const indent = (text) => text.replace(/^/gm, "    ");
 
 if (warnings.length > 0) {
