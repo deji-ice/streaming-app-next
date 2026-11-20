@@ -1,5 +1,6 @@
 import { MediaType } from "@/types";
 import { NextResponse, NextRequest } from "next/server";
+import { isTakenDown } from "@/lib/takedowns";
 
 const VIDSRC_BASE = process.env.NEXT_STREAM_BASE_URL; // Add to .env.local
 
@@ -15,6 +16,11 @@ export async function GET(request: NextRequest) {
       { error: "Invalid parameters" },
       { status: 400 }
     );
+  }
+
+  // Titles taken down after a copyright notice (lib/takedowns.ts) get no stream link.
+  if (isTakenDown(type, tmdbId)) {
+    return NextResponse.json({ error: "Not available" }, { status: 404 });
   }
 
   // Ensure we're using the correct episode number from the params

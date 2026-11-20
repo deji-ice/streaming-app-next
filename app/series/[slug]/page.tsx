@@ -27,6 +27,7 @@ import {
 import { FunFactsSkeleton } from "@/components/details/skeletons";
 import { hasWatchOptions, StreamingOn } from "@/components/details/streaming-on";
 import { TitleHeader } from "@/components/details/title-header";
+import { UnavailablePlayer } from "@/components/details/unavailable-player";
 import { MetaRow } from "@/components/ds/meta-row";
 import { Rating } from "@/components/ds/rating";
 import { TrailerButton, VideoRail } from "@/components/ds/trailer";
@@ -35,6 +36,7 @@ import { SponsorBanner } from "@/components/sponsor/sponsor-banner";
 import { formatDate, formatRuntime } from "@/lib/format";
 import { RecordView } from "@/lib/history/record-view";
 import { companyHref, mediaHref, networkHref, parseIdFromSlug } from "@/lib/slug";
+import { isTakenDown } from "@/lib/takedowns";
 import { getTv, isTmdbNotFound, type TvDTO } from "@/lib/tmdb";
 import { selectWatchProviders } from "@/lib/tmdb/providers";
 import { cn } from "@/lib/utils";
@@ -118,15 +120,22 @@ export default async function SeriesPage({ params, searchParams }: PageProps) {
   return (
     <>
       <PlayerBand>
-        <VideoPlayer
-          // key={`${currentSeason}-${currentEpisode}`}
-          tmdbId={tv.id}
-          type="series"
-          posterPath={tv.backdropPath ?? tv.posterPath ?? ""}
-          title={tv.title}
-          episode={{ season: currentSeason, number: currentEpisode }}
-          seasonLength={seasonLength || undefined}
-        />
+        {isTakenDown("tv", tv.id) ? (
+          <UnavailablePlayer
+            backdropPath={tv.backdropPath ?? tv.posterPath}
+            hasWatchOptions={hasWatchOptions(providers)}
+          />
+        ) : (
+          <VideoPlayer
+            // key={`${currentSeason}-${currentEpisode}`}
+            tmdbId={tv.id}
+            type="series"
+            posterPath={tv.backdropPath ?? tv.posterPath ?? ""}
+            title={tv.title}
+            episode={{ season: currentSeason, number: currentEpisode }}
+            seasonLength={seasonLength || undefined}
+          />
+        )}
       </PlayerBand>
 
       {/* Episodes sit directly under the player: picking an episode is the main action here. */}

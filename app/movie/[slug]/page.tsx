@@ -17,6 +17,7 @@ import { RecommendationsRail } from "@/components/details/recommendations-rail";
 import { FunFactsSkeleton } from "@/components/details/skeletons";
 import { hasWatchOptions, StreamingOn } from "@/components/details/streaming-on";
 import { TitleHeader } from "@/components/details/title-header";
+import { UnavailablePlayer } from "@/components/details/unavailable-player";
 import { MetaRow } from "@/components/ds/meta-row";
 import { Rating } from "@/components/ds/rating";
 import { TrailerButton, VideoRail } from "@/components/ds/trailer";
@@ -25,6 +26,7 @@ import { SponsorBanner } from "@/components/sponsor/sponsor-banner";
 import { formatDate, formatMoney, formatRuntime } from "@/lib/format";
 import { RecordView } from "@/lib/history/record-view";
 import { companyHref, mediaHref, parseIdFromSlug } from "@/lib/slug";
+import { isTakenDown } from "@/lib/takedowns";
 import { getMovie, isTmdbNotFound, type MovieDTO } from "@/lib/tmdb";
 import { selectWatchProviders } from "@/lib/tmdb/providers";
 import { cn } from "@/lib/utils";
@@ -93,12 +95,19 @@ export default async function MoviePage({ params }: PageProps) {
   return (
     <>
       <PlayerBand>
-        <VideoPlayer
-          tmdbId={movie.id}
-          type="movie"
-          posterPath={movie.backdropPath ?? movie.posterPath ?? ""}
-          title={movie.title}
-        />
+        {isTakenDown("movie", movie.id) ? (
+          <UnavailablePlayer
+            backdropPath={movie.backdropPath ?? movie.posterPath}
+            hasWatchOptions={hasWatchOptions(providers)}
+          />
+        ) : (
+          <VideoPlayer
+            tmdbId={movie.id}
+            type="movie"
+            posterPath={movie.backdropPath ?? movie.posterPath ?? ""}
+            title={movie.title}
+          />
+        )}
       </PlayerBand>
 
       <div className={cn(pageWrapper, "flex flex-col pt-6 md:pt-10", blockGap)}>
